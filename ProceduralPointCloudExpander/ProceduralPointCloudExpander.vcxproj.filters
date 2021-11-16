@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Archivos de origen">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Archivos de encabezado">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Archivos de recursos">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Archivos de encabezado\RendererCore">
+      <UniqueIdentifier>{7f385013-bbf5-4565-b1fc-e8f8b0d147ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\RendererCore">
+      <UniqueIdentifier>{2044d927-9425-4c71-8f7e-f18c21718332}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\PrecompiledHeaders">
+      <UniqueIdentifier>{0bb481a2-36bc-4e1b-9530-6d07d2c3d091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Utilities">
+      <UniqueIdentifier>{fc8e669b-5ab4-4b7d-8e3c-1e0d54590c58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\Shaders">
+      <UniqueIdentifier>{210247fc-b540-4aea-8582-6dc661b8dd2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Utilities">
+      <UniqueIdentifier>{7b0306cc-9379-477c-84da-bd4eaf7e8aaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\ImportedLibraries">
+      <UniqueIdentifier>{fca933c7-e574-4567-8800-fc55b75db707}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\ImportedLibraries">
+      <UniqueIdentifier>{72384ffe-260c-42de-a84b-c233b6e7f431}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\RendererCore\ShaderProgram.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RendererCore\Camara.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RendererCore\pointCloud.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RendererCore\Renderer.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RendererCore\Shader.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RendererCore\ShaderManager.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\main.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Utilities\Image.cpp">
+      <Filter>Archivos de origen\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Utilities\PlyLoader.cpp">
+      <Filter>Archivos de origen\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Libraries\lodepng\lodepng.cpp">
+      <Filter>Archivos de origen\ImportedLibraries</Filter>
+    </ClCompile>
+    <ClCompile Include="Libraries\tinyply\tinyply.cpp">
+      <Filter>Archivos de origen\ImportedLibraries</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\RendererCore\ShaderProgram.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\Camara.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\pointCloud.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\Renderer.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\RenderOptions.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\Shader.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\ShaderManager.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\PrecompiledHeaders\stdafx.h">
+      <Filter>Archivos de encabezado\PrecompiledHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utilities\Singleton.h">
+      <Filter>Archivos de encabezado\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utilities\Image.h">
+      <Filter>Archivos de encabezado\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utilities\PlyLoader.h">
+      <Filter>Archivos de encabezado\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utilities\Point.h">
+      <Filter>Archivos de encabezado\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utilities\FileManagement.h">
+      <Filter>Archivos de encabezado\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\lodepng\lodepng.h">
+      <Filter>Archivos de encabezado\ImportedLibraries</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\tinyply\tinyply.h">
+      <Filter>Archivos de encabezado\ImportedLibraries</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Shaders\FragmentShader.glsl">
+      <Filter>Archivos de recursos\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\VertexShader.glsl">
+      <Filter>Archivos de recursos\Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
