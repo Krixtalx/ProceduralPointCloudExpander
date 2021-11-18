@@ -2,7 +2,7 @@
 // Created by Niskp on 08/10/2021.
 //
 #include "stdafx.h"
-#include "pointCloud.h"
+#include "PointCloud.h"
 #include "ShaderManager.h"
 
 /**
@@ -10,7 +10,7 @@
  * @param shaderProgram que se usará para renderizar el modelo
  * @param pos Posicion inicial de la nube de puntos
  */
-PPCX::pointCloud::pointCloud(std::string shaderProgram, glm::vec3 pos) : idVBO(UINT_MAX), idIBO(UINT_MAX),
+PPCX::PointCloud::PointCloud(std::string shaderProgram, glm::vec3 pos) : idVBO(UINT_MAX), idIBO(UINT_MAX),
                                                                          shaderProgram(
 	                                                                         std::move(shaderProgram)),
                                                                          posicion(pos)
@@ -26,7 +26,7 @@ PPCX::pointCloud::pointCloud(std::string shaderProgram, glm::vec3 pos) : idVBO(U
  * Constructor copia. Copia el numVertices y el shaderProgram y realiza una nueva instanciacion de los vbos e ibos
  * @param orig
  */
-PPCX::pointCloud::pointCloud(pointCloud& orig) : vbo(orig.vbo),
+PPCX::PointCloud::PointCloud(PointCloud& orig) : vbo(orig.vbo),
                                                  ibo(orig.ibo), shaderProgram(orig.shaderProgram)
 {
 	//Creamos nuestro VAO
@@ -42,7 +42,7 @@ PPCX::pointCloud::pointCloud(pointCloud& orig) : vbo(orig.vbo),
 /**
  * Destructor. Libera todos los recursos reservados a OpenGL.
  */
-PPCX::pointCloud::~pointCloud()
+PPCX::PointCloud::~PointCloud()
 {
 	if (idVBO != UINT_MAX)
 		glDeleteBuffers(1, &idVBO);
@@ -52,12 +52,23 @@ PPCX::pointCloud::~pointCloud()
 	glDeleteVertexArrays(1, &idVAO);
 }
 
+void PPCX::PointCloud::nuevoPunto(const PointModel& punto)
+{
+	vbo.push_back(punto);
+}
+
+void PPCX::PointCloud::nuevosPuntos(const std::vector<PointModel>& puntos)
+{
+	vbo.resize(vbo.size() + puntos.size());
+	std::copy(puntos.begin(), puntos.end(), vbo.begin() + vbo.size());
+}
+
 /**
  * Instancia un VBO en el contexto OpenGL y lo guarda en vbos
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PPCX::pointCloud::nuevoVBO(std::vector<PointModel> datos, GLenum freqAct)
+void PPCX::PointCloud::nuevoVBO(std::vector<PointModel> datos, GLenum freqAct)
 {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idVBO != UINT_MAX)
@@ -84,7 +95,7 @@ void PPCX::pointCloud::nuevoVBO(std::vector<PointModel> datos, GLenum freqAct)
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PPCX::pointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct)
+void PPCX::PointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct)
 {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idIBO != UINT_MAX)
@@ -101,7 +112,7 @@ void PPCX::pointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct)
 /**
  * Función a la que se llama cuando se debe de dibujar el modelo
  */
-void PPCX::pointCloud::dibujarModelo(glm::mat4 matrizMVP)
+void PPCX::PointCloud::dibujarModelo(glm::mat4 matrizMVP)
 {
 	try
 	{

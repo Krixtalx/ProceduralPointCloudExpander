@@ -6,9 +6,6 @@ class ProceduralGenerator: public Singleton<ProceduralGenerator>{
 	friend class Singleton<ProceduralGenerator>;
 
 private:
-	PointCloudScene* _pointCloudScene = nullptr;
-	PointCloud* pointClouds[2];
-
 	unsigned axisSubdivision[3];
 	unsigned axisSubdivisionOriginal[3];
 	float gsd;
@@ -31,7 +28,4 @@ protected:
 
 public:
 	~ProceduralGenerator();
-	void setCurrentCloudScene(PointCloudScene* pointCloudScene);
-	
-
 };

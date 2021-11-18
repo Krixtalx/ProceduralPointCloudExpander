@@ -207,12 +207,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\ProceduralUtils\ProceduralGenerator.cpp" />
+    <ClCompile Include="Source\ProceduralUtils\ProceduralVoxel.cpp" />
     <ClCompile Include="Source\RendererCore\Camara.cpp">
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdcpp17</LanguageStandard>
       <OpenMPSupport Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</OpenMPSupport>
       <OpenMPSupport Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</OpenMPSupport>
     </ClCompile>
-    <ClCompile Include="Source\RendererCore\pointCloud.cpp" />
+    <ClCompile Include="Source\RendererCore\PointCloud.cpp" />
     <ClCompile Include="Source\RendererCore\Renderer.cpp" />
     <ClCompile Include="Source\RendererCore\Shader.cpp" />
     <ClCompile Include="Source\RendererCore\ShaderManager.cpp" />
@@ -235,8 +237,10 @@
     <ClInclude Include="Source\Interface\Fonts\lato.hpp" />
     <ClInclude Include="Source\Interface\GUI.h" />
     <ClInclude Include="Source\PrecompiledHeaders\stdafx.h" />
+    <ClInclude Include="Source\ProceduralUtils\ProceduralGenerator.h" />
+    <ClInclude Include="Source\ProceduralUtils\ProceduralVoxel.h" />
     <ClInclude Include="Source\RendererCore\Camara.h" />
-    <ClInclude Include="Source\RendererCore\pointCloud.h" />
+    <ClInclude Include="Source\RendererCore\PointCloud.h" />
     <ClInclude Include="Source\RendererCore\Renderer.h" />
     <ClInclude Include="Source\RendererCore\RenderOptions.h" />
     <ClInclude Include="Source\RendererCore\Shader.h" />

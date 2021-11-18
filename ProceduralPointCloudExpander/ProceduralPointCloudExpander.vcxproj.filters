@@ -64,6 +64,12 @@
     <Filter Include="Archivos de origen\Interface\Fonts">
       <UniqueIdentifier>{74a26e21-f868-403c-b5e3-6d3242d5d151}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de encabezado\ProceduralUtils">
+      <UniqueIdentifier>{cff1a787-8b3c-4de8-b9d3-5e703de7b7f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\ProceduralUtils">
+      <UniqueIdentifier>{9ad62183-d734-400d-883c-239fafd12e62}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RendererCore\ShaderProgram.cpp">
@@ -72,7 +78,7 @@
     <ClCompile Include="Source\RendererCore\Camara.cpp">
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
-    <ClCompile Include="Source\RendererCore\pointCloud.cpp">
+    <ClCompile Include="Source\RendererCore\PointCloud.cpp">
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
     <ClCompile Include="Source\RendererCore\Renderer.cpp">
@@ -132,6 +138,12 @@
     <ClCompile Include="Source\Interface\Fonts\lato.cpp">
       <Filter>Archivos de origen\Interface\Fonts</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ProceduralUtils\ProceduralGenerator.cpp">
+      <Filter>Archivos de origen\ProceduralUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ProceduralUtils\ProceduralVoxel.cpp">
+      <Filter>Archivos de origen\ProceduralUtils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RendererCore\ShaderProgram.h">
@@ -140,7 +152,7 @@
     <ClInclude Include="Source\RendererCore\Camara.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
-    <ClInclude Include="Source\RendererCore\pointCloud.h">
+    <ClInclude Include="Source\RendererCore\PointCloud.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
     <ClInclude Include="Source\RendererCore\Renderer.h">
@@ -211,6 +223,12 @@
     </ClInclude>
     <ClInclude Include="Source\Interface\Fonts\lato.hpp">
       <Filter>Archivos de encabezado\Interface\Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ProceduralUtils\ProceduralGenerator.h">
+      <Filter>Archivos de encabezado\ProceduralUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ProceduralUtils\ProceduralVoxel.h">
+      <Filter>Archivos de encabezado\ProceduralUtils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

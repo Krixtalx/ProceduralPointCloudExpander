@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-
+using namespace glm;
 /**
 *	@file AABB.h
 *	@authors Alfonso López Ruiz (alr00048@red.ujaen.es)

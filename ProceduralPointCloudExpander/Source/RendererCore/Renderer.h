@@ -5,7 +5,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "pointCloud.h"
+#include "PointCloud.h"
 #include "Camara.h"
 
 namespace PPCX {
@@ -26,7 +26,7 @@ namespace PPCX {
 		glm::vec3 colorFondo = { 0.2, 0.2, 0.2 };
 
 		bool triangulo = false, tetraedro = false;
-		std::vector<PPCX::pointCloud *> modelos;
+		std::vector<PPCX::PointCloud *> modelos;
 
 		PPCX::Camara camara;
 

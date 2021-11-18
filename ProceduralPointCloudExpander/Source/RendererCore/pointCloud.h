@@ -5,10 +5,12 @@
 #ifndef PAG_MODELO_H
 #define PAG_MODELO_H
 
+#include <GeometryUtils/AABB.h>
+
 #include "Utilities/Point.h"
 
 namespace PPCX {
-	class pointCloud {
+	class PointCloud {
 	private:
 		GLuint idVAO{};
 		GLuint idVBO;
@@ -17,18 +19,23 @@ namespace PPCX {
 		std::vector<GLuint> ibo;
 		std::string shaderProgram;
 		glm::vec3 posicion;
-
-	public:
-		pointCloud(std::string shaderProgram, glm::vec3 pos = {0, 0, 0});
-
-		pointCloud(pointCloud &orig);
-
-		~pointCloud();
+		AABB aabb;
 
 		void nuevoVBO(std::vector<PointModel> datos, GLenum freqAct);
 
 		void nuevoIBO(std::vector<GLuint> datos, GLenum freqAct);
 
+	public:
+		PointCloud(std::string shaderProgram, glm::vec3 pos = {0, 0, 0});
+
+		PointCloud(PointCloud &orig);
+
+		~PointCloud();
+
+		void nuevoPunto(const PointModel& punto);
+
+		void nuevosPuntos(const std::vector<PointModel>& puntos);
+		
 		void dibujarModelo(glm::mat4 matrizMVP);
 	};
 }

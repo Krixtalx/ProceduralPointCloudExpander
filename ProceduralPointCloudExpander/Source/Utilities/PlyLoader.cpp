@@ -5,7 +5,7 @@
 
 static std::string PLY_EXTENSION = ".ply";
 
-PPCX::pointCloud* PlyLoader::cargarModelo(const std::string& _filename)
+PPCX::PointCloud* PlyLoader::cargarModelo(const std::string& _filename)
 {
 	std::vector<uint8_t> byteBuffer;
 	std::vector<PointModel> _points;
@@ -99,7 +99,7 @@ PPCX::pointCloud* PlyLoader::cargarModelo(const std::string& _filename)
 
 		return nullptr;
 	}
-	const auto nube = new PPCX::pointCloud("DefaultSP");
+	const auto nube = new PPCX::PointCloud("DefaultSP");
 	nube->nuevoVBO(_points, GL_STATIC_DRAW);
 	std::vector<unsigned> ibo;
 	ibo.resize(_points.size());
