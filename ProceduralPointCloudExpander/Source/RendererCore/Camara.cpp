@@ -2,8 +2,6 @@
 // Created by Niskp on 18/10/2021.
 //
 
-#define GLM_ENABLE_EXPERIMENTAL
-
 #include "stdafx.h"
 #include "Camara.h"
 #include "RenderOptions.h"
@@ -46,8 +44,8 @@ PAG::Camara::Camara(const glm::vec3 &posicion, const glm::vec3 &puntoMira, const
  * @return matrizMVP
  */
 glm::mat4 PAG::Camara::matrizMVP() const {
-	glm::mat4 vision = glm::lookAt(posicion, puntoMira, up);
-	glm::mat4 proyeccion = glm::perspective(fovY, aspecto(), zNear, zFar);
+	const glm::mat4 vision = glm::lookAt(posicion, puntoMira, up);
+	const glm::mat4 proyeccion = glm::perspective(fovY, aspecto(), zNear, zFar);
 	//Multiplicamos de manera inversa: Modelado-Vision-Proyeccion -> Proyeccion-Vision-Modelado
 	return proyeccion * vision; //Devuelve solo proyección*vision. El modelado lo aplicará el modelo
 }
@@ -93,7 +91,7 @@ void PAG::Camara::calcularFovY() {
  * @param mov magnitud del movimiento
  */
 void PAG::Camara::truck(float mov) {
-	glm::mat4 translacion = glm::translate(n * mov);
+	const glm::mat4 translacion = glm::translate(n * mov);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
 }
@@ -103,7 +101,7 @@ void PAG::Camara::truck(float mov) {
  * @param mov magnitud del movimiento
  */
 void PAG::Camara::dolly(float mov) {
-	glm::mat4 translacion = glm::translate(u * mov);
+	const glm::mat4 translacion = glm::translate(u * mov);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
 }
@@ -113,7 +111,7 @@ void PAG::Camara::dolly(float mov) {
  * @param mov magnitud del movimiento
  */
 void PAG::Camara::boom(float mov) {
-	glm::mat4 translacion = glm::translate(v * mov);
+	const glm::mat4 translacion = glm::translate(v * mov);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
 }
@@ -131,7 +129,7 @@ void PAG::Camara::crane(float mov) {
  * @param mov magnitud del movimiento
  */
 void PAG::Camara::pan(float mov) {
-	glm::mat4 rotacion = glm::rotate(glm::radians(mov * 0.02f), v);
+	const glm::mat4 rotacion = glm::rotate(glm::radians(mov * 0.02f), v);
 	puntoMira = glm::vec3(rotacion * glm::vec4(puntoMira - posicion, 1)) + posicion;
 	calcularEjes();
 }
@@ -141,7 +139,7 @@ void PAG::Camara::pan(float mov) {
  * @param mov magnitud del movimiento
  */
 void PAG::Camara::tilt(float mov) {
-	glm::mat4 rotacion = glm::rotate(glm::radians(mov * 0.02f), u);
+	const glm::mat4 rotacion = glm::rotate(glm::radians(mov * 0.02f), u);
 	puntoMira = glm::vec3(rotacion * glm::vec4(puntoMira - posicion, 1)) + posicion;
 	calcularEjes();
 	up = v; // Igualamos up a v para evitar que n pueda ser igual a up. Ver explicación en la documentación
@@ -152,7 +150,7 @@ void PAG::Camara::tilt(float mov) {
  * @param mov magnitud del movimiento
  */
 void PAG::Camara::orbitX(float mov) {
-	glm::mat4 rotacion = glm::rotate(glm::radians(mov), v);
+	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), v);
 	posicion = glm::vec3(rotacion * glm::vec4(posicion - puntoMira, 1)) + puntoMira;
 	calcularEjes();
 }
@@ -162,7 +160,7 @@ void PAG::Camara::orbitX(float mov) {
  * @param mov magnitud del movimiento
  */
 void PAG::Camara::orbitY(float mov) {
-	glm::mat4 rotacion = glm::rotate(glm::radians(mov), u);
+	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), u);
 	posicion = glm::vec3(rotacion * glm::vec4(posicion - puntoMira, 1)) + puntoMira;
 	calcularEjes();
 	up = v; // Igualamos up a v para evitar que n pueda ser igual a up. Ver explicación en la documentación
@@ -204,7 +202,7 @@ void PAG::Camara::reset() {
  * @return relacion de aspecto del viewport
  */
 GLfloat PAG::Camara::aspecto() const {
-	return ((GLfloat) ancho / (GLfloat) alto);
+	return (GLfloat(ancho) / GLfloat(alto));
 }
 
 void PAG::Camara::setAlto(GLuint alto) {

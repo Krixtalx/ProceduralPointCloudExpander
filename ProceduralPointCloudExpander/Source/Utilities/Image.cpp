@@ -7,7 +7,7 @@
 Image::Image(const std::string& filename) :
 	_depth (4)				// PNG depth
 {
-	unsigned error = lodepng::decode(_image, _width, _height, filename.c_str());
+	const unsigned error = lodepng::decode(_image, _width, _height, filename.c_str());
 
 	if (error)
 	{
@@ -41,7 +41,7 @@ Image::~Image()
 
 void Image::flipImageVertically(std::vector<unsigned char>& image, const uint16_t width, const uint16_t height, const uint8_t depth)
 {
-	int rowSize = width * depth;
+	const int rowSize = width * depth;
 	unsigned char* bits = image.data();
 	unsigned char* tempBuffer = new unsigned char[rowSize];
 

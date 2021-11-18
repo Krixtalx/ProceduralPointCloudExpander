@@ -8,7 +8,7 @@
 /**
  * Constructor parametrizado
  * @param shaderProgram que se usará para renderizar el modelo
- * @param numVertices que contiene el modelo
+ * @param pos Posicion inicial de la nube de puntos
  */
 PAG::pointCloud::pointCloud(std::string shaderProgram, glm::vec3 pos) : shaderProgram(
 	std::move(shaderProgram)),
@@ -52,7 +52,6 @@ PAG::pointCloud::~pointCloud() {
 
 /**
  * Instancia un VBO en el contexto OpenGL y lo guarda en vbos
- * @param tipoDato parametro del shader que representa el vbo
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
@@ -77,7 +76,6 @@ void PAG::pointCloud::nuevoVBO(std::vector<PointModel> datos, GLenum freqAct) {
 
 /**
  * Instancia un IBO en el contexto OpenGL y lo guarda en ibos
- * @param modo modo de dibujado que representa el ibo
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
@@ -95,7 +93,6 @@ void PAG::pointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct) {
 
 /**
  * Función a la que se llama cuando se debe de dibujar el modelo
- * @param modo modo de dibujado a usar
  */
 void PAG::pointCloud::dibujarModelo(glm::mat4 matrizMVP) {
 	try {
@@ -109,6 +106,6 @@ void PAG::pointCloud::dibujarModelo(glm::mat4 matrizMVP) {
 		glDrawElements(GL_TRIANGLES, ibo.size(), GL_UNSIGNED_INT, nullptr);
 	}
 	catch (std::runtime_error& e) {
-		throw e;
+		throw;
 	}
 }

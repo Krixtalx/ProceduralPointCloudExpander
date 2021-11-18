@@ -23,7 +23,7 @@ PAG::Shader::Shader(std::string nombreShader, GLenum tipoShader, const std::stri
 			cargaShader(ruta);
 			compilaShader();
 		} catch (std::runtime_error &e) {
-			throw e;
+			throw;
 		}
 	}
 }
@@ -51,7 +51,7 @@ void PAG::Shader::cargaShader(const std::string &ruta) const {
 
 	std::stringstream streamShader;
 	streamShader << archivoShader.rdbuf();
-	std::string codigoFuenteShader = streamShader.str();
+	const std::string codigoFuenteShader = streamShader.str();
 
 	archivoShader.close();
 
@@ -71,9 +71,9 @@ void PAG::Shader::compruebaErroresShader() const {
 		// Ha habido un error en la compilación.
 		// Para saber qué ha pasado, tenemos que recuperar el mensaje de error de OpenGL
 		GLint tamMsj = 0;
-		std::string mensaje;
 		glGetShaderiv(idShader, GL_INFO_LOG_LENGTH, &tamMsj);
 		if (tamMsj > 0) {
+			std::string mensaje;
 			auto *mensajeFormatoC = new GLchar[tamMsj];
 			GLint datosEscritos = 0;
 			glGetShaderInfoLog(idShader, tamMsj, &datosEscritos, mensajeFormatoC);
@@ -94,7 +94,7 @@ void PAG::Shader::compilaShader() {
 	try {
 		compruebaErroresShader();
 	} catch (std::runtime_error &e) {
-		throw e;
+		throw;
 	}
 }
 

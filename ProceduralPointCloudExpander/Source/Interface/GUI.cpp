@@ -1,13 +1,8 @@
 #include "stdafx.h"
 #include "GUI.h"
 
-#include "Graphics/Application/PointCloudParameters.h"
-#include "Graphics/Application/Renderer.h"
-#include "Interface/Fonts/font_awesome.hpp"
-#include "Interface/Fonts/lato.hpp"
 #include "Interface/Fonts/IconsFontAwesome5.h"
 #include "imfiledialog/ImGuiFileDialog.h"
-#include  <glm/gtx/io.hpp>
 
 
 /// [Protected methods]
@@ -16,22 +11,18 @@ GUI::GUI() :
 	_pointCloudPath(""), _showRenderingSettings(false), _showScreenshotSettings(false), _showAboutUs(false),
 	_showControls(false), _showFileDialog(false), _showPointCloudDialog(false)
 {
-	_renderer			= Renderer::getInstance();	
-	_renderingParams	= Renderer::getInstance()->getRenderingParameters();
-	_pointCloudScene	= dynamic_cast<PointCloudScene*>(_renderer->getCurrentScene());
+	
 }
 
 void GUI::createMenu()
 {
-	ImGuiIO& io = ImGui::GetIO();
+	const ImGuiIO& io = ImGui::GetIO();
 	
 	if (_showRenderingSettings)		showRenderingSettings();
-	if (_showScreenshotSettings)	showScreenshotSettings();
 	if (_showAboutUs)				showAboutUsWindow();
 	if (_showControls)				showControls();
 	if (_showFileDialog)			showFileDialog();
 	if (_showPointCloudDialog)		showPointCloudDialog();
-	if (_showCameraParameters)      showCameraParameters();
 
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -129,14 +120,14 @@ void GUI::showControls()
 void GUI::showFileDialog()
 {
 	ImGuiFileDialog::Instance()->OpenDialog("Choose Point Cloud", "Choose File", ".ply", ".");
-
+	
 	// display
 	if (ImGuiFileDialog::Instance()->Display("Choose Point Cloud"))
 	{
 		// action if OK
 		if (ImGuiFileDialog::Instance()->IsOk())
 		{
-			std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+			const std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
 			_pointCloudPath = filePathName.substr(0, filePathName.find_last_of("."));
 			_showPointCloudDialog = true;
 		}
@@ -160,11 +151,6 @@ void GUI::showPointCloudDialog()
 
 		this->leaveSpace(1);
 		
-		ImGui::Checkbox("Order (Radix Sort)", &PointCloudParameters::_sortPointCloud);
-		ImGui::Checkbox("Reduce Size", &PointCloudParameters::_reducePointCloud);
-		ImGui::SameLine(0, 80); ImGui::PushItemWidth(150.0f);
-		ImGui::SliderScalar("Iterations", ImGuiDataType_U16, &PointCloudParameters::_reduceIterations, &minIterations, &maxIterations);
-		ImGui::PopItemWidth();
 		ImGui::Checkbox("Aggregate", &aggregate);
 
 		ImGui::PushID(0);
@@ -176,9 +162,7 @@ void GUI::showPointCloudDialog()
 
 		if (ImGui::Button("Open Point Cloud"))
 		{
-			_pointCloudScene->loadPointCloud(_pointCloudPath, aggregate);
-			_showPointCloudDialog = false;
-			*(InputManager::getInstance()->getMovementMultiplier()) = distance(_pointCloudScene->getAABB().min(), _pointCloudScene->getAABB().max())/1000;
+			
 		}
 
 		ImGui::PopStyleColor(3);
@@ -190,9 +174,7 @@ void GUI::showPointCloudDialog()
 
 void GUI::showRenderingSettings()
 {
-	if (ImGui::Begin("Rendering Settings", &_showRenderingSettings))
-	{
-		ImGui::ColorEdit3("Background color", &_renderingParams->_backgroundColor[0]);
+	if (ImGui::Begin("Rendering Settings", &_showRenderingSettings)){
 
 		this->leaveSpace(3);
 
@@ -200,56 +182,11 @@ void GUI::showRenderingSettings()
 		{
 			if (ImGui::BeginTabItem("General settings"))
 			{
-				this->leaveSpace(1);
-
-				ImGui::Separator();
-				ImGui::Text(ICON_FA_LIGHTBULB "Lighting");
-
-				ImGui::SliderFloat("Scattering", &_renderingParams->_materialScattering, 0.0f, 2.0f);
-
-				this->leaveSpace(2);
-
-				ImGui::Separator();
-				ImGui::Text(ICON_FA_TREE "Scenario");
-
-				ImGui::Checkbox("Render scenario", &_renderingParams->_showTriangleMesh);
-
-				{
-					ImGui::Spacing();
-
-					ImGui::NewLine();
-					ImGui::SameLine(30, 0);
-					ImGui::Checkbox("Screen Space Ambient Occlusion", &_renderingParams->_ambientOcclusion);
-
-					const char* visualizationTitles[] = { "Points", "Lines", "Triangles", "All" };
-					ImGui::NewLine();
-					ImGui::SameLine(30, 0);
-					ImGui::PushItemWidth(200.0f);
-					ImGui::Combo("Visualization", &_renderingParams->_visualizationMode, visualizationTitles, IM_ARRAYSIZE(visualizationTitles));
-
-					ImGui::Spacing();
-				}
-
-				ImGui::EndTabItem();
-			}
-
-			if (ImGui::BeginTabItem("Data Structures"))
-			{
-				this->leaveSpace(1);
-
-				this->leaveSpace(1);
-
-				ImGui::EndTabItem();
 			}
 
 			if (ImGui::BeginTabItem("Point Cloud"))
 			{
 				this->leaveSpace(1);
-
-				ImGui::SliderFloat("Point Size", &_renderingParams->_scenePointSize, 0.1f, 50.0f);
-				ImGui::ColorEdit3("Point Cloud Color", &_renderingParams->_scenePointCloudColor[0]);
-				ImGui::Checkbox("HQR Rendering Optimization", &PointCloudParameters::_enableHQR);
-				ImGui::SliderFloat("Depth Threshold", &PointCloudParameters::_distanceThreshold, 1.0f, 1.2f, "%.6f");
 				
 				ImGui::EndTabItem();
 			}
@@ -257,8 +194,6 @@ void GUI::showRenderingSettings()
 			if (ImGui::BeginTabItem("Wireframe"))
 			{
 				this->leaveSpace(1);
-
-				ImGui::ColorEdit3("Wireframe Color", &_renderingParams->_wireframeColor[0]);
 
 				ImGui::EndTabItem();
 			}
@@ -270,72 +205,9 @@ void GUI::showRenderingSettings()
 	ImGui::End();
 }
 
-void GUI::showScreenshotSettings()
-{
-	if (ImGui::Begin("Screenshot Settings", &_showScreenshotSettings, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		ImGui::SliderFloat("Size multiplier", &_renderingParams->_screenshotMultiplier, 1.0f, 10.0f);
-		ImGui::InputText("Filename", _renderingParams->_screenshotFilenameBuffer, IM_ARRAYSIZE(_renderingParams->_screenshotFilenameBuffer));
-
-		this->leaveSpace(2);
-
-		ImGui::PushID(0);
-		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(1 / 7.0f, 0.6f, 0.6f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(1 / 7.0f, 0.7f, 0.7f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(1 / 7.0f, 0.8f, 0.8f));
-
-		if (ImGui::Button("Take screenshot"))
-		{
-			std::string filename = _renderingParams->_screenshotFilenameBuffer;
-
-			if (filename.empty())
-			{
-				filename = "Screenshot.png";
-			}
-			else if (filename.find(".png") == std::string::npos)
-			{
-				filename += ".png";
-			}
-
-			Renderer::getInstance()->getScreenshot(filename);
-		}
-
-		ImGui::PopStyleColor(3);
-		ImGui::PopID();
-	}
-
-	ImGui::End();
-}
-
-void GUI::showCameraParameters() {
-	if (ImGui::Begin("Camera Parameters", &_showCameraParameters))
-	{
-		const int NUM_MOVEMENTS = 11;
-		const char* parameter[] = { "MOVEMENT MULTIPLIER", "MOVEMENT SPEED UP", "BOOM", "CRANE", "DOLLY", "ORBIT_XZ", "ORBIT_Y", "PAN", "TILT", "TRUCK", "ZOOM"};
-		ImGui::Columns(2, "ControlColumns"); // 4-ways, with border
-		ImGui::Separator();
-
-		ImGui::Text(parameter[0]); ImGui::NextColumn();
-		ImGui::InputFloat("", InputManager::getInstance()->getMovementMultiplier(), 0.1f, 1.0f); ImGui::NextColumn();
-		ImGui::Text(parameter[1]); ImGui::NextColumn();
-		ImGui::Text("%f", *(InputManager::getInstance()->getMovementSpeedUp())); ImGui::NextColumn();
-
-		for (int i = 2; i < NUM_MOVEMENTS; i++)
-		{
-			ImGui::Text(parameter[i]); ImGui::NextColumn();
-			ImGui::Text("%f", *(InputManager::getInstance()->getSpeedValue(i-2))); ImGui::NextColumn();
-		}
-
-		ImGui::Columns(1);
-		ImGui::Separator();
-	}
-
-	ImGui::End();
-}
 
 GUI::~GUI()
 {
-	ImPlot::DestroyContext();
 	ImGui::DestroyContext();
 }
 
@@ -347,7 +219,6 @@ void GUI::initialize(GLFWwindow* window, const int openGLMinorVersion)
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImPlot::CreateContext();
 
 	this->loadImGUIStyle();
 	
@@ -373,24 +244,24 @@ void GUI::loadImGUIStyle()
 {
 	ImGui::StyleColorsDark();
 
-	this->loadFonts();
+	//this->loadFonts();
 }
 
-void GUI::loadFonts()
-{
-	ImFontConfig cfg;
-	ImGuiIO& io = ImGui::GetIO();
-	
-	std::copy_n("Lato", 5, cfg.Name);
-	io.Fonts->AddFontFromMemoryCompressedBase85TTF(lato_compressed_data_base85, 15.0f, &cfg);
-
-	static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-	cfg.MergeMode = true;
-	cfg.PixelSnapH = true;
-	cfg.GlyphMinAdvanceX = 20.0f;
-	cfg.GlyphMaxAdvanceX = 20.0f;
-	std::copy_n("FontAwesome", 12, cfg.Name);
-
-	io.Fonts->AddFontFromFileTTF("Assets/Fonts/fa-regular-400.ttf", 13.0f, &cfg, icons_ranges);
-	io.Fonts->AddFontFromFileTTF("Assets/Fonts/fa-solid-900.ttf", 13.0f, &cfg, icons_ranges);
-}
+//void GUI::loadFonts()
+//{
+//	ImFontConfig cfg;
+//	ImGuiIO& io = ImGui::GetIO();
+//	
+//	std::copy_n("Lato", 5, cfg.Name);
+//	io.Fonts->AddFontFromMemoryCompressedBase85TTF(lato_compressed_data_base85, 15.0f, &cfg);
+//
+//	static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+//	cfg.MergeMode = true;
+//	cfg.PixelSnapH = true;
+//	cfg.GlyphMinAdvanceX = 20.0f;
+//	cfg.GlyphMaxAdvanceX = 20.0f;
+//	std::copy_n("FontAwesome", 12, cfg.Name);
+//
+//	io.Fonts->AddFontFromFileTTF("Assets/Fonts/fa-regular-400.ttf", 13.0f, &cfg, icons_ranges);
+//	io.Fonts->AddFontFromFileTTF("Assets/Fonts/fa-solid-900.ttf", 13.0f, &cfg, icons_ranges);
+//}

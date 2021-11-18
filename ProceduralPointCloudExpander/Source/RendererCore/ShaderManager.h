@@ -5,10 +5,7 @@
 #ifndef PAG_SHADERMANAGER_H
 #define PAG_SHADERMANAGER_H
 
-#include "stdafx.h"
 #include "ShaderProgram.h"
-
-#include <glm/gtc/type_ptr.hpp>
 
 namespace PAG {
 	class ShaderManager {

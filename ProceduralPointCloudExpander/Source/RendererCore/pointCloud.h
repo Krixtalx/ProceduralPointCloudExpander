@@ -5,9 +5,6 @@
 #ifndef PAG_MODELO_H
 #define PAG_MODELO_H
 
-
-#include "stdafx.h"
-#include "RenderOptions.h"
 #include "Utilities/Point.h"
 
 namespace PAG {

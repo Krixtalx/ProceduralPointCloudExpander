@@ -5,7 +5,6 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "stdafx.h"
 #include "pointCloud.h"
 #include "Camara.h"
 
@@ -24,9 +23,9 @@ namespace PAG {
 		static Renderer *instancia; ///< Puntero al único objeto de la clase
 		Renderer();
 
-		float rojoFondo = 0.15;
-		float verdeFondo = 0.15;
-		float azulFondo = 0.2;
+		float rojoFondo = 0.15f;
+		float verdeFondo = 0.15f;
+		float azulFondo = 0.2f;
 
 		bool triangulo = false, tetraedro = false;
 		std::vector<PAG::pointCloud *> modelos;

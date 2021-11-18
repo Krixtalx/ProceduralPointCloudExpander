@@ -14,7 +14,7 @@ PAG::ShaderProgram::ShaderProgram() {
 
 PAG::ShaderProgram::ShaderProgram(std::vector<Shader *> shaders) : shaders(std::move(shaders)) {
 	idSP = glCreateProgram();
-	for (auto &shader: this->shaders) {
+	for (const auto &shader: this->shaders) {
 		glAttachShader(idSP, shader->getShaderId());
 	}
 }
@@ -53,7 +53,7 @@ void PAG::ShaderProgram::activateShaderProgram() {
 		}
 		glUseProgram(idSP);
 	} catch (std::runtime_error &e) {
-		throw e;
+		throw;
 	}
 }
 

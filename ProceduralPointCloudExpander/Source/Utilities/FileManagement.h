@@ -2,8 +2,6 @@
 
 #include "stdafx.h"
 
-#include "tinyply//tinyply.h"
-
 /**
 *	@file FileManagement.h
 *	@authors Alfonso López Ruiz (alr00048@red.ujaen.es)
@@ -44,7 +42,7 @@ inline void FileManagement::clearTokens(std::vector<std::string>& stringTokens, 
 
 inline bool FileManagement::openImage(const std::string& filename, std::vector<unsigned char>* image, unsigned int& width, unsigned int& height)
 {
-	unsigned error = lodepng::decode(*image, width, height, filename.c_str());
+	const unsigned error = lodepng::decode(*image, width, height, filename.c_str());
 
 	return error == 0;
 }
@@ -72,7 +70,7 @@ inline void FileManagement::readTokens(const std::string& line, const char delim
 inline bool FileManagement::saveImage(const std::string& filename, std::vector<GLubyte>* image, const unsigned int width, const unsigned int height)
 {
 	std::vector<unsigned char> result;
-	unsigned error = lodepng::encode(result, *image, width, height);
+	const unsigned error = lodepng::encode(result, *image, width, height);
 
 	if (!error)
 	{

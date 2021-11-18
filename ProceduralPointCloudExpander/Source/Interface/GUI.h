@@ -1,13 +1,5 @@
 #pragma once
 
-#include "imgui/imgui.h"
-#include "imgui/examples/imgui_impl_glfw.h"
-#include "imgui/examples/imgui_impl_opengl3.h"
-#include "implot/implot.h"
-
-#include "Graphics/Application/PointCloudScene.h"
-#include "Graphics/Application/Renderer.h"
-#include "Graphics/Application/RenderingParameters.h"
 #include "Utilities/Singleton.h"
 
 /**
@@ -24,9 +16,6 @@ class GUI: public Singleton<GUI>
 	friend class Singleton<GUI>;
 
 protected:
-	PointCloudScene*				_pointCloudScene;					//!<
-	Renderer*						_renderer;							//!< Access to current scene
-	RenderingParameters*			_renderingParams;					//!< Reference to rendering parameters
 
 	// GUI state
 	std::string						_pointCloudPath;					//!<
@@ -57,7 +46,7 @@ protected:
 	/**
 	*	@brief  
 	*/
-	void loadFonts();
+	//void loadFonts();
 
 	/**
 	*	@brief  
@@ -93,16 +82,6 @@ protected:
 	*	@brief Shows a window with general rendering configuration.
 	*/
 	void showRenderingSettings();
-
-	/**
-	*	@brief Shows a window with framebuffer and screenshot configuration.
-	*/
-	void showScreenshotSettings();
-
-	/**
-	*   @brief Shows a window with the camera current parameters.
-	*/
-	void showCameraParameters();
 
 public:
 	/**

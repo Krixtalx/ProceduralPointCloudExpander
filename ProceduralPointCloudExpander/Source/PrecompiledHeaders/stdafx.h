@@ -1,4 +1,5 @@
 #define _USE_MATH_DEFINES
+#define GLM_ENABLE_EXPERIMENTAL
 
 // [Libraries]
 
@@ -15,6 +16,11 @@
 // [Image]
 
 #include "lodepng.h"
+
+// [ImGui]
+#include "imgui/imgui.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_opengl3.h"
 
 // [Standard libraries: basic]
 

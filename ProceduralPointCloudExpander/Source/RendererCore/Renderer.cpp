@@ -21,7 +21,7 @@ PAG::Renderer::Renderer() {
 		PAG::ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
 		PAG::ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
 	} catch (std::runtime_error &e) {
-		throw e;
+		throw;
 	}
 	modelos.push_back(PlyLoader::cargarModelo("NubeDensa"));
 }
@@ -30,7 +30,7 @@ PAG::Renderer::Renderer() {
  * Destructor
  */
 PAG::Renderer::~Renderer() {
-	for (auto modelo: modelos) {
+	for (const auto modelo: modelos) {
 		delete modelo;
 	}
 }
@@ -44,7 +44,7 @@ PAG::Renderer *PAG::Renderer::getInstancia() {
 		try {
 			instancia = new Renderer;
 		} catch (std::runtime_error &e) {
-			throw e;
+			throw;
 		}
 	}
 	return instancia;
@@ -70,13 +70,13 @@ void PAG::Renderer::inicializaOpenGL() {
 void PAG::Renderer::refrescar() const {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glm::mat4 matrizMVP = camara.matrizMVP();
-	for (auto modelo: modelos) {
+	const glm::mat4 matrizMVP = camara.matrizMVP();
+	for (const auto modelo: modelos) {
 		if (modelo)
 			try {
 				modelo->dibujarModelo(matrizMVP);
 			} catch (std::runtime_error &e) {
-				throw e;
+				throw;
 			}
 	}
 }

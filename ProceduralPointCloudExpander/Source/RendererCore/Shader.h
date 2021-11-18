@@ -5,9 +5,6 @@
 #ifndef PAG_SHADER_H
 #define PAG_SHADER_H
 
-
-#include "stdafx.h"
-
 namespace PAG {
 	class Shader {
 		friend class ShaderManager;

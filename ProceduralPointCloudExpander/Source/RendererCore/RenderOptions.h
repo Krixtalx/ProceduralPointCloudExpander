@@ -25,8 +25,8 @@ namespace PAG {
 		return color + 1;
 	};
 
-	static unsigned anchoVentanaPorDefecto = 1024;
-	static unsigned altoVentanaPorDefecto = 576;
+	static unsigned anchoVentanaPorDefecto = 1280;
+	static unsigned altoVentanaPorDefecto = 720;
 
 };
 

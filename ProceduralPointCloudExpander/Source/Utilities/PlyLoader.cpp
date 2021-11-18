@@ -3,40 +3,41 @@
 #include <tinyply/tinyply.h>
 #include "Point.h"
 
-PAG::pointCloud* PlyLoader::cargarModelo(std::string _filename)
+static std::string PLY_EXTENSION = ".ply";
+
+PAG::pointCloud* PlyLoader::cargarModelo(const std::string& _filename)
 {
-	std::unique_ptr<std::istream> fileStream;
 	std::vector<uint8_t> byteBuffer;
-	std::shared_ptr<tinyply::PlyData> plyPoints, plyColors;
 	std::vector<PointModel> _points;
-	unsigned baseIndex;
-	float* pointsRawFloat = nullptr;
-	double* pointsRawDouble = nullptr;
-	uint8_t* colorsRaw;
 
 	try
 	{
+		std::shared_ptr<tinyply::PlyData> plyColors;
+		std::shared_ptr<tinyply::PlyData> plyPoints;
+		std::unique_ptr<std::istream> fileStream;
 		const std::string filename = _filename + ".ply";
 		fileStream.reset(new std::ifstream(filename, std::ios::binary));
 
 		if (!fileStream || fileStream->fail()) return nullptr;
 
 		fileStream->seekg(0, std::ios::end);
-		const float size_mb = fileStream->tellg() * float(1e-6);
 		fileStream->seekg(0, std::ios::beg);
 
 		tinyply::PlyFile file;
 		file.parse_header(*fileStream);
 
-		try { plyPoints = file.request_properties_from_element("vertex", { "x", "y", "z" }); }
+		try { plyPoints = file.request_properties_from_element("vertex", {"x", "y", "z"}); }
 		catch (const std::exception& e) { std::cerr << "tinyply exception: " << e.what() << std::endl; }
 
-		try { plyColors = file.request_properties_from_element("vertex", { "red", "green", "blue" }); }
+		try { plyColors = file.request_properties_from_element("vertex", {"red", "green", "blue"}); }
 		catch (const std::exception& e) { std::cerr << "tinyply exception: " << e.what() << std::endl; }
 
 		file.read(*fileStream);
 
 		{
+			double* pointsRawDouble = nullptr;
+			float* pointsRawFloat = nullptr;
+			unsigned baseIndex;
 			const bool isDouble = plyPoints->t == tinyply::Type::FLOAT64;
 			const size_t numPoints = plyPoints->count;
 			const size_t numPointsBytes = numPoints * (!isDouble ? sizeof(float) : sizeof(double)) * 3;
@@ -56,7 +57,7 @@ PAG::pointCloud* PlyLoader::cargarModelo(std::string _filename)
 				pointsRawDouble = new double[numPoints * 3];
 				std::memcpy(pointsRawDouble, plyPoints->buffer.get(), numPointsBytes);
 			}
-			colorsRaw = new uint8_t[numColors * 3];
+			const auto colorsRaw = new uint8_t[numColors * 3];
 
 			std::memcpy(colorsRaw, plyColors->buffer.get(), numColorsBytes);
 
@@ -66,7 +67,12 @@ PAG::pointCloud* PlyLoader::cargarModelo(std::string _filename)
 				{
 					baseIndex = index * 3;
 
-					_points[index] = PointModel{ glm::vec3(pointsRawFloat[baseIndex], pointsRawFloat[baseIndex + 1], pointsRawFloat[baseIndex + 2]),PointModel::getRGBColor(glm::vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1], colorsRaw[baseIndex + 2])) };
+					_points[index] = PointModel{
+						glm::vec3(pointsRawFloat[baseIndex], pointsRawFloat[baseIndex + 1],
+						          pointsRawFloat[baseIndex + 2]),
+						PointModel::getRGBColor(glm::vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
+						                                  colorsRaw[baseIndex + 2]))
+					};
 					//_aabb.update(_points[index]._point);
 				}
 			}
@@ -76,8 +82,12 @@ PAG::pointCloud* PlyLoader::cargarModelo(std::string _filename)
 				{
 					baseIndex = index * 3;
 
-					_points[index] = PointModel{ glm::vec3(pointsRawDouble[baseIndex], pointsRawDouble[baseIndex + 1], pointsRawDouble[baseIndex + 2]),
-												 PointModel::getRGBColor(glm::vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1], colorsRaw[baseIndex + 2])) };
+					_points[index] = PointModel{
+						glm::vec3(pointsRawDouble[baseIndex], pointsRawDouble[baseIndex + 1],
+						          pointsRawDouble[baseIndex + 2]),
+						PointModel::getRGBColor(glm::vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
+						                                  colorsRaw[baseIndex + 2]))
+					};
 					//_aabb.update(_points[index]._point);
 				}
 			}
@@ -89,7 +99,7 @@ PAG::pointCloud* PlyLoader::cargarModelo(std::string _filename)
 
 		return nullptr;
 	}
-	PAG::pointCloud* nube = new PAG::pointCloud("DefaultSP");
+	const auto nube = new PAG::pointCloud("DefaultSP");
 	nube->nuevoVBO(_points, GL_STATIC_DRAW);
 	std::vector<unsigned> ibo;
 	ibo.resize(_points.size());

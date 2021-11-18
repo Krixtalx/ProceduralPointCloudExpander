@@ -22,11 +22,11 @@ PAG::ShaderManager *PAG::ShaderManager::getInstancia() {
  * Destructor. Elimina todos los shaders y shaderPrograms (que estén en los mapas) del contexto OpenGL
  */
 PAG::ShaderManager::~ShaderManager() {
-	for (auto &shader: shaders) {
+	for (const auto &shader: shaders) {
 		delete shader.second;
 	}
 
-	for (auto &shaderProgram: shaderPrograms) {
+	for (const auto &shaderProgram: shaderPrograms) {
 		delete shaderProgram.second;
 	}
 }
@@ -57,7 +57,7 @@ void PAG::ShaderManager::nuevoShaderProgram(const std::string &nombreSP) {
  * @param nombreSP al que se le añadirá
  */
 void PAG::ShaderManager::addShaderToSP(const std::string &nombreShader, const std::string &nombreSP) {
-	auto SP = shaderPrograms.find(nombreSP);
+	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		SP->second->addShader(shaders.find(nombreShader)->second);
 	} else {
@@ -71,7 +71,7 @@ void PAG::ShaderManager::addShaderToSP(const std::string &nombreShader, const st
  * @param nombreSP a activar
  */
 void PAG::ShaderManager::activarSP(const std::string &nombreSP) {
-	auto SP = shaderPrograms.find(nombreSP);
+	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		SP->second->activateShaderProgram();
 	} else {
@@ -86,9 +86,9 @@ void PAG::ShaderManager::activarSP(const std::string &nombreSP) {
  * @param variable nombre de la variable a establecer
  */
 void PAG::ShaderManager::setUniform(const std::string &nombreSP, const std::string &variable, glm::mat4 matrizMVP) {
-	auto SP = shaderPrograms.find(nombreSP);
+	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
-		GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
+		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
 		if (location >= 0) {
 			glUniformMatrix4fv(location, 1, false, glm::value_ptr(matrizMVP));
 		} else
@@ -108,9 +108,9 @@ void PAG::ShaderManager::setUniform(const std::string &nombreSP, const std::stri
  * @param variable nombre de la variable a establecer
  */
 void PAG::ShaderManager::setUniform(const std::string &nombreSP, const std::string &variable, glm::vec3 vec) {
-	auto SP = shaderPrograms.find(nombreSP);
+	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
-		GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
+		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
 		if (location >= 0) {
 			glUniform3fv(location, 1, glm::value_ptr(vec));
 		} else
@@ -131,9 +131,9 @@ void PAG::ShaderManager::setUniform(const std::string &nombreSP, const std::stri
  */
 void PAG::ShaderManager::activarSubrutina(const std::string &nombreSP, GLenum tipoShader,
                                           const std::string &nombreSubrutina) {
-	auto SP = shaderPrograms.find(nombreSP);
+	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
-		GLuint location = glGetSubroutineIndex(SP->second->getIdSP(), tipoShader, nombreSubrutina.c_str());
+		const GLuint location = glGetSubroutineIndex(SP->second->getIdSP(), tipoShader, nombreSubrutina.c_str());
 		glUniformSubroutinesuiv(tipoShader, 1, &location);
 	} else {
 		throw std::runtime_error(

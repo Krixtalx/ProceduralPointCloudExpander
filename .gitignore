@@ -44,3 +44,4 @@
 *.ipdb
 *.tlog
 *.ipch
+*.command

@@ -1,6 +1,7 @@
-// IMPORTANTE: El include de GLEW debe estar siempre ANTES de el de GLFW
 #include "stdafx.h"
 #include "RendererCore/Renderer.h"
+#include "Interface/GUI.h"
+#include "RendererCore/RenderOptions.h"
 
 
 int colorSeleccionado = 0;
@@ -13,7 +14,7 @@ float ultimoFrame = 0.0f;
 void actualizarDeltaTime() {
 	static clock_t ultimaEjecucion = clock(); // Solo se ejecuta la primera vez
 	if ((clock() - ultimaEjecucion) > 25) {
-		float frameActual = glfwGetTime();
+		const float frameActual = glfwGetTime();
 		deltaTime = frameActual - ultimoFrame;
 		ultimoFrame = frameActual;
 		ultimaEjecucion = clock();
@@ -42,7 +43,6 @@ void callbackRefrescoVentana(GLFWwindow *ventana) {
 		std::cerr << e.what() << std::endl;
 	}
 	glfwSwapBuffers(ventana);
-	//std::cout << "Finaliza el callback de refresco" << std::endl;
 }
 
 
@@ -50,7 +50,6 @@ void callbackRefrescoVentana(GLFWwindow *ventana) {
 // del área de dibujo OpenGL.
 void callbackFramebufferSize(GLFWwindow *window, int width, int height) {
 	PAG::Renderer::getInstancia()->setViewport(0, 0, width, height);
-	//std::cout << "Resize callback called" << std::endl;
 }
 
 // - Esta función callback será llamada cada vez que se pulse una tecla
@@ -87,7 +86,6 @@ void callbackTecla(GLFWwindow *window, int key, int scancode, int action, int mo
 	}
 
 	callbackRefrescoVentana(window);
-	//std::cout << "Key callback called" << std::endl;
 }
 
 // - Esta función callback será llamada cada vez que se pulse algún botón
@@ -111,7 +109,7 @@ void callbackBotonRaton(GLFWwindow *window, int button, int action, int mods) {
 	}
 }
 
-void callbackMovimientoRaton(GLFWwindow *window, double xpos, double ypos) {
+void callbackMovimientoRaton(GLFWwindow *window, const double xpos, const double ypos) {
 	if (botonDerechoPulsado) {
 		PAG::Renderer::getInstancia()->getCamara().pan((xpos - prevXPos) * deltaTime * 10);
 		PAG::Renderer::getInstancia()->getCamara().tilt((ypos - prevYPos) * deltaTime * 10);
@@ -172,14 +170,10 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // siguientes activan un contexto
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1); // OpenGL Core Profile 4.1.
 
-	// - Definimos el puntero para guardar la dirección de la ventana de la aplicación y
-	// la creamos
-	GLFWwindow *window;
-
 	// - Tamaño, título de la ventana, en ventana y no en pantalla completa,
 	// sin compartir recursos con otras ventanas.
-	window = glfwCreateWindow(PAG::anchoVentanaPorDefecto, PAG::altoVentanaPorDefecto,
-	                          "Procedural Point Cloud Expander", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(PAG::anchoVentanaPorDefecto, PAG::altoVentanaPorDefecto,
+	                                      "Procedural Point Cloud Expander", nullptr, nullptr);
 	// - Comprobamos si la creación de la ventana ha tenido éxito.
 	if (window == nullptr) {
 		std::cerr << "Failed to open GLFW window" << std::endl;
@@ -226,10 +220,11 @@ int main() {
 	glfwSetScrollCallback(window, callbackScroll);
 	glfwSetCursorPosCallback(window, callbackMovimientoRaton);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	glDebugMessageCallback(MessageCallback, 0);
+	glDebugMessageCallback(MessageCallback, nullptr);
 
 
 	PAG::Renderer::getInstancia()->inicializaOpenGL();
+	GUI::getInstance()->initialize(window, 6);
 
 	std::cout
 			<< "Con el clic izquierdo del raton se selecciona el color a cambiar. Por defecto se encuentra el color rojo seleccionado."
@@ -252,6 +247,7 @@ int main() {
 		// teclas o de ratón, etc. Siempre al final de cada iteración del ciclo
 		// de eventos y después de glfwSwapBuffers(window);
 		glfwPollEvents();
+		GUI::getInstance()->render();
 		//actualizarDeltaTime();
 	}
 	// - Una vez terminado el ciclo de eventos, liberar recursos, etc.
