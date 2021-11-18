@@ -10,24 +10,25 @@
  * @param shaderProgram que se usará para renderizar el modelo
  * @param pos Posicion inicial de la nube de puntos
  */
-PAG::pointCloud::pointCloud(std::string shaderProgram, glm::vec3 pos) : shaderProgram(
-	std::move(shaderProgram)),
-	posicion(pos) {
+PPCX::pointCloud::pointCloud(std::string shaderProgram, glm::vec3 pos) : idVBO(UINT_MAX), idIBO(UINT_MAX),
+                                                                         shaderProgram(
+	                                                                         std::move(shaderProgram)),
+                                                                         posicion(pos)
+{
 	//Creamos nuestro VAO
 	glGenVertexArrays(1, &idVAO);
 	glBindVertexArray(idVAO);
 
 	//Ponemos tanto espacios en el vector de VBO como parametros tengamos para el shader.
-	idVBO = UINT_MAX;
-	idIBO = UINT_MAX;
 }
 
 /**
  * Constructor copia. Copia el numVertices y el shaderProgram y realiza una nueva instanciacion de los vbos e ibos
  * @param orig
  */
-PAG::pointCloud::pointCloud(PAG::pointCloud& orig) : shaderProgram(orig.shaderProgram),
-vbo(orig.vbo), ibo(orig.ibo) {
+PPCX::pointCloud::pointCloud(pointCloud& orig) : vbo(orig.vbo),
+                                                 ibo(orig.ibo), shaderProgram(orig.shaderProgram)
+{
 	//Creamos nuestro VAO
 	glGenVertexArrays(1, &idVAO);
 	glBindVertexArray(idVAO);
@@ -41,7 +42,8 @@ vbo(orig.vbo), ibo(orig.ibo) {
 /**
  * Destructor. Libera todos los recursos reservados a OpenGL.
  */
-PAG::pointCloud::~pointCloud() {
+PPCX::pointCloud::~pointCloud()
+{
 	if (idVBO != UINT_MAX)
 		glDeleteBuffers(1, &idVBO);
 	if (idIBO != UINT_MAX)
@@ -55,9 +57,11 @@ PAG::pointCloud::~pointCloud() {
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PAG::pointCloud::nuevoVBO(std::vector<PointModel> datos, GLenum freqAct) {
+void PPCX::pointCloud::nuevoVBO(std::vector<PointModel> datos, GLenum freqAct)
+{
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
-	if (idVBO != UINT_MAX) {
+	if (idVBO != UINT_MAX)
+	{
 		glDeleteBuffers(1, &idVBO);
 	}
 	vbo = datos;
@@ -68,10 +72,11 @@ void PAG::pointCloud::nuevoVBO(std::vector<PointModel> datos, GLenum freqAct) {
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PointModel),
-		nullptr);
-	
+	                      nullptr);
+
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(PointModel), ((GLubyte*)nullptr + sizeof(glm::vec3)));
+	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(PointModel),
+	                      (static_cast<GLubyte*>(nullptr) + sizeof(glm::vec3)));
 }
 
 /**
@@ -79,9 +84,11 @@ void PAG::pointCloud::nuevoVBO(std::vector<PointModel> datos, GLenum freqAct) {
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PAG::pointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct) {
+void PPCX::pointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct)
+{
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
-	if (idIBO != UINT_MAX) {
+	if (idIBO != UINT_MAX)
+	{
 		glDeleteBuffers(1, &idIBO);
 	}
 	ibo = datos;
@@ -94,18 +101,21 @@ void PAG::pointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct) {
 /**
  * Función a la que se llama cuando se debe de dibujar el modelo
  */
-void PAG::pointCloud::dibujarModelo(glm::mat4 matrizMVP) {
-	try {
-		matrizMVP = matrizMVP * glm::translate(posicion);
-		PAG::ShaderManager::getInstancia()->activarSP(shaderProgram);
-		PAG::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrizMVP);
+void PPCX::pointCloud::dibujarModelo(glm::mat4 matrizMVP)
+{
+	try
+	{
+		matrizMVP = matrizMVP * translate(posicion);
+		ShaderManager::getInstancia()->activarSP(shaderProgram);
+		ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrizMVP);
 
 		glBindVertexArray(idVAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 		glDrawElements(GL_TRIANGLES, ibo.size(), GL_UNSIGNED_INT, nullptr);
 	}
-	catch (std::runtime_error& e) {
+	catch (std::runtime_error& e)
+	{
 		throw;
 	}
 }

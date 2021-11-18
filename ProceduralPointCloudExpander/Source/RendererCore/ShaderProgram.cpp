@@ -8,11 +8,11 @@
 /**
  * Constructor por defecto
  */
-PAG::ShaderProgram::ShaderProgram() {
+PPCX::ShaderProgram::ShaderProgram() {
 	idSP = glCreateProgram();
 }
 
-PAG::ShaderProgram::ShaderProgram(std::vector<Shader *> shaders) : shaders(std::move(shaders)) {
+PPCX::ShaderProgram::ShaderProgram(std::vector<Shader *> shaders) : shaders(std::move(shaders)) {
 	idSP = glCreateProgram();
 	for (const auto &shader: this->shaders) {
 		glAttachShader(idSP, shader->getShaderId());
@@ -22,7 +22,7 @@ PAG::ShaderProgram::ShaderProgram(std::vector<Shader *> shaders) : shaders(std::
 /**
  * Destructor.
  */
-PAG::ShaderProgram::~ShaderProgram() {
+PPCX::ShaderProgram::~ShaderProgram() {
 	glDeleteProgram(idSP);
 }
 
@@ -31,7 +31,7 @@ PAG::ShaderProgram::~ShaderProgram() {
  * @param shader Puntero al shader a añadir
  * @throw runtime_error en caso de que el puntero sea nulo
  */
-void PAG::ShaderProgram::addShader(PAG::Shader *shader) {
+void PPCX::ShaderProgram::addShader(PPCX::Shader *shader) {
 	if (shader != nullptr) {
 		shaders.push_back(shader);
 		glAttachShader(idSP, shader->getShaderId());
@@ -44,7 +44,7 @@ void PAG::ShaderProgram::addShader(PAG::Shader *shader) {
 /**
  * Enlaza el ShaderProgram si no esta enlazado y lo establece como activo
  */
-void PAG::ShaderProgram::activateShaderProgram() {
+void PPCX::ShaderProgram::activateShaderProgram() {
 	try {
 		if (!linked) {
 			glLinkProgram(idSP);
@@ -61,7 +61,7 @@ void PAG::ShaderProgram::activateShaderProgram() {
 * Comprueba si se ha producido algún error en el enlazado del Shader Program
 * @throw runtime_error en caso de que haya algún error de compilación
 */
-void PAG::ShaderProgram::compruebaErroresSP() const {
+void PPCX::ShaderProgram::compruebaErroresSP() const {
 
 	GLint resultadoCompilacion;
 	glGetProgramiv(idSP, GL_LINK_STATUS, &resultadoCompilacion);
@@ -85,6 +85,6 @@ void PAG::ShaderProgram::compruebaErroresSP() const {
 }
 
 //-------------Getters y setters-----------------------
-GLuint PAG::ShaderProgram::getIdSP() const {
+GLuint PPCX::ShaderProgram::getIdSP() const {
 	return idSP;
 }

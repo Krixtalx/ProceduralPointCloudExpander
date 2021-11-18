@@ -7,7 +7,7 @@
 
 #include "stdafx.h"
 
-namespace PAG {
+namespace PPCX {
 	class Camara {
 	private:
 		//Parámetros intrínsecos de la camara

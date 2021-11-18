@@ -8,28 +8,28 @@
 #include "Utilities/PlyLoader.h"
 
 
-PAG::Renderer *PAG::Renderer::instancia = nullptr;
+PPCX::Renderer *PPCX::Renderer::instancia = nullptr;
 
 /**
  * Constructor por defecto
  */
-PAG::Renderer::Renderer() {
+PPCX::Renderer::Renderer() {
 	try {
-		PAG::ShaderManager::getInstancia()->nuevoShader("VertexShader", GL_VERTEX_SHADER, "Source/Shaders/VertexShader.glsl");
-		PAG::ShaderManager::getInstancia()->nuevoShader("FragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/FragmentShader.glsl");
-		PAG::ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
-		PAG::ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
-		PAG::ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
+		PPCX::ShaderManager::getInstancia()->nuevoShader("VertexShader", GL_VERTEX_SHADER, "Source/Shaders/VertexShader.glsl");
+		PPCX::ShaderManager::getInstancia()->nuevoShader("FragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/FragmentShader.glsl");
+		PPCX::ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
+		PPCX::ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
+		PPCX::ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
 	} catch (std::runtime_error &e) {
 		throw;
 	}
-	modelos.push_back(PlyLoader::cargarModelo("NubeDensa"));
+	//modelos.push_back(PlyLoader::cargarModelo("NubeDensa"));
 }
 
 /**
  * Destructor
  */
-PAG::Renderer::~Renderer() {
+PPCX::Renderer::~Renderer() {
 	for (const auto modelo: modelos) {
 		delete modelo;
 	}
@@ -39,7 +39,7 @@ PAG::Renderer::~Renderer() {
  * Consulta del objeto único de la clase
  * @return Puntero al Renderer
  */
-PAG::Renderer *PAG::Renderer::getInstancia() {
+PPCX::Renderer *PPCX::Renderer::getInstancia() {
 	if (!instancia) {
 		try {
 			instancia = new Renderer;
@@ -56,18 +56,17 @@ PAG::Renderer *PAG::Renderer::getInstancia() {
  * Activa el ZBuffer.
  * Activa el Antialiasing MultiSampling (MSAA)
  */
-void PAG::Renderer::inicializaOpenGL() {
-
-	glClearColor(rojoFondo, verdeFondo, azulFondo, 1);
+void PPCX::Renderer::inicializaOpenGL() {
 	activarUtilidadGL(GL_DEPTH_TEST);
 	activarUtilidadGL(GL_MULTISAMPLE);
 	activarUtilidadGL(GL_DEBUG_OUTPUT);
+	actualizarColorFondo();
 }
 
 /**
  * Método para hacer el refresco de la escena
  */
-void PAG::Renderer::refrescar() const {
+void PPCX::Renderer::refrescar() const {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	const glm::mat4 matrizMVP = camara.matrizMVP();
@@ -88,18 +87,16 @@ void PAG::Renderer::refrescar() const {
  * @param blue
  * @param alpha
  */
-void PAG::Renderer::setColorFondo(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
-	rojoFondo = red;
-	verdeFondo = green;
-	azulFondo = blue;
-	glClearColor(red, green, blue, alpha);
+void PPCX::Renderer::setColorFondo(glm::vec3 color) {
+	this->colorFondo = color;
+	actualizarColorFondo();
 }
 
 /**
  * Método que actualiza el color de fondo de la escena al indicado por los atributos
  */
-void PAG::Renderer::actualizarColorFondo() const {
-	glClearColor(rojoFondo, verdeFondo, azulFondo, 1);
+void PPCX::Renderer::actualizarColorFondo() const {
+	glClearColor(colorFondo[0], colorFondo[1], colorFondo[2], 1);
 }
 
 /**
@@ -107,7 +104,7 @@ void PAG::Renderer::actualizarColorFondo() const {
  * @param propiedad a obtener
  * @return GLubyte con la propiedad requerida
  */
-const GLubyte *PAG::Renderer::getPropiedadGL(GLenum propiedad) {
+const GLubyte *PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
 	return glGetString(propiedad);
 }
 
@@ -115,7 +112,7 @@ const GLubyte *PAG::Renderer::getPropiedadGL(GLenum propiedad) {
  * Activa la utilidad de OpenGL indicada
  * @param utility
  */
-void PAG::Renderer::activarUtilidadGL(GLenum utility) {
+void PPCX::Renderer::activarUtilidadGL(GLenum utility) {
 	glEnable(utility);
 }
 
@@ -126,7 +123,7 @@ void PAG::Renderer::activarUtilidadGL(GLenum utility) {
  * @param width ancho de la ventana
  * @param height alto de la ventana
  */
-void PAG::Renderer::setViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
+void PPCX::Renderer::setViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
 	glViewport(x, y, width, height);
 	camara.setAlto(height);
 	camara.setAncho(width);
@@ -136,40 +133,25 @@ void PAG::Renderer::setViewport(GLint x, GLint y, GLsizei width, GLsizei height)
  * Limpia el buffer OpenGL indicado en la mascara
  * @param mascara
  */
-void PAG::Renderer::limpiarGL(GLbitfield mascara) {
+void PPCX::Renderer::limpiarGL(GLbitfield mascara) {
 	glClear(mascara);
 }
 
+void PPCX::Renderer::cargaModelo(const std::string& path)
+{
+	modelos.push_back(PlyLoader::cargarModelo(path));
+}
 
 /**
  * ------------------- Getters y Setters ------------------------------------
  */
 
-float PAG::Renderer::getRojoFondo() const {
-	return rojoFondo;
-}
-
-void PAG::Renderer::setRojoFondo(float rojoFondo) {
-	this->rojoFondo = rojoFondo;
-}
-
-float PAG::Renderer::getVerdeFondo() const {
-	return verdeFondo;
-}
-
-void PAG::Renderer::setVerdeFondo(float verdeFondo) {
-	this->verdeFondo = verdeFondo;
-}
-
-float PAG::Renderer::getAzulFondo() const {
-	return azulFondo;
-}
-
-void PAG::Renderer::setAzulFondo(float azulFondo) {
-	this->azulFondo = azulFondo;
-}
-
-PAG::Camara &PAG::Renderer::getCamara() {
+PPCX::Camara &PPCX::Renderer::getCamara() {
 	return camara;
+}
+
+glm::vec3& PPCX::Renderer::getColorFondo()
+{
+	return colorFondo;
 }
 

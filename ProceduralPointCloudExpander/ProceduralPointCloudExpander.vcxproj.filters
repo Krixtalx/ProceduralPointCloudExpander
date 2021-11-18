@@ -58,6 +58,12 @@
     <Filter Include="Archivos de origen\PrecompiledHeaders">
       <UniqueIdentifier>{3c22d459-498e-4916-989a-a37daf92cdda}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de encabezado\Interface\Fonts">
+      <UniqueIdentifier>{8418c60d-fdfb-4550-876d-9cebd4f8ae24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Interface\Fonts">
+      <UniqueIdentifier>{74a26e21-f868-403c-b5e3-6d3242d5d151}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RendererCore\ShaderProgram.cpp">
@@ -122,6 +128,9 @@
     </ClCompile>
     <ClCompile Include="Source\PrecompiledHeaders\stdafx.cpp">
       <Filter>Archivos de origen\PrecompiledHeaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Interface\Fonts\lato.cpp">
+      <Filter>Archivos de origen\Interface\Fonts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -196,6 +205,12 @@
     </ClInclude>
     <ClInclude Include="Libraries\imfiledialog\ImGuiFileDialogConfig.h">
       <Filter>Archivos de encabezado\ImportedLibraries\ImGuiFileDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Interface\Fonts\IconsFontAwesome5.h">
+      <Filter>Archivos de encabezado\Interface\Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Interface\Fonts\lato.hpp">
+      <Filter>Archivos de encabezado\Interface\Fonts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

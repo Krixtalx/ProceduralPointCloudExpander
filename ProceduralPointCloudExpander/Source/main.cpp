@@ -3,11 +3,8 @@
 #include "Interface/GUI.h"
 #include "RendererCore/RenderOptions.h"
 
-
-int colorSeleccionado = 0;
 double prevXPos = 0, prevYPos = 0;
 bool botonDerechoPulsado;
-std::string colores[3] = {"Rojo", "Verde", "Azul"};
 float deltaTime = 0.1f;
 float ultimoFrame = 0.0f;
 
@@ -22,24 +19,26 @@ void actualizarDeltaTime() {
 }
 
 void GLAPIENTRY MessageCallback(GLenum source,
-                                GLenum type,
-                                GLuint id,
-                                GLenum severity,
-                                GLsizei length,
-                                const GLchar *message,
-                                const void *userParam) {
+	GLenum type,
+	GLuint id,
+	GLenum severity,
+	GLsizei length,
+	const GLchar* message,
+	const void* userParam) {
 	if (type == 0x824C) {
 		fprintf(stderr, "GL DEBUG CALLBACK: ** GL ERROR ** type = 0x%x, severity = 0x%x, message = %s\n",
-		        type, severity, message);
+			type, severity, message);
 	}
 }
 
 // - Esta función callback será llamada cada vez que el área de dibujo
 // OpenGL deba ser redibujada.
-void callbackRefrescoVentana(GLFWwindow *ventana) {
+void callbackRefrescoVentana(GLFWwindow* ventana) {
 	try {
-		PAG::Renderer::getInstancia()->refrescar();
-	} catch (std::runtime_error &e) {
+		PPCX::Renderer::getInstancia()->refrescar();
+		GUI::getInstance()->render();
+	}
+	catch (std::runtime_error& e) {
 		std::cerr << e.what() << std::endl;
 	}
 	glfwSwapBuffers(ventana);
@@ -48,60 +47,72 @@ void callbackRefrescoVentana(GLFWwindow *ventana) {
 
 // - Esta función callback será llamada cada vez que se cambie el tamaño
 // del área de dibujo OpenGL.
-void callbackFramebufferSize(GLFWwindow *window, int width, int height) {
-	PAG::Renderer::getInstancia()->setViewport(0, 0, width, height);
+void callbackFramebufferSize(GLFWwindow* window, int width, int height) {
+	PPCX::Renderer::getInstancia()->setViewport(0, 0, width, height);
 }
 
 // - Esta función callback será llamada cada vez que se pulse una tecla
 // dirigida al área de dibujo OpenGL.
-void callbackTecla(GLFWwindow *window, int key, int scancode, int action, int mods) {
+void callbackTecla(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
-	} else if (key == GLFW_KEY_W && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().truck(-1.0f * deltaTime);
-	} else if (key == GLFW_KEY_S && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().truck(1.0f * deltaTime);
-	} else if (key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().dolly(-1.0f * deltaTime);
-	} else if (key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().dolly(1.0f * deltaTime);
-	} else if (key == GLFW_KEY_Z && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().boom(1.0f * deltaTime);
-	} else if (key == GLFW_KEY_X && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().crane(1.0f * deltaTime);
-	} else if (key == GLFW_KEY_I && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().zoom(-4 * deltaTime);
-	} else if (key == GLFW_KEY_O && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().zoom(4 * deltaTime);
-	} else if (key == GLFW_KEY_Q && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().orbitX(50 * deltaTime);
-	} else if (key == GLFW_KEY_E && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().orbitX(-50 * deltaTime);
-	} else if (key == GLFW_KEY_T && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().orbitY(50 * deltaTime);
-	} else if (key == GLFW_KEY_G && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().orbitY(-50 * deltaTime);
-	} else if (key == GLFW_KEY_R && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PAG::Renderer::getInstancia()->getCamara().reset();
 	}
-
-	callbackRefrescoVentana(window);
+	else if (key == GLFW_KEY_W && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().truck(-1.0f * deltaTime);
+	}
+	else if (key == GLFW_KEY_S && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().truck(1.0f * deltaTime);
+	}
+	else if (key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().dolly(-1.0f * deltaTime);
+	}
+	else if (key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().dolly(1.0f * deltaTime);
+	}
+	else if (key == GLFW_KEY_Z && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().boom(1.0f * deltaTime);
+	}
+	else if (key == GLFW_KEY_X && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().crane(1.0f * deltaTime);
+	}
+	else if (key == GLFW_KEY_I && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().zoom(-4 * deltaTime);
+	}
+	else if (key == GLFW_KEY_O && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().zoom(4 * deltaTime);
+	}
+	else if (key == GLFW_KEY_Q && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().orbitX(50 * deltaTime);
+	}
+	else if (key == GLFW_KEY_E && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().orbitX(-50 * deltaTime);
+	}
+	else if (key == GLFW_KEY_T && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().orbitY(50 * deltaTime);
+	}
+	else if (key == GLFW_KEY_G && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().orbitY(-50 * deltaTime);
+	}
+	else if (key == GLFW_KEY_R && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().reset();
+	}
+	
 }
 
 // - Esta función callback será llamada cada vez que se pulse algún botón
 // del ratón sobre el área de dibujo OpenGL.
-void callbackBotonRaton(GLFWwindow *window, int button, int action, int mods) {
+void callbackBotonRaton(GLFWwindow* window, int button, int action, int mods) {
+	ImGui::GetIO().MouseDown[button] = action==GLFW_PRESS;
+
+	if (GUI::getInstance()->isMouseActive()) return;
+
 	if (action == GLFW_PRESS) {
-		if (button == 0) {
-			colorSeleccionado = (colorSeleccionado + 1) % 3;
-			std::cout << "Seleccionado el colorSeleccionado "
-			          << colores[colorSeleccionado]
-			          << std::endl;
-		} else if (button == 1) {
+		if (button == 1) {
 			botonDerechoPulsado = true;
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
-	} else if (action == GLFW_RELEASE) {
+	}
+	else if (action == GLFW_RELEASE) {
 		if (button == 1) {
 			botonDerechoPulsado = false;
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -109,10 +120,10 @@ void callbackBotonRaton(GLFWwindow *window, int button, int action, int mods) {
 	}
 }
 
-void callbackMovimientoRaton(GLFWwindow *window, const double xpos, const double ypos) {
-	if (botonDerechoPulsado) {
-		PAG::Renderer::getInstancia()->getCamara().pan((xpos - prevXPos) * deltaTime * 10);
-		PAG::Renderer::getInstancia()->getCamara().tilt((ypos - prevYPos) * deltaTime * 10);
+void callbackMovimientoRaton(GLFWwindow* window, const double xpos, const double ypos) {
+	if (!GUI::getInstance()->isMouseActive() && botonDerechoPulsado) {
+		PPCX::Renderer::getInstancia()->getCamara().pan((xpos - prevXPos) * deltaTime * 10);
+		PPCX::Renderer::getInstancia()->getCamara().tilt((ypos - prevYPos) * deltaTime * 10);
 		callbackRefrescoVentana(window);
 	}
 	prevXPos = xpos;
@@ -121,37 +132,8 @@ void callbackMovimientoRaton(GLFWwindow *window, const double xpos, const double
 
 // - Esta función callback será llamada cada vez que se mueva la rueda
 // del ratón sobre el área de dibujo OpenGL.
-void callbackScroll(GLFWwindow *window, double xoffset, double yoffset) {
-	float rojo = PAG::Renderer::getInstancia()->getRojoFondo();
-	float verde = PAG::Renderer::getInstancia()->getVerdeFondo();
-	float azul = PAG::Renderer::getInstancia()->getAzulFondo();
-	//Cambio del colorSeleccionado en función al colorSeleccionado seleccionado. La selección se altera con el clic izquierdo del ratón
-	if (colorSeleccionado == 0) {
-		rojo += (float) (yoffset * 0.05f);
-		if (rojo > 1) {
-			rojo = 1;
-		} else if (rojo < 0) {
-			rojo = 0;
-		}
-	} else if (colorSeleccionado == 1) {
-		verde += (float) (yoffset * 0.05f);
-		if (verde > 1) {
-			verde = 1;
-		} else if (verde < 0) {
-			verde = 0;
-		}
-	} else {
-		azul += (float) (yoffset * 0.05f);
-		if (azul > 1) {
-			azul = 1;
-		} else if (azul < 0) {
-			azul = 0;
-		}
-	}
-
-	std::cout << "rojoFondo: " << rojo << " verdeFondo: " << verde << " azulFondo: " << azul << std::endl;
-	PAG::Renderer::getInstancia()->setColorFondo(rojo, verde, azul, 1);
-	callbackRefrescoVentana(window);
+void callbackScroll(GLFWwindow* window, double xoffset, double yoffset) {
+	PPCX::Renderer::getInstancia()->getCamara().zoom(yoffset * deltaTime);
 }
 
 int main() {
@@ -172,8 +154,8 @@ int main() {
 
 	// - Tamaño, título de la ventana, en ventana y no en pantalla completa,
 	// sin compartir recursos con otras ventanas.
-	GLFWwindow* window = glfwCreateWindow(PAG::anchoVentanaPorDefecto, PAG::altoVentanaPorDefecto,
-	                                      "Procedural Point Cloud Expander", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(PPCX::anchoVentanaPorDefecto, PPCX::altoVentanaPorDefecto,
+		"Procedural Point Cloud Expander", nullptr, nullptr);
 	// - Comprobamos si la creación de la ventana ha tenido éxito.
 	if (window == nullptr) {
 		std::cerr << "Failed to open GLFW window" << std::endl;
@@ -197,8 +179,9 @@ int main() {
 
 	//Realizamos esta llamada para forzar la creación del Renderer y asi poder capturar el posible error sin problema
 	try {
-		PAG::Renderer::getInstancia();
-	} catch (std::runtime_error &e) {
+		PPCX::Renderer::getInstancia();
+	}
+	catch (std::runtime_error& e) {
 		std::cerr << e.what() << std::endl;
 		std::cout << "Finishing application..." << std::endl;
 		glfwDestroyWindow(window); // - Cerramos y destruimos la ventana de la aplicación.
@@ -207,10 +190,10 @@ int main() {
 	}
 	// - Interrogamos a OpenGL para que nos informe de las propiedades del contexto
 	// 3D construido.
-	std::cout << PAG::Renderer::getInstancia()->getPropiedadGL(GL_RENDERER) << std::endl
-	          << PAG::Renderer::getInstancia()->getPropiedadGL(GL_VENDOR) << std::endl
-	          << PAG::Renderer::getInstancia()->getPropiedadGL(GL_VERSION) << std::endl
-	          << PAG::Renderer::getInstancia()->getPropiedadGL(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+	std::cout << PPCX::Renderer::getInstancia()->getPropiedadGL(GL_RENDERER) << std::endl
+		<< PPCX::Renderer::getInstancia()->getPropiedadGL(GL_VENDOR) << std::endl
+		<< PPCX::Renderer::getInstancia()->getPropiedadGL(GL_VERSION) << std::endl
+		<< PPCX::Renderer::getInstancia()->getPropiedadGL(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
 	// - Registramos los callbacks que responderán a los eventos principales
 	glfwSetWindowRefreshCallback(window, callbackRefrescoVentana);
@@ -220,15 +203,16 @@ int main() {
 	glfwSetScrollCallback(window, callbackScroll);
 	glfwSetCursorPosCallback(window, callbackMovimientoRaton);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	glfwSwapInterval(1); // Enable vsync
 	glDebugMessageCallback(MessageCallback, nullptr);
 
 
-	PAG::Renderer::getInstancia()->inicializaOpenGL();
-	GUI::getInstance()->initialize(window, 6);
+	PPCX::Renderer::getInstancia()->inicializaOpenGL();
+	GUI::getInstance()->initialize(window, 1);
 
 	std::cout
-			<< "Con el clic izquierdo del raton se selecciona el color a cambiar. Por defecto se encuentra el color rojo seleccionado."
-			<< std::endl;
+		<< "Con el clic izquierdo del raton se selecciona el color a cambiar. Por defecto se encuentra el color rojo seleccionado."
+		<< std::endl;
 	std::cout << "Con la tecla W/S se realiza el movimiento truck" << std::endl;
 	std::cout << "Con la tecla A/D se realiza el movimiento dolly" << std::endl;
 	std::cout << "Con la tecla Z/X se realiza el movimiento boom/crane" << std::endl;
@@ -236,7 +220,7 @@ int main() {
 	std::cout << "Con la tecla Q/E se realiza el movimiento orbit horizontal" << std::endl;
 	std::cout << "Con la tecla T/G se realiza el movimiento orbit vertical" << std::endl;
 	std::cout << "Con los ejes del raton mientras se pulsa el boton derecho se realiza el movimiento pan y tilt"
-	          << std::endl;
+		<< std::endl;
 	std::cout << "Con la tecla R se resetea la camara a su posicion original" << std::endl;
 
 	// - Ciclo de eventos de la aplicación. La condición de parada es que la
@@ -246,9 +230,9 @@ int main() {
 		// - Obtiene y organiza los eventos pendientes, tales como pulsaciones de
 		// teclas o de ratón, etc. Siempre al final de cada iteración del ciclo
 		// de eventos y después de glfwSwapBuffers(window);
-		glfwPollEvents();
-		GUI::getInstance()->render();
 		//actualizarDeltaTime();
+		glfwPollEvents();
+		callbackRefrescoVentana(window);
 	}
 	// - Una vez terminado el ciclo de eventos, liberar recursos, etc.
 	std::cout << "Finishing application..." << std::endl;

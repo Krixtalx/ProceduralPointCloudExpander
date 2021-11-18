@@ -77,10 +77,10 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -197,6 +197,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\Interface\Fonts\lato.cpp" />
     <ClCompile Include="Source\Interface\GUI.cpp" />
     <ClCompile Include="Source\main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
@@ -230,6 +231,8 @@
     <ClInclude Include="Libraries\imgui\imstb_truetype.h" />
     <ClInclude Include="Libraries\lodepng\lodepng.h" />
     <ClInclude Include="Libraries\tinyply\tinyply.h" />
+    <ClInclude Include="Source\Interface\Fonts\IconsFontAwesome5.h" />
+    <ClInclude Include="Source\Interface\Fonts\lato.hpp" />
     <ClInclude Include="Source\Interface\GUI.h" />
     <ClInclude Include="Source\PrecompiledHeaders\stdafx.h" />
     <ClInclude Include="Source\RendererCore\Camara.h" />

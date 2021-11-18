@@ -10,9 +10,9 @@
 /**
  * Constructor por defecto. Inicializa la cámara con unos parametros predeterminados
  */
-PAG::Camara::Camara() : posicion(0, 0, 2.5f), puntoMira(0, 0, 0),
-                        up(0, 1, 0), zNear(0.1f), zFar(1000), alto(PAG::altoVentanaPorDefecto),
-                        ancho(PAG::anchoVentanaPorDefecto) {
+PPCX::Camara::Camara() : posicion(0, 0, 2.5f), puntoMira(0, 0, 0),
+                        up(0, 1, 0), zNear(0.1f), zFar(1000), alto(PPCX::altoVentanaPorDefecto),
+                        ancho(PPCX::anchoVentanaPorDefecto) {
 
 	fovX = glm::radians(80.0);
 	calcularFovY();
@@ -30,7 +30,7 @@ PAG::Camara::Camara() : posicion(0, 0, 2.5f), puntoMira(0, 0, 0),
  * @param alto del viewport
  * @param ancho del viewport
  */
-PAG::Camara::Camara(const glm::vec3 &posicion, const glm::vec3 &puntoMira, const glm::vec3 &up, GLfloat zNear,
+PPCX::Camara::Camara(const glm::vec3 &posicion, const glm::vec3 &puntoMira, const glm::vec3 &up, GLfloat zNear,
                     GLfloat zFar, GLfloat fovX, GLuint alto, GLuint ancho) : posicion(posicion), puntoMira(puntoMira),
                                                                              up(up), zNear(zNear), zFar(zFar),
                                                                              alto(alto), ancho(ancho) {
@@ -43,7 +43,7 @@ PAG::Camara::Camara(const glm::vec3 &posicion, const glm::vec3 &puntoMira, const
  * Calcula la matriz de modelado visión y proyección y la devuelve.
  * @return matrizMVP
  */
-glm::mat4 PAG::Camara::matrizMVP() const {
+glm::mat4 PPCX::Camara::matrizMVP() const {
 	const glm::mat4 vision = glm::lookAt(posicion, puntoMira, up);
 	const glm::mat4 proyeccion = glm::perspective(fovY, aspecto(), zNear, zFar);
 	//Multiplicamos de manera inversa: Modelado-Vision-Proyeccion -> Proyeccion-Vision-Modelado
@@ -54,14 +54,14 @@ glm::mat4 PAG::Camara::matrizMVP() const {
  * Calcula la matriz de modelado y visión y la devuelve.
  * @return matrizMV
  */
-glm::mat4 PAG::Camara::matrizMV() const {
+glm::mat4 PPCX::Camara::matrizMV() const {
 	return glm::lookAt(posicion, puntoMira, up); //Devuelve solo vision. El modelado lo aplicará el modelo
 }
 
 /**
  * Actualiza los ejes locales de la cámara recalculando su valor.
  */
-void PAG::Camara::calcularEjes() {
+void PPCX::Camara::calcularEjes() {
 	n = glm::normalize(posicion - puntoMira);
 
 	if (glm::all(glm::equal(n, up, 0.001f))) {
@@ -77,7 +77,7 @@ void PAG::Camara::calcularEjes() {
 /**
  * Calcula el fovY equivalente al fovX actual
  */
-void PAG::Camara::calcularFovY() {
+void PPCX::Camara::calcularFovY() {
 	this->fovY = 2 * glm::atan(tan(this->fovX / 2) / aspecto());
 }
 
@@ -90,7 +90,7 @@ void PAG::Camara::calcularFovY() {
  * Movimiento truck de la camara. Mueve la camara hacia delante o hacia atrás
  * @param mov magnitud del movimiento
  */
-void PAG::Camara::truck(float mov) {
+void PPCX::Camara::truck(float mov) {
 	const glm::mat4 translacion = glm::translate(n * mov);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
@@ -100,7 +100,7 @@ void PAG::Camara::truck(float mov) {
  * Movimiento dolly de la camara. Mueve la camara hacia la izquierda o hacia la derecha
  * @param mov magnitud del movimiento
  */
-void PAG::Camara::dolly(float mov) {
+void PPCX::Camara::dolly(float mov) {
 	const glm::mat4 translacion = glm::translate(u * mov);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
@@ -110,7 +110,7 @@ void PAG::Camara::dolly(float mov) {
  * Movimiento boom de la cámara. Mueve la cámara hacia arriba
  * @param mov magnitud del movimiento
  */
-void PAG::Camara::boom(float mov) {
+void PPCX::Camara::boom(float mov) {
 	const glm::mat4 translacion = glm::translate(v * mov);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
@@ -120,7 +120,7 @@ void PAG::Camara::boom(float mov) {
  * Movimiento boom de la cámara. Mueve la cámara hacia abajo
  * @param mov magnitud del movimiento
  */
-void PAG::Camara::crane(float mov) {
+void PPCX::Camara::crane(float mov) {
 	boom(-mov);
 }
 
@@ -128,7 +128,7 @@ void PAG::Camara::crane(float mov) {
  * Movimiento pan de la cámara. Rota la cámara horizontalmente
  * @param mov magnitud del movimiento
  */
-void PAG::Camara::pan(float mov) {
+void PPCX::Camara::pan(float mov) {
 	const glm::mat4 rotacion = glm::rotate(glm::radians(mov * 0.02f), v);
 	puntoMira = glm::vec3(rotacion * glm::vec4(puntoMira - posicion, 1)) + posicion;
 	calcularEjes();
@@ -138,7 +138,7 @@ void PAG::Camara::pan(float mov) {
  * Movimiento tilt de la cámara. Rota la cámara verticalmente
  * @param mov magnitud del movimiento
  */
-void PAG::Camara::tilt(float mov) {
+void PPCX::Camara::tilt(float mov) {
 	const glm::mat4 rotacion = glm::rotate(glm::radians(mov * 0.02f), u);
 	puntoMira = glm::vec3(rotacion * glm::vec4(puntoMira - posicion, 1)) + posicion;
 	calcularEjes();
@@ -149,7 +149,7 @@ void PAG::Camara::tilt(float mov) {
  * Orbita en longitud alrededor del punto al que se mira.
  * @param mov magnitud del movimiento
  */
-void PAG::Camara::orbitX(float mov) {
+void PPCX::Camara::orbitX(float mov) {
 	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), v);
 	posicion = glm::vec3(rotacion * glm::vec4(posicion - puntoMira, 1)) + puntoMira;
 	calcularEjes();
@@ -159,7 +159,7 @@ void PAG::Camara::orbitX(float mov) {
  * Orbita en latitud alrededor del punto al que se mira.
  * @param mov magnitud del movimiento
  */
-void PAG::Camara::orbitY(float mov) {
+void PPCX::Camara::orbitY(float mov) {
 	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), u);
 	posicion = glm::vec3(rotacion * glm::vec4(posicion - puntoMira, 1)) + puntoMira;
 	calcularEjes();
@@ -170,7 +170,7 @@ void PAG::Camara::orbitY(float mov) {
  * Realiza el zoom modificando el fov
  * @param angulo variación del ángulo
  */
-void PAG::Camara::zoom(float angulo) {
+void PPCX::Camara::zoom(float angulo) {
 	fovX += glm::radians(angulo);
 	if (fovX < 0)
 		fovX = 0;
@@ -183,7 +183,7 @@ void PAG::Camara::zoom(float angulo) {
 /**
  * Situa la cámara en la posición por defecto.
  */
-void PAG::Camara::reset() {
+void PPCX::Camara::reset() {
 	posicion = glm::vec3(0, 0, 2.5);
 	puntoMira = glm::vec3(0, 0, 0);
 	up = glm::vec3(0, 1, 0);
@@ -201,14 +201,14 @@ void PAG::Camara::reset() {
  * Calcula y devuelve la relacion de aspecto
  * @return relacion de aspecto del viewport
  */
-GLfloat PAG::Camara::aspecto() const {
+GLfloat PPCX::Camara::aspecto() const {
 	return (GLfloat(ancho) / GLfloat(alto));
 }
 
-void PAG::Camara::setAlto(GLuint alto) {
+void PPCX::Camara::setAlto(GLuint alto) {
 	Camara::alto = alto;
 }
 
-void PAG::Camara::setAncho(GLuint ancho) {
+void PPCX::Camara::setAncho(GLuint ancho) {
 	Camara::ancho = ancho;
 }

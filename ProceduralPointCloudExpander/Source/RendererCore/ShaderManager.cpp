@@ -5,13 +5,13 @@
 #include "stdafx.h"
 #include "ShaderManager.h"
 
-PAG::ShaderManager *PAG::ShaderManager::instancia = nullptr;
+PPCX::ShaderManager *PPCX::ShaderManager::instancia = nullptr;
 
 /**
  * Consulta del objeto único de la clase
  * @return Puntero al ShaderManager
  */
-PAG::ShaderManager *PAG::ShaderManager::getInstancia() {
+PPCX::ShaderManager *PPCX::ShaderManager::getInstancia() {
 	if (!instancia) {
 		instancia = new ShaderManager;
 	}
@@ -21,7 +21,7 @@ PAG::ShaderManager *PAG::ShaderManager::getInstancia() {
 /**
  * Destructor. Elimina todos los shaders y shaderPrograms (que estén en los mapas) del contexto OpenGL
  */
-PAG::ShaderManager::~ShaderManager() {
+PPCX::ShaderManager::~ShaderManager() {
 	for (const auto &shader: shaders) {
 		delete shader.second;
 	}
@@ -37,7 +37,7 @@ PAG::ShaderManager::~ShaderManager() {
  * @param tipoShader
  * @param ruta en la que se encuentra el código fuente
  */
-void PAG::ShaderManager::nuevoShader(const std::string &nombreShader, GLenum tipoShader, const std::string &ruta) {
+void PPCX::ShaderManager::nuevoShader(const std::string &nombreShader, GLenum tipoShader, const std::string &ruta) {
 	auto nuevoShader = new Shader(nombreShader, tipoShader, ruta);
 	shaders.insert(std::make_pair(nombreShader, nuevoShader));
 }
@@ -46,7 +46,7 @@ void PAG::ShaderManager::nuevoShader(const std::string &nombreShader, GLenum tip
  * Añade un nuevo shaderProgram al mapa shaderPrograms
  * @param nombreSP nombre con el que se incluirá en el mapa
  */
-void PAG::ShaderManager::nuevoShaderProgram(const std::string &nombreSP) {
+void PPCX::ShaderManager::nuevoShaderProgram(const std::string &nombreSP) {
 	auto nuevoSP = new ShaderProgram();
 	shaderPrograms.insert(std::make_pair(nombreSP, nuevoSP));
 }
@@ -56,7 +56,7 @@ void PAG::ShaderManager::nuevoShaderProgram(const std::string &nombreSP) {
  * @param nombreShader a añadir
  * @param nombreSP al que se le añadirá
  */
-void PAG::ShaderManager::addShaderToSP(const std::string &nombreShader, const std::string &nombreSP) {
+void PPCX::ShaderManager::addShaderToSP(const std::string &nombreShader, const std::string &nombreSP) {
 	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		SP->second->addShader(shaders.find(nombreShader)->second);
@@ -70,7 +70,7 @@ void PAG::ShaderManager::addShaderToSP(const std::string &nombreShader, const st
  * Activa el shader program indicado
  * @param nombreSP a activar
  */
-void PAG::ShaderManager::activarSP(const std::string &nombreSP) {
+void PPCX::ShaderManager::activarSP(const std::string &nombreSP) {
 	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		SP->second->activateShaderProgram();
@@ -85,7 +85,7 @@ void PAG::ShaderManager::activarSP(const std::string &nombreSP) {
  * @param nombreSP nombre del ShaderProgram en el que establecer el uniform
  * @param variable nombre de la variable a establecer
  */
-void PAG::ShaderManager::setUniform(const std::string &nombreSP, const std::string &variable, glm::mat4 matrizMVP) {
+void PPCX::ShaderManager::setUniform(const std::string &nombreSP, const std::string &variable, glm::mat4 matrizMVP) {
 	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
@@ -107,7 +107,7 @@ void PAG::ShaderManager::setUniform(const std::string &nombreSP, const std::stri
  * @param nombreSP nombre del ShaderProgram en el que establecer el uniform
  * @param variable nombre de la variable a establecer
  */
-void PAG::ShaderManager::setUniform(const std::string &nombreSP, const std::string &variable, glm::vec3 vec) {
+void PPCX::ShaderManager::setUniform(const std::string &nombreSP, const std::string &variable, glm::vec3 vec) {
 	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
@@ -129,7 +129,7 @@ void PAG::ShaderManager::setUniform(const std::string &nombreSP, const std::stri
  * @param tipoShader en que shader se encuentra la subrutina (GL_VERTEX_SHADER o GL_FRAGMENT_SHADER)
  * @param nombreSubrutina nombre de la subrutina a activar
  */
-void PAG::ShaderManager::activarSubrutina(const std::string &nombreSP, GLenum tipoShader,
+void PPCX::ShaderManager::activarSubrutina(const std::string &nombreSP, GLenum tipoShader,
                                           const std::string &nombreSubrutina) {
 	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {

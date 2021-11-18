@@ -5,7 +5,7 @@
 #ifndef PAG_RENDEROPTIONS_H
 #define PAG_RENDEROPTIONS_H
 
-namespace PAG {
+namespace PPCX {
 	enum modoDibujado {
 		nubePuntos,
 		wireframe,

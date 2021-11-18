@@ -7,15 +7,15 @@
 
 #include "ShaderProgram.h"
 
-namespace PAG {
+namespace PPCX {
 	class ShaderManager {
 	private:
 		static ShaderManager *instancia;
 
 		ShaderManager() = default;
 
-		std::map<std::string, PAG::ShaderProgram*> shaderPrograms;
-		std::map<std::string, PAG::Shader*> shaders;
+		std::map<std::string, PPCX::ShaderProgram*> shaderPrograms;
+		std::map<std::string, PPCX::Shader*> shaders;
 	public:
 		static ShaderManager *getInstancia();
 

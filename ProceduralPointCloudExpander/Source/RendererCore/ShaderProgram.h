@@ -9,7 +9,7 @@
 #include "stdafx.h"
 #include "Shader.h"
 
-namespace PAG {
+namespace PPCX {
 	class ShaderProgram {
 		friend class ShaderManager;
 

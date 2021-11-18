@@ -12,7 +12,7 @@
  * @param ruta donde se encuentra el código GLSL del shader
  * @throw runtime_error en caso de que ocurra algún error durante la carga o compilación
  */
-PAG::Shader::Shader(std::string nombreShader, GLenum tipoShader, const std::string &ruta) : nombreShader(std::move(
+PPCX::Shader::Shader(std::string nombreShader, GLenum tipoShader, const std::string &ruta) : nombreShader(std::move(
 		nombreShader)), tipoShader(tipoShader) {
 	idShader = glCreateShader(tipoShader);
 	if (idShader == 0) {
@@ -31,7 +31,7 @@ PAG::Shader::Shader(std::string nombreShader, GLenum tipoShader, const std::stri
 /**
  * Destructor.
  */
-PAG::Shader::~Shader() {
+PPCX::Shader::~Shader() {
 	glDeleteShader(idShader);
 }
 
@@ -40,7 +40,7 @@ PAG::Shader::~Shader() {
  * @param ruta donde se encuentra el código GLSL del shader
  * @throw runtime_error Si no se puede abrir el fichero
  */
-void PAG::Shader::cargaShader(const std::string &ruta) const {
+void PPCX::Shader::cargaShader(const std::string &ruta) const {
 	std::ifstream archivoShader;
 	archivoShader.open(ruta, std::ifstream::in);
 
@@ -63,7 +63,7 @@ void PAG::Shader::cargaShader(const std::string &ruta) const {
  * Comprueba si se ha producido algún error en la compilación del shader
  * @throw runtime_error en caso de que haya algún error de compilación
  */
-void PAG::Shader::compruebaErroresShader() const {
+void PPCX::Shader::compruebaErroresShader() const {
 	GLint resultadoCompilacion;
 	glGetShaderiv(idShader, GL_COMPILE_STATUS, &resultadoCompilacion);
 
@@ -89,7 +89,7 @@ void PAG::Shader::compruebaErroresShader() const {
  * Realiza la compilación del shader y después lanza la comprobación de errores
  * @throw runtime_error en caso de que haya algún error de compilación
  */
-void PAG::Shader::compilaShader() {
+void PPCX::Shader::compilaShader() {
 	glCompileShader(idShader);
 	try {
 		compruebaErroresShader();
@@ -101,11 +101,11 @@ void PAG::Shader::compilaShader() {
 
 //---------Getters y setters----------------------------------------
 
-GLuint PAG::Shader::getShaderId() const {
+GLuint PPCX::Shader::getShaderId() const {
 	return idShader;
 }
 
-GLenum PAG::Shader::getTipoShader() const {
+GLenum PPCX::Shader::getTipoShader() const {
 	return tipoShader;
 }
 

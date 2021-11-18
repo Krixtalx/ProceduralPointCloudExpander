@@ -11,7 +11,7 @@
 /**
 *	@brief Wrapper for GUI graphics which allows the user to interact with the scene.
 */
-class GUI: public Singleton<GUI>
+class GUI final : public Singleton<GUI>
 {
 	friend class Singleton<GUI>;
 
@@ -24,15 +24,13 @@ protected:
 	bool							_showFileDialog;					//!< Shows a file dialog that allows opening a point cloud in .ply format
 	bool							_showPointCloudDialog;				//!< 
 	bool							_showRenderingSettings;				//!< Displays a window which allows the user to modify the rendering parameters
-	bool							_showScreenshotSettings;			//!< Shows a window which allows to take an screenshot at any size
-	bool							_showCameraParameters;
 
 protected:
 	/**
 	*	@brief Constructor of GUI context provided by a graphics library (Dear ImGui).
 	*/
 	GUI();
-	
+
 	/**
 	*	@brief Creates the navbar.
 	*/
@@ -44,12 +42,12 @@ protected:
 	static void leaveSpace(const unsigned numSlots);
 
 	/**
-	*	@brief  
+	*	@brief
 	*/
 	//void loadFonts();
 
 	/**
-	*	@brief  
+	*	@brief
 	*/
 	void loadImGUIStyle();
 
@@ -74,7 +72,7 @@ protected:
 	void showFileDialog();
 
 	/**
-	*	@brief  
+	*	@brief
 	*/
 	void showPointCloudDialog();
 
@@ -101,12 +99,7 @@ public:
 	*/
 	void render();
 
-	// ------- Getters --------
+	void loadFonts();
 
-	/**
-	*	@return  
-	*/
 	bool isMouseActive() { return ImGui::GetIO().WantCaptureMouse; }
-
 };
-

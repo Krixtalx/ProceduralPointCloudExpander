@@ -7,7 +7,7 @@
 
 #include "Utilities/Point.h"
 
-namespace PAG {
+namespace PPCX {
 	class pointCloud {
 	private:
 		GLuint idVAO{};

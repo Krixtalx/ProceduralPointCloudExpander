@@ -1,23 +1,24 @@
 #include "stdafx.h"
 #include "GUI.h"
-
+#include "Interface/Fonts/lato.hpp"
 #include "Interface/Fonts/IconsFontAwesome5.h"
 #include "imfiledialog/ImGuiFileDialog.h"
+#include "RendererCore/Renderer.h"
 
 
 /// [Protected methods]
 
 GUI::GUI() :
-	_pointCloudPath(""), _showRenderingSettings(false), _showScreenshotSettings(false), _showAboutUs(false),
-	_showControls(false), _showFileDialog(false), _showPointCloudDialog(false)
+	_showAboutUs(false), _showControls(false), _showFileDialog(false),
+	_showPointCloudDialog(false), _showRenderingSettings(false)
 {
-	
+
 }
 
 void GUI::createMenu()
 {
 	const ImGuiIO& io = ImGui::GetIO();
-	
+
 	if (_showRenderingSettings)		showRenderingSettings();
 	if (_showAboutUs)				showAboutUsWindow();
 	if (_showControls)				showControls();
@@ -28,30 +29,28 @@ void GUI::createMenu()
 	{
 		if (ImGui::BeginMenu(ICON_FA_COG "Settings"))
 		{
-			ImGui::MenuItem(ICON_FA_CUBE "Rendering", NULL, &_showRenderingSettings);
-			ImGui::MenuItem(ICON_FA_IMAGE "Screenshot", NULL, &_showScreenshotSettings);
-			ImGui::MenuItem(ICON_FA_SAVE "Open Point Cloud", NULL, &_showFileDialog);
-			ImGui::MenuItem(ICON_FA_CAMERA "Camera parameters", NULL, &_showCameraParameters);
+			ImGui::MenuItem(ICON_FA_CUBE "Rendering", nullptr, &_showRenderingSettings);
+			ImGui::MenuItem(ICON_FA_SAVE "Open Point Cloud", nullptr, &_showFileDialog);
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu(ICON_FA_QUESTION_CIRCLE "Help"))
 		{
-			ImGui::MenuItem(ICON_FA_INFO "About the project", NULL, &_showAboutUs);
-			ImGui::MenuItem(ICON_FA_GAMEPAD "Controls", NULL, &_showControls);
+			ImGui::MenuItem(ICON_FA_INFO "About the project", nullptr, &_showAboutUs);
+			ImGui::MenuItem(ICON_FA_GAMEPAD "Controls", nullptr, &_showControls);
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu(ICON_FA_SITEMAP "Procedural Options"))
 		{
-			ImGui::MenuItem(ICON_FA_INFO "About the project", NULL, &_showAboutUs);
+			ImGui::MenuItem(ICON_FA_INFO "About the project", nullptr, &_showAboutUs);
 			ImGui::EndMenu();
 		}
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(io.DisplaySize.x - 125);
-		this->renderHelpMarker("Avoids some movements to also modify the camera parameters");
-		
+		GUI::renderHelpMarker("Avoids some movements to also modify the camera parameters");
+
 		ImGui::SameLine(0, 20);
 		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 		ImGui::EndMainMenuBar();
@@ -83,7 +82,7 @@ void GUI::showAboutUsWindow()
 {
 	if (ImGui::Begin("About the project", &_showAboutUs))
 	{
-		ImGui::Text("This code belongs to a research project from University of Jaen (GGGJ group).");	
+		ImGui::Text("This code belongs to a research project from University of Jaen (GGGJ group).");
 	}
 
 	ImGui::End();
@@ -120,7 +119,7 @@ void GUI::showControls()
 void GUI::showFileDialog()
 {
 	ImGuiFileDialog::Instance()->OpenDialog("Choose Point Cloud", "Choose File", ".ply", ".");
-	
+
 	// display
 	if (ImGuiFileDialog::Instance()->Display("Choose Point Cloud"))
 	{
@@ -128,7 +127,7 @@ void GUI::showFileDialog()
 		if (ImGuiFileDialog::Instance()->IsOk())
 		{
 			const std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-			_pointCloudPath = filePathName.substr(0, filePathName.find_last_of("."));
+			_pointCloudPath = filePathName.substr(0, filePathName.find_last_of('.'));
 			_showPointCloudDialog = true;
 		}
 
@@ -142,7 +141,6 @@ void GUI::showPointCloudDialog()
 {
 	if (ImGui::Begin("Open Point Cloud Dialog", &_showPointCloudDialog))
 	{
-		GLuint minIterations = 1, maxIterations = 4;
 		static bool aggregate;
 		this->leaveSpace(1);
 
@@ -150,7 +148,7 @@ void GUI::showPointCloudDialog()
 		ImGui::Separator();
 
 		this->leaveSpace(1);
-		
+
 		ImGui::Checkbox("Aggregate", &aggregate);
 
 		ImGui::PushID(0);
@@ -162,7 +160,8 @@ void GUI::showPointCloudDialog()
 
 		if (ImGui::Button("Open Point Cloud"))
 		{
-			
+			PPCX::Renderer::getInstancia()->cargaModelo(_pointCloudPath);
+			_showPointCloudDialog = false;
 		}
 
 		ImGui::PopStyleColor(3);
@@ -174,7 +173,10 @@ void GUI::showPointCloudDialog()
 
 void GUI::showRenderingSettings()
 {
-	if (ImGui::Begin("Rendering Settings", &_showRenderingSettings)){
+	if (ImGui::Begin("Rendering Settings", &_showRenderingSettings)) {
+		glm::vec3 color = PPCX::Renderer::getInstancia()->getColorFondo();
+		ImGui::ColorEdit3("Background color", &color[0]);
+		PPCX::Renderer::getInstancia()->setColorFondo(color);
 
 		this->leaveSpace(3);
 
@@ -182,12 +184,13 @@ void GUI::showRenderingSettings()
 		{
 			if (ImGui::BeginTabItem("General settings"))
 			{
+				ImGui::EndTabItem();
 			}
 
 			if (ImGui::BeginTabItem("Point Cloud"))
 			{
 				this->leaveSpace(1);
-				
+
 				ImGui::EndTabItem();
 			}
 
@@ -201,13 +204,14 @@ void GUI::showRenderingSettings()
 			ImGui::EndTabBar();
 		}
 	}
-
 	ImGui::End();
 }
 
 
 GUI::~GUI()
 {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 }
 
@@ -219,9 +223,10 @@ void GUI::initialize(GLFWwindow* window, const int openGLMinorVersion)
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	this->loadImGUIStyle();
-	
+
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init(openGLVersion.c_str());
 }
@@ -236,6 +241,7 @@ void GUI::render()
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	
 }
 
 // ---------------- IMGUI ------------------
@@ -244,24 +250,24 @@ void GUI::loadImGUIStyle()
 {
 	ImGui::StyleColorsDark();
 
-	//this->loadFonts();
+	this->loadFonts();
 }
 
-//void GUI::loadFonts()
-//{
-//	ImFontConfig cfg;
-//	ImGuiIO& io = ImGui::GetIO();
-//	
-//	std::copy_n("Lato", 5, cfg.Name);
-//	io.Fonts->AddFontFromMemoryCompressedBase85TTF(lato_compressed_data_base85, 15.0f, &cfg);
-//
-//	static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-//	cfg.MergeMode = true;
-//	cfg.PixelSnapH = true;
-//	cfg.GlyphMinAdvanceX = 20.0f;
-//	cfg.GlyphMaxAdvanceX = 20.0f;
-//	std::copy_n("FontAwesome", 12, cfg.Name);
-//
-//	io.Fonts->AddFontFromFileTTF("Assets/Fonts/fa-regular-400.ttf", 13.0f, &cfg, icons_ranges);
-//	io.Fonts->AddFontFromFileTTF("Assets/Fonts/fa-solid-900.ttf", 13.0f, &cfg, icons_ranges);
-//}
+void GUI::loadFonts()
+{
+	ImFontConfig cfg;
+	ImGuiIO& io = ImGui::GetIO();
+	
+	std::copy_n("Lato", 5, cfg.Name);
+	io.Fonts->AddFontFromMemoryCompressedBase85TTF(lato_compressed_data_base85, 15.0f, &cfg);
+
+	static constexpr ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+	cfg.MergeMode = true;
+	cfg.PixelSnapH = true;
+	cfg.GlyphMinAdvanceX = 20.0f;
+	cfg.GlyphMaxAdvanceX = 20.0f;
+	std::copy_n("FontAwesome", 12, cfg.Name);
+
+	io.Fonts->AddFontFromFileTTF("Assets/Fonts/fa-regular-400.ttf", 13.0f, &cfg, icons_ranges);
+	io.Fonts->AddFontFromFileTTF("Assets/Fonts/fa-solid-900.ttf", 13.0f, &cfg, icons_ranges);
+}

@@ -8,7 +8,7 @@ uniform mat4 matrizMVP;
 out vec4 ourColor;
 
 void main() {
-	gl_PointSize = 10;
+	gl_PointSize = 2.0f;
 	gl_Position = matrizMVP * vec4(vPosition, 1.0);
 	ourColor = unpackUnorm4x8(vColor);
 }

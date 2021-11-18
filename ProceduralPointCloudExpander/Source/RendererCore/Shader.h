@@ -5,7 +5,7 @@
 #ifndef PAG_SHADER_H
 #define PAG_SHADER_H
 
-namespace PAG {
+namespace PPCX {
 	class Shader {
 		friend class ShaderManager;
 

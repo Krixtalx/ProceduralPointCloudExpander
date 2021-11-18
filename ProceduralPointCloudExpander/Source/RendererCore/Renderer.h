@@ -8,7 +8,7 @@
 #include "pointCloud.h"
 #include "Camara.h"
 
-namespace PAG {
+namespace PPCX {
 	/**
 	 * @brief Clase encargada de encapsular la gestión del área de dibujo
 	 * OpenGL
@@ -23,14 +23,12 @@ namespace PAG {
 		static Renderer *instancia; ///< Puntero al único objeto de la clase
 		Renderer();
 
-		float rojoFondo = 0.15f;
-		float verdeFondo = 0.15f;
-		float azulFondo = 0.2f;
+		glm::vec3 colorFondo = { 0.2, 0.2, 0.2 };
 
 		bool triangulo = false, tetraedro = false;
-		std::vector<PAG::pointCloud *> modelos;
+		std::vector<PPCX::pointCloud *> modelos;
 
-		PAG::Camara camara;
+		PPCX::Camara camara;
 
 	public:
 		virtual ~Renderer();
@@ -41,7 +39,7 @@ namespace PAG {
 
 		void refrescar() const;
 
-		void setColorFondo(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+		void setColorFondo(glm::vec3 color);
 
 		void actualizarColorFondo() const;
 
@@ -53,19 +51,11 @@ namespace PAG {
 
 		void limpiarGL(GLbitfield mascara);
 
-		float getRojoFondo() const;
-
-		void setRojoFondo(float rojoFondo);
-
-		float getVerdeFondo() const;
-
-		void setVerdeFondo(float verdeFondo);
-
-		float getAzulFondo() const;
-
-		void setAzulFondo(float azulFondo);
+		void cargaModelo(const std::string& path);
 
 		Camara &getCamara();
+
+		glm::vec3& getColorFondo();
 
 	};
 }
