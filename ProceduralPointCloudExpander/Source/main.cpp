@@ -230,7 +230,7 @@ int main() {
 		// - Obtiene y organiza los eventos pendientes, tales como pulsaciones de
 		// teclas o de ratón, etc. Siempre al final de cada iteración del ciclo
 		// de eventos y después de glfwSwapBuffers(window);
-		//actualizarDeltaTime();
+		actualizarDeltaTime();
 		glfwPollEvents();
 		callbackRefrescoVentana(window);
 	}

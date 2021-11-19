@@ -60,6 +60,7 @@ void PPCX::Renderer::inicializaOpenGL() {
 	activarUtilidadGL(GL_DEPTH_TEST);
 	activarUtilidadGL(GL_MULTISAMPLE);
 	activarUtilidadGL(GL_DEBUG_OUTPUT);
+	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 	actualizarColorFondo();
 }
 
