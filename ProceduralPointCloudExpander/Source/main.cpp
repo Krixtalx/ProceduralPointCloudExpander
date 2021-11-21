@@ -9,13 +9,9 @@ float deltaTime = 0.1f;
 float ultimoFrame = 0.0f;
 
 void actualizarDeltaTime() {
-	static clock_t ultimaEjecucion = clock(); // Solo se ejecuta la primera vez
-	if ((clock() - ultimaEjecucion) > 25) {
-		const float frameActual = glfwGetTime();
-		deltaTime = frameActual - ultimoFrame;
-		ultimoFrame = frameActual;
-		ultimaEjecucion = clock();
-	}
+	const float frameActual = glfwGetTime();
+	deltaTime = (frameActual - ultimoFrame) * 10;
+	ultimoFrame = frameActual;
 }
 
 void GLAPIENTRY MessageCallback(GLenum source,
@@ -96,13 +92,13 @@ void callbackTecla(GLFWwindow* window, int key, int scancode, int action, int mo
 	else if (key == GLFW_KEY_R && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().reset();
 	}
-	
+
 }
 
 // - Esta función callback será llamada cada vez que se pulse algún botón
 // del ratón sobre el área de dibujo OpenGL.
 void callbackBotonRaton(GLFWwindow* window, int button, int action, int mods) {
-	ImGui::GetIO().MouseDown[button] = action==GLFW_PRESS;
+	ImGui::GetIO().MouseDown[button] = action == GLFW_PRESS;
 
 	if (GUI::getInstance()->isMouseActive()) return;
 
@@ -124,14 +120,11 @@ void callbackMovimientoRaton(GLFWwindow* window, const double xpos, const double
 	if (!GUI::getInstance()->isMouseActive() && botonDerechoPulsado) {
 		PPCX::Renderer::getInstancia()->getCamara().pan((xpos - prevXPos) * deltaTime * 10);
 		PPCX::Renderer::getInstancia()->getCamara().tilt((ypos - prevYPos) * deltaTime * 10);
-		callbackRefrescoVentana(window);
 	}
 	prevXPos = xpos;
 	prevYPos = ypos;
 }
 
-// - Esta función callback será llamada cada vez que se mueva la rueda
-// del ratón sobre el área de dibujo OpenGL.
 void callbackScroll(GLFWwindow* window, double xoffset, double yoffset) {
 	PPCX::Renderer::getInstancia()->getCamara().zoom(yoffset * deltaTime);
 }
@@ -144,9 +137,6 @@ int main() {
 		return -1;
 	}
 
-	// - Definimos las características que queremos que tenga el contexto gráfico
-	// OpenGL de la ventana que vamos a crear. Por ejemplo, el número de muestras o el
-	// modo Core Profile.
 	glfwWindowHint(GLFW_SAMPLES, 4); // - Activa antialiasing con 4 muestras.
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // - Esta y las 2
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // siguientes activan un contexto
@@ -162,13 +152,8 @@ int main() {
 		glfwTerminate(); // - Liberamos los recursos que ocupaba GLFW.
 		return -2;
 	}
-	// - Hace que el contexto OpenGL asociado a la ventana que acabamos de crear pase a
-	// ser el contexto actual de OpenGL para las siguientes llamadas a la biblioteca
-	glfwMakeContextCurrent(window);
 
-	// - Ahora inicializamos GLEW.
-	// IMPORTANTE: GLEW debe inicializarse siempre DESPUÉS de que se haya
-	// inicializado GLFW y creado la ventana
+	glfwMakeContextCurrent(window);
 	glewExperimental = true;
 	if (glewInit() != GLEW_OK) {
 		std::cerr << "Failed to initialize GLEW" << std::endl;
@@ -188,8 +173,8 @@ int main() {
 		glfwTerminate(); // - Liberamos los recursos que ocupaba GLFW.
 		return -1; //Forzamos el cierre si ha ocurrido alguna excepción en el shader
 	}
-	// - Interrogamos a OpenGL para que nos informe de las propiedades del contexto
-	// 3D construido.
+
+
 	std::cout << PPCX::Renderer::getInstancia()->getPropiedadGL(GL_RENDERER) << std::endl
 		<< PPCX::Renderer::getInstancia()->getPropiedadGL(GL_VENDOR) << std::endl
 		<< PPCX::Renderer::getInstancia()->getPropiedadGL(GL_VERSION) << std::endl
@@ -210,31 +195,13 @@ int main() {
 	PPCX::Renderer::getInstancia()->inicializaOpenGL();
 	GUI::getInstance()->initialize(window, 1);
 
-	std::cout
-		<< "Con el clic izquierdo del raton se selecciona el color a cambiar. Por defecto se encuentra el color rojo seleccionado."
-		<< std::endl;
-	std::cout << "Con la tecla W/S se realiza el movimiento truck" << std::endl;
-	std::cout << "Con la tecla A/D se realiza el movimiento dolly" << std::endl;
-	std::cout << "Con la tecla Z/X se realiza el movimiento boom/crane" << std::endl;
-	std::cout << "Con la tecla I/O se realiza el zoom" << std::endl;
-	std::cout << "Con la tecla Q/E se realiza el movimiento orbit horizontal" << std::endl;
-	std::cout << "Con la tecla T/G se realiza el movimiento orbit vertical" << std::endl;
-	std::cout << "Con los ejes del raton mientras se pulsa el boton derecho se realiza el movimiento pan y tilt"
-		<< std::endl;
-	std::cout << "Con la tecla R se resetea la camara a su posicion original" << std::endl;
-
-	// - Ciclo de eventos de la aplicación. La condición de parada es que la
-	// ventana principal deba cerrarse. Por ejemplo, si el usuario pulsa el
-	// botón de cerrar la ventana (la X).
+	// - Ciclo de eventos de la aplicación.
 	while (!glfwWindowShouldClose(window)) {
-		// - Obtiene y organiza los eventos pendientes, tales como pulsaciones de
-		// teclas o de ratón, etc. Siempre al final de cada iteración del ciclo
-		// de eventos y después de glfwSwapBuffers(window);
 		actualizarDeltaTime();
 		glfwPollEvents();
 		callbackRefrescoVentana(window);
 	}
-	// - Una vez terminado el ciclo de eventos, liberar recursos, etc.
+
 	std::cout << "Finishing application..." << std::endl;
 	glfwDestroyWindow(window); // - Cerramos y destruimos la ventana de la aplicación.
 	glfwTerminate(); // - Liberamos los recursos que ocupaba GLFW.

@@ -1,5 +1,6 @@
 #pragma once
-#include "stdafx.h"
+
+
 using namespace glm;
 /**
 *	@file AABB.h

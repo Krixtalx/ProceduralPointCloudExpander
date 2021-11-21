@@ -1,17 +1,19 @@
 #pragma once
 #include "Utilities/Singleton.h"
 #include <ProceduralUtils/ProceduralVoxel.h>
+#include <RendererCore/pointCloud.h>
+
 class ProceduralGenerator: public Singleton<ProceduralGenerator>{
 
 	friend class Singleton<ProceduralGenerator>;
 
 private:
 	unsigned axisSubdivision[3];
-	unsigned axisSubdivisionOriginal[3];
 	float gsd;
-	int expansion;
 
 	std::vector<std::vector<std::vector<ProceduralVoxel*>>> subdivisions;
+	AABB aabb;
+	PPCX::PointCloud* nube;
 	float cloudDensity;
 
 protected:

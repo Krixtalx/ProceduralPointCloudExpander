@@ -70,6 +70,12 @@
     <Filter Include="Archivos de origen\ProceduralUtils">
       <UniqueIdentifier>{9ad62183-d734-400d-883c-239fafd12e62}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de encabezado\GeometricUtils">
+      <UniqueIdentifier>{c40290a2-5955-458b-b4ce-12deb78357ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\GeometricUtils">
+      <UniqueIdentifier>{2385a8cb-58a7-470e-b8da-efbc60a7f10d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RendererCore\ShaderProgram.cpp">
@@ -143,6 +149,9 @@
     </ClCompile>
     <ClCompile Include="Source\ProceduralUtils\ProceduralVoxel.cpp">
       <Filter>Archivos de origen\ProceduralUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GeometryUtils\AABB.cpp">
+      <Filter>Archivos de origen\GeometricUtils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -229,6 +238,9 @@
     </ClInclude>
     <ClInclude Include="Source\ProceduralUtils\ProceduralVoxel.h">
       <Filter>Archivos de encabezado\ProceduralUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GeometryUtils\AABB.h">
+      <Filter>Archivos de encabezado\GeometricUtils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

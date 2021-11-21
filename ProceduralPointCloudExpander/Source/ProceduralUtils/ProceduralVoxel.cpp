@@ -1,16 +1,13 @@
 #include "stdafx.h"
 #include "ProceduralVoxel.h"
 
-
-ProceduralVoxel::ProceduralVoxel(PointCloud* pointCloud, AABB* aabb) :pointCloud(pointCloud)
+ProceduralVoxel::ProceduralVoxel(PPCX::PointCloud* pointCloud, AABB* aabb):nube(pointCloud), aabb(aabb)
 {
-	setAABB(aabb);
 }
 
 ProceduralVoxel::~ProceduralVoxel()
 {
 	delete aabb;
-	delete drawAABB;
 }
 
 void ProceduralVoxel::addPoint(unsigned pointIndex)
@@ -18,23 +15,11 @@ void ProceduralVoxel::addPoint(unsigned pointIndex)
 	pointsIndex.push_back(pointIndex);
 }
 
-void ProceduralVoxel::drawAsLines(RenderingShader* shader, const RendEnum::RendShaderTypes shaderType, std::vector<mat4>& matrix)
-{
-	if (wireframe) {
-		if (!drawAABB)
-			drawAABB = new DrawAABB(this->aabb);
-		drawAABB->drawAsLines(shader, shaderType, matrix);
-	}
-}
-
 void ProceduralVoxel::setAABB(AABB* aabb)
 {
 	if (this->aabb)
 		delete this->aabb;
 	this->aabb = aabb;
-	if (drawAABB)
-		delete drawAABB;
-	drawAABB = nullptr;
 }
 
 void ProceduralVoxel::setProcedural(bool proc)
@@ -44,13 +29,13 @@ void ProceduralVoxel::setProcedural(bool proc)
 
 void ProceduralVoxel::computeHeight()
 {
-	std::vector<PointCloud::PointModel>* points = pointCloud->getPoints();
+	std::vector<PointModel> points = nube->getPoints();
 	unsigned size = pointsIndex.size();
 	height = 0;
 	if (size != 0) {
 		for (size_t i = 0; i < size; i++)
 		{
-			height += (*points)[pointsIndex[i]]._point[2];
+			height += points[pointsIndex[i]]._point[2];
 		}
 
 		height /= size;
@@ -62,13 +47,13 @@ void ProceduralVoxel::computeHeight()
 
 void ProceduralVoxel::computeColor()
 {
-	std::vector<PointCloud::PointModel>* points = pointCloud->getPoints();
+	std::vector<PointModel> points = nube->getPoints();
 	unsigned size = pointsIndex.size();
 	color = { 0, 0, 0 };
 	if (size != 0) {
 		for (size_t i = 0; i < size; i++)
 		{
-			color += glm::vec3((*points)[pointsIndex[i]].getRGBVec3());
+			color += glm::vec3(points[pointsIndex[i]].getRGBVec3());
 		}
 
 		color /= size;
@@ -80,28 +65,21 @@ void ProceduralVoxel::computeColor()
 
 void ProceduralVoxel::checkPoints()
 {
-	std::vector<PointCloud::PointModel>* points = pointCloud->getPoints();
+	std::vector<PointModel> points = nube->getPoints();
 	unsigned size = pointsIndex.size();
 	if (size != 0) {
 		for (size_t i = 0; i < size; i++)
 		{
-			if (!isInside((*points)[pointsIndex[i]])) {
+			if (!isInside(points[pointsIndex[i]])) {
 				std::cout << "Outside point" << std::endl;
 			}
 		}
 	}
 }
 
-bool ProceduralVoxel::isInside(PointCloud::PointModel point)
+bool ProceduralVoxel::isInside(PointModel point)
 {
 	return aabb->isInside(point._point);
-}
-
-bool ProceduralVoxel::load(const mat4& modelMatrix)
-{
-	//this->_loaded = true;
-
-	return true;
 }
 
 void ProceduralVoxel::setHeight(float h)

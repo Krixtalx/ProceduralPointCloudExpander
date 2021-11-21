@@ -2,6 +2,7 @@
 #include <GeometryUtils/AABB.h>
 
 #include "Utilities/Point.h"
+#include <RendererCore/pointCloud.h>
 
 namespace PPCX
 {
@@ -11,7 +12,7 @@ namespace PPCX
 class ProceduralVoxel{
 private:
 	AABB* aabb;
-	PPCX::PointCloud* pointCloud;
+	PPCX::PointCloud* nube;
 	std::vector<unsigned> pointsIndex;
 	bool procedural = true;
 

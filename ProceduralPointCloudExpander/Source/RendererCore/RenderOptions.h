@@ -6,16 +6,6 @@
 #define PAG_RENDEROPTIONS_H
 
 namespace PPCX {
-	enum modoDibujado {
-		nubePuntos,
-		wireframe,
-		mallaTriangulos
-	};
-
-	static unsigned numModosDibujo() {
-		return modoDibujado::mallaTriangulos + 1;
-	}
-
 	enum paramShader {
 		posicion,
 		color

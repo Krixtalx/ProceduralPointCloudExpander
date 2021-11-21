@@ -16,7 +16,7 @@ namespace PPCX {
 		GLuint idVBO;
 		GLuint idIBO;
 		std::vector<PointModel> vbo;
-		std::vector<GLuint> ibo;
+
 		std::string shaderProgram;
 		glm::vec3 posicion;
 		AABB aabb;
@@ -35,8 +35,14 @@ namespace PPCX {
 		void nuevoPunto(const PointModel& punto);
 
 		void nuevosPuntos(const std::vector<PointModel>& puntos);
+
+		void actualizarNube();
 		
 		void dibujarModelo(glm::mat4 matrizMVP);
+
+		const std::vector<PointModel>& getPoints();
+
+		unsigned getNumberOfPoints();
 	};
 }
 

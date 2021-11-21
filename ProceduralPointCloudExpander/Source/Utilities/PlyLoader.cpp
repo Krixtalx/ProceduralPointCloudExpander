@@ -100,10 +100,6 @@ PPCX::PointCloud* PlyLoader::cargarModelo(const std::string& _filename)
 		return nullptr;
 	}
 	const auto nube = new PPCX::PointCloud("DefaultSP");
-	nube->nuevoVBO(_points, GL_STATIC_DRAW);
-	std::vector<unsigned> ibo;
-	ibo.resize(_points.size());
-	std::iota(ibo.begin(), ibo.end(), 0);
-	nube->nuevoIBO(ibo, GL_STATIC_DRAW);
+	nube->nuevosPuntos(_points);
 	return nube;
 }

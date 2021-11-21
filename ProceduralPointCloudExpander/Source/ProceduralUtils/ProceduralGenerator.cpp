@@ -1,36 +1,7 @@
 #include "stdafx.h"
 #include "ProceduralGenerator.h"
-#include <omp.h>
 #include "tinynurbs.h"
 #include "Utilities/Image.h"
-
-/**
- * @brief Set the pointCloudScene passed by parameters as the current pointCloudScene of the generator
- * deleting all previous work(if any) and redoing all the process from the start
- * @param pointCloudScene New pointCloudScene
-*/
-void ProceduralGenerator::setCurrentCloudScene(PointCloudScene* pointCloudScene)
-{
-	for (size_t x = 0; x < axisSubdivision[0]; x++)
-	{
-		for (size_t y = 0; y < axisSubdivision[1]; y++)
-		{
-			for (size_t z = 0; z < axisSubdivision[2]; z++)
-			{
-				delete subdivisions[x][y][z];
-			}
-		}
-	}
-
-	this->_pointCloudScene = pointCloudScene;
-	_pointCloudScene->_sceneGroup->addComponent(pointClouds[1]);
-	calculateCloudDensity();
-
-	readParameters("proceduralParameters.ini");
-	createVoxelGrid();
-	subdivideCloud();
-	test();
-}
 
 ProceduralGenerator::~ProceduralGenerator()
 {
@@ -51,15 +22,11 @@ ProceduralGenerator::~ProceduralGenerator()
 */
 void ProceduralGenerator::calculateCloudDensity()
 {
-	if (_pointCloudScene) {
-		int numberPoints = _pointCloudScene->_pointCloud->getNumberOfPoints();
-		glm::vec3 AABBSize = _pointCloudScene->getAABB().size();
-		cloudDensity = numberPoints / (AABBSize.x * AABBSize.y * AABBSize.z);
-		std::cout << "Cloud density: " << cloudDensity << std::endl;
-	}
-	else {
-		std::cerr << "[ProceduralGenerator]->Nullptr in _pointCloudScene" << std::endl;
-	}
+	/*int numberPoints = _pointCloudScene->_pointCloud->getNumberOfPoints();
+	glm::vec3 AABBSize = _pointCloudScene->getAABB().size();
+	cloudDensity = numberPoints / (AABBSize.x * AABBSize.y * AABBSize.z);
+	std::cout << "Cloud density: " << cloudDensity << std::endl;*/
+
 }
 
 /**
@@ -83,19 +50,17 @@ void ProceduralGenerator::readParameters(const std::string& path)
 				std::string parameter = line.substr(0, pos);
 				std::string value = line.substr(++pos, line.length());
 				if (parameter == "gsd")			   gsd = stof(value);
-				else if (parameter == "expansion") expansion = stoi(value);
 			}
 		}
 		parametersFile.close();
-		glm::vec3 size = _pointCloudScene->_pointCloud->getAABB().size();
+		glm::vec3 size = aabb.size();
 		for (size_t i = 0; i < 2; i++)
 		{
 			axisSubdivision[i] = round(size[i] / gsd);
-			axisSubdivisionOriginal[i] = axisSubdivision[i];
 		}
 		//axisSubdivisionOriginal[0] = axisSubdivision[0] = 1000;
 		//axisSubdivisionOriginal[1] = axisSubdivision[1] = 500;
-		axisSubdivisionOriginal[2] = axisSubdivision[2] = 1;
+		axisSubdivision[2] = 1;
 	}
 }
 
@@ -139,18 +104,14 @@ void ProceduralGenerator::meanHeight(unsigned x, unsigned y)
 */
 void ProceduralGenerator::createVoxelGrid()
 {
-	glm::vec3 size = _pointCloudScene->_pointCloud->getAABB().size();
-	glm::vec3 minPoint = _pointCloudScene->_pointCloud->getAABB().min();
+	glm::vec3 size = aabb.size();
+	glm::vec3 minPoint = aabb.min();
 	float stride[3];
 
 	for (unsigned i = 0; i < 3; i++)
 	{
 		stride[i] = size[i] / axisSubdivision[i];
-		axisSubdivision[i] *= expansion;
-		minPoint[i] *= expansion;
 	}
-	axisSubdivision[2] /= expansion;
-	minPoint[2] /= expansion;
 
 	subdivisions.resize(axisSubdivision[0]);
 	for (size_t x = 0; x < axisSubdivision[0]; x++)
@@ -171,9 +132,8 @@ void ProceduralGenerator::createVoxelGrid()
 				point[1] += stride[1];
 				point[2] += stride[2];
 				newAABB->update(point);
-				ProceduralVoxel* procVoxel = new ProceduralVoxel(_pointCloudScene->_pointCloud, newAABB);
+				ProceduralVoxel* procVoxel = new ProceduralVoxel(nube, newAABB);
 				subdivisions[x][y][z] = procVoxel;
-				//_pointCloudScene->_sceneGroup->addComponent(procVoxel);
 			}
 		}
 	}
@@ -187,48 +147,48 @@ void ProceduralGenerator::subdivideCloud()
 	unsigned startPoint[3];
 	for (size_t i = 0; i < 3; i++)
 	{
-		startPoint[i] = axisSubdivision[i] / 2 - axisSubdivisionOriginal[i] / 2;
+		startPoint[i] = axisSubdivision[i] / 2;
 	}
 
-	unsigned pointCloudSize = this->_pointCloudScene->_pointCloud->getNumberOfPoints();
-	std::vector<PointModel>* points = _pointCloudScene->_pointCloud->getPoints();
+	unsigned pointCloudSize = nube->getNumberOfPoints();
+	std::vector<PointModel> points = nube->getPoints();
 
-	glm::vec3 size = _pointCloudScene->_pointCloud->getAABB().size();
-	glm::vec3 minPoint = _pointCloudScene->_pointCloud->getAABB().min();
+	glm::vec3 size = aabb.size();
+	glm::vec3 minPoint = aabb.min();
 	float stride[3];
 
 	for (unsigned i = 0; i < 3; i++)
 	{
-		stride[i] = size[i] / axisSubdivisionOriginal[i];
+		stride[i] = size[i];
 	}
 
 	unsigned x, y, z;
 	glm::vec3 relativePoint;
 	unsigned xOffset, yOffset, zOffset;
-	xOffset = (axisSubdivision[0] - axisSubdivisionOriginal[0]) / 2;
-	yOffset = (axisSubdivision[1] - axisSubdivisionOriginal[1]) / 2;
-	zOffset = (axisSubdivision[2] - axisSubdivisionOriginal[2]) / 2;
-	for (int i = 0; i < points->size(); i++)
+	xOffset = axisSubdivision[0] / 2;
+	yOffset = axisSubdivision[1] / 2;
+	zOffset = axisSubdivision[2] / 2;
+	for (int i = 0; i < points.size(); i++)
 	{
-		relativePoint = (*points)[i]._point - minPoint;
+		relativePoint = points[i]._point - minPoint;
 		x = floor(relativePoint[0] / stride[0]) + xOffset;
 		y = floor(relativePoint[1] / stride[1]) + yOffset;
 		z = floor(relativePoint[2] / stride[2]) + zOffset;
-		if (x == axisSubdivisionOriginal[0] + xOffset)
+		if (x == axisSubdivision[0] + xOffset)
 			x--;
-		if (y == axisSubdivisionOriginal[1] + yOffset)
+		if (y == axisSubdivision[1] + yOffset)
 			y--;
-		if (z == axisSubdivisionOriginal[2] + zOffset)
+		if (z == axisSubdivision[2] + zOffset)
 			z--;
 		subdivisions[x][y][z]->addPoint(i);
 	}
 
 #pragma omp parallel for collapse(3)
-	for (int x = startPoint[0]; x < startPoint[0] + axisSubdivisionOriginal[0]; x++)
+	for (int x = startPoint[0]; x < startPoint[0] + axisSubdivision[0]; x++)
 	{
-		for (int y = startPoint[1]; y < startPoint[1] + axisSubdivisionOriginal[1]; y++)
+		for (int y = startPoint[1]; y < startPoint[1] + axisSubdivision[1]; y++)
 		{
-			for (int z = startPoint[2]; z < startPoint[2] + axisSubdivisionOriginal[2]; z++)
+			for (int z = startPoint[2]; z < startPoint[2] + axisSubdivision[2]; z++)
 			{
 				subdivisions[x][y][z]->setProcedural(false);
 				subdivisions[x][y][z]->computeHeight();
@@ -247,8 +207,8 @@ void ProceduralGenerator::subdivideCloud()
 */
 void ProceduralGenerator::saveHeightMap()
 {
-	float minPointZ = _pointCloudScene->_pointCloud->getAABB().min()[2];
-	float relativeMaxPointZ = _pointCloudScene->_pointCloud->getAABB().max()[2] - minPointZ;
+	float minPointZ = aabb.min()[2];
+	float relativeMaxPointZ = aabb.max()[2] - minPointZ;
 	float relativeHeightValue;
 	float height;
 	std::vector<unsigned char>* pixels = new std::vector<unsigned char>();
@@ -280,8 +240,8 @@ void ProceduralGenerator::saveHeightMap()
 */
 void ProceduralGenerator::saveTextureMap()
 {
-	float minPointZ = _pointCloudScene->_pointCloud->getAABB().min()[2];
-	float relativeMaxPointZ = _pointCloudScene->_pointCloud->getAABB().max()[2] - minPointZ;
+	float minPointZ = aabb.min()[2];
+	float relativeMaxPointZ = aabb.max()[2] - minPointZ;
 	float relativeHeightValue;
 	glm::vec3 color;
 	std::vector<unsigned char>* pixels = new std::vector<unsigned char>();
@@ -326,8 +286,8 @@ void ProceduralGenerator::test()
 
 	srf.control_points = { axisSubdivision[0], axisSubdivision[1], vec };
 	if (tinynurbs::surfaceIsValid(srf)) {
-		glm::vec3 minPoint = pointClouds[0]->getAABB().min();
-		glm::vec3 maxPoint = pointClouds[0]->getAABB().max();
+		glm::vec3 minPoint = aabb.min();
+		glm::vec3 maxPoint = aabb.max();
 		PointModel point;
 #pragma omp parallel for private(point)
 		for (int x = 0; x < axisSubdivision[0] * 5; x++)
@@ -338,11 +298,11 @@ void ProceduralGenerator::test()
 				point.saveRGB(subdivisions[floor(x / 5)][floor(y / 5)][0]->getColor());
 
 #pragma omp critical
-				pointClouds[1]->_points.push_back(point);
+				nube->nuevoPunto(point);
 
 			}
 		}
 
-		this->pointClouds[1]->setVAOData();
+		nube->actualizarNube();
 	}
 }

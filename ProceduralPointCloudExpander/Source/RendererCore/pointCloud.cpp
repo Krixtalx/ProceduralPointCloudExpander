@@ -26,8 +26,7 @@ PPCX::PointCloud::PointCloud(std::string shaderProgram, glm::vec3 pos) : idVBO(U
  * Constructor copia. Copia el numVertices y el shaderProgram y realiza una nueva instanciacion de los vbos e ibos
  * @param orig
  */
-PPCX::PointCloud::PointCloud(PointCloud& orig) : vbo(orig.vbo),
-                                                 ibo(orig.ibo), shaderProgram(orig.shaderProgram)
+PPCX::PointCloud::PointCloud(PointCloud& orig) : vbo(orig.vbo), shaderProgram(orig.shaderProgram)
 {
 	//Creamos nuestro VAO
 	glGenVertexArrays(1, &idVAO);
@@ -35,8 +34,6 @@ PPCX::PointCloud::PointCloud(PointCloud& orig) : vbo(orig.vbo),
 
 
 	nuevoVBO(vbo, GL_STATIC_DRAW);
-
-	nuevoIBO(ibo, GL_STATIC_DRAW);
 }
 
 /**
@@ -62,6 +59,17 @@ void PPCX::PointCloud::nuevosPuntos(const std::vector<PointModel>& puntos)
 	vbo.resize(vbo.size() + puntos.size());
 	std::copy(puntos.begin(), puntos.end(), vbo.begin() + vbo.size());
 }
+
+void PPCX::PointCloud::actualizarNube()
+{
+	nuevoVBO(vbo, GL_STATIC_DRAW);
+	std::vector<unsigned> ibo;
+	ibo.resize(vbo.size());
+	std::iota(ibo.begin(), ibo.end(), 0);
+	nuevoIBO(ibo, GL_STATIC_DRAW);
+}
+
+
 
 /**
  * Instancia un VBO en el contexto OpenGL y lo guarda en vbos
@@ -102,7 +110,7 @@ void PPCX::PointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct)
 	{
 		glDeleteBuffers(1, &idIBO);
 	}
-	ibo = datos;
+
 	glBindVertexArray(idVAO);
 	glGenBuffers(1, &idIBO);
 	glBindBuffer(GL_ARRAY_BUFFER, idIBO);
@@ -123,10 +131,20 @@ void PPCX::PointCloud::dibujarModelo(glm::mat4 matrizMVP)
 		glBindVertexArray(idVAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-		glDrawElements(GL_TRIANGLES, ibo.size(), GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, vbo.size(), GL_UNSIGNED_INT, nullptr); //Al ser una nube de puntos vbo.size = ibo.size
 	}
 	catch (std::runtime_error& e)
 	{
 		throw;
 	}
+}
+
+const std::vector<PointModel>& PPCX::PointCloud::getPoints()
+{
+	return vbo;
+}
+
+unsigned PPCX::PointCloud::getNumberOfPoints()
+{
+	return vbo.size();
 }

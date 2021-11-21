@@ -41,6 +41,8 @@
 #include <time.h>
 #include <thread>
 
+#include <omp.h>
+
 // [Standard libraries: data structures]
 
 #include <map>
