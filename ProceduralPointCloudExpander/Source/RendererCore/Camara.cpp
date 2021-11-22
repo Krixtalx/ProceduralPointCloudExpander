@@ -11,10 +11,10 @@
  * Constructor por defecto. Inicializa la cámara con unos parametros predeterminados
  */
 PPCX::Camara::Camara() : posicion(0, 0, 2.5f), puntoMira(0, 0, 0),
-                        up(0, 1, 0), zNear(0.1f), zFar(1000), alto(PPCX::altoVentanaPorDefecto),
+                        up(0, 1, 0), zNear(1.0f), zFar(100), alto(PPCX::altoVentanaPorDefecto),
                         ancho(PPCX::anchoVentanaPorDefecto) {
 
-	fovX = glm::radians(80.0);
+	fovX = glm::radians(60.0);
 	calcularFovY();
 	calcularEjes();
 }

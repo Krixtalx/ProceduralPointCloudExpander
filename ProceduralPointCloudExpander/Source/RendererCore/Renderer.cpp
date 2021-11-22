@@ -60,7 +60,7 @@ void PPCX::Renderer::inicializaOpenGL() {
 	activarUtilidadGL(GL_DEPTH_TEST);
 	activarUtilidadGL(GL_MULTISAMPLE);
 	activarUtilidadGL(GL_DEBUG_OUTPUT);
-	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+	glPointSize(1.0f);
 	actualizarColorFondo();
 }
 
@@ -140,7 +140,7 @@ void PPCX::Renderer::limpiarGL(GLbitfield mascara) {
 
 void PPCX::Renderer::cargaModelo(const std::string& path)
 {
-	modelos.push_back(PlyLoader::cargarModelo(path));
+	modelos.push_back(PlyLoader::loadPointCloud(path));
 }
 
 /**

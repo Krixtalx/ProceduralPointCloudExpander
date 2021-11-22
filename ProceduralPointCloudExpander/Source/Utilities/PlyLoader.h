@@ -3,8 +3,10 @@
 
 class PlyLoader
 {
-private: 
-	static std::string PLY_EXTENSION;
+private:
+	static bool writeToBinary(const std::string& filename, PPCX::PointCloud* pointCloud);
+	static PPCX::PointCloud* readFromBinary(const std::string& filename);
+	static PPCX::PointCloud* readFromPly(const std::string& _filename);
 public:
-	static PPCX::PointCloud* cargarModelo(const std::string& _filename);
+	static PPCX::PointCloud* loadPointCloud(const std::string& filename);
 };
