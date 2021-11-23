@@ -4,20 +4,13 @@
 #include "Utilities/Point.h"
 #include <RendererCore/pointCloud.h>
 
-namespace PPCX
-{
-	class PointCloud;
-}
-
-class ProceduralVoxel{
+class ProceduralVoxel {
 private:
 	AABB* aabb;
 	PPCX::PointCloud* nube;
 	std::vector<unsigned> pointsIndex;
-	bool procedural = true;
-
-	float height;
-	glm::vec3 color;
+	float height = FLT_MAX;
+	glm::vec3 color = { 0, 0, 0 };
 
 public:
 
@@ -26,20 +19,16 @@ public:
 	~ProceduralVoxel();
 
 	void addPoint(unsigned pointIndex);
-	
-	void setAABB(AABB* aabb);
 
-	void setProcedural(bool proc);
+	void setAABB(AABB* aabb);
 
 	void computeHeight();
 
 	void computeColor();
-	
+
 	void checkPoints();
 
 	bool isInside(PointModel point);
-
-	bool load(const glm::mat4& modelMatrix);
 
 	void setHeight(float h);
 

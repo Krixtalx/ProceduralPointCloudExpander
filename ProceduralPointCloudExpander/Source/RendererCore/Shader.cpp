@@ -89,7 +89,8 @@ void PPCX::Shader::compruebaErroresShader() const {
  * Realiza la compilación del shader y después lanza la comprobación de errores
  * @throw runtime_error en caso de que haya algún error de compilación
  */
-void PPCX::Shader::compilaShader() {
+void PPCX::Shader::compilaShader() const
+{
 	glCompileShader(idShader);
 	try {
 		compruebaErroresShader();

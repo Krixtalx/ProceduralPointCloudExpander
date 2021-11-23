@@ -6,6 +6,7 @@
 *.obj
 *.ply
 *.xyz
+*.ppcxbin
 
 # Prerequisites
 *.d
@@ -45,4 +46,3 @@
 *.tlog
 *.ipch
 *.command
-ProceduralPointCloudExpander/NubeDensa.ppcxbin

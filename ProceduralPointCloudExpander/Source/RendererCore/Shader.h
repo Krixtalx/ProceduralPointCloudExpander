@@ -8,15 +8,14 @@
 namespace PPCX {
 	class Shader {
 		friend class ShaderManager;
-
-	private:
+		
 		std::string nombreShader;
 		GLuint idShader{};
 		GLenum tipoShader{};
 
 		void cargaShader(const std::string &ruta) const;
 
-		void compilaShader();
+		void compilaShader() const;
 
 		void compruebaErroresShader() const;
 

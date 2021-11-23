@@ -8,7 +8,7 @@
 #include "Utilities/PlyLoader.h"
 
 
-PPCX::Renderer *PPCX::Renderer::instancia = nullptr;
+PPCX::Renderer* PPCX::Renderer::instancia = nullptr;
 
 /**
  * Constructor por defecto
@@ -20,30 +20,27 @@ PPCX::Renderer::Renderer() {
 		PPCX::ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
 		PPCX::ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
 		PPCX::ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
-	} catch (std::runtime_error &e) {
+	} catch (std::runtime_error& e) {
 		throw;
 	}
-	//modelos.push_back(PlyLoader::cargarModelo("NubeDensa"));
+
 }
 
 /**
  * Destructor
  */
-PPCX::Renderer::~Renderer() {
-	for (const auto modelo: modelos) {
-		delete modelo;
-	}
-}
+PPCX::Renderer::~Renderer() {}
+
 
 /**
  * Consulta del objeto único de la clase
  * @return Puntero al Renderer
  */
-PPCX::Renderer *PPCX::Renderer::getInstancia() {
+PPCX::Renderer* PPCX::Renderer::getInstancia() {
 	if (!instancia) {
 		try {
 			instancia = new Renderer;
-		} catch (std::runtime_error &e) {
+		} catch (std::runtime_error& e) {
 			throw;
 		}
 	}
@@ -56,10 +53,10 @@ PPCX::Renderer *PPCX::Renderer::getInstancia() {
  * Activa el ZBuffer.
  * Activa el Antialiasing MultiSampling (MSAA)
  */
-void PPCX::Renderer::inicializaOpenGL() {
-	activarUtilidadGL(GL_DEPTH_TEST);
-	activarUtilidadGL(GL_MULTISAMPLE);
-	activarUtilidadGL(GL_DEBUG_OUTPUT);
+void PPCX::Renderer::inicializaOpenGL() const {
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_MULTISAMPLE);
+	glEnable(GL_DEBUG_OUTPUT);
 	glPointSize(1.0f);
 	actualizarColorFondo();
 }
@@ -67,30 +64,11 @@ void PPCX::Renderer::inicializaOpenGL() {
 /**
  * Método para hacer el refresco de la escena
  */
-void PPCX::Renderer::refrescar() const {
+void PPCX::Renderer::refrescar(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	const glm::mat4 matrizMVP = camara.matrizMVP();
-	for (const auto modelo: modelos) {
-		if (modelo)
-			try {
-				modelo->dibujarModelo(matrizMVP);
-			} catch (std::runtime_error &e) {
-				throw;
-			}
-	}
-}
-
-/**
- * Método para cambiar el colorSeleccionado de fondo de la escena
- * @param red
- * @param green
- * @param blue
- * @param alpha
- */
-void PPCX::Renderer::setColorFondo(glm::vec3 color) {
-	this->colorFondo = color;
-	actualizarColorFondo();
+	procGenerator.drawClouds(matrizMVP);
 }
 
 /**
@@ -105,25 +83,29 @@ void PPCX::Renderer::actualizarColorFondo() const {
  * @param propiedad a obtener
  * @return GLubyte con la propiedad requerida
  */
-const GLubyte *PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
+const GLubyte* PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
 	return glGetString(propiedad);
 }
 
-/**
- * Activa la utilidad de OpenGL indicada
- * @param utility
- */
-void PPCX::Renderer::activarUtilidadGL(GLenum utility) {
-	glEnable(utility);
+void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene) {
+	PointCloud* pCloud = PlyLoader::loadPointCloud(path);
+	if (pCloud)
+		procGenerator.newPointCloud(pCloud, newScene);
+	else
+		std::cerr << "Point cloud load has failed" << std::endl;
 }
 
 /**
- * Cambia el tamaño del viewport al indicado
- * @param x punto de referencia
- * @param y punto de referencia
- * @param width ancho de la ventana
- * @param height alto de la ventana
+ * ------------------- Getters y Setters ------------------------------------
  */
+
+ /**
+  * Cambia el tamaño del viewport al indicado
+  * @param x punto de referencia
+  * @param y punto de referencia
+  * @param width ancho de la ventana
+  * @param height alto de la ventana
+  */
 void PPCX::Renderer::setViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
 	glViewport(x, y, width, height);
 	camara.setAlto(height);
@@ -131,28 +113,26 @@ void PPCX::Renderer::setViewport(GLint x, GLint y, GLsizei width, GLsizei height
 }
 
 /**
- * Limpia el buffer OpenGL indicado en la mascara
- * @param mascara
+ * Método para cambiar el colorSeleccionado de fondo de la escena
  */
-void PPCX::Renderer::limpiarGL(GLbitfield mascara) {
-	glClear(mascara);
+void PPCX::Renderer::setColorFondo(glm::vec3 color) {
+	this->colorFondo = color;
+	actualizarColorFondo();
 }
 
-void PPCX::Renderer::cargaModelo(const std::string& path)
-{
-	modelos.push_back(PlyLoader::loadPointCloud(path));
-}
-
-/**
- * ------------------- Getters y Setters ------------------------------------
- */
-
-PPCX::Camara &PPCX::Renderer::getCamara() {
+PPCX::Camara& PPCX::Renderer::getCamara() {
 	return camara;
 }
 
-glm::vec3& PPCX::Renderer::getColorFondo()
-{
+glm::vec3& PPCX::Renderer::getColorFondo() {
 	return colorFondo;
 }
 
+float PPCX::Renderer::getPointSize() const {
+	return pointSize;
+}
+
+void PPCX::Renderer::setPointSize(float pointS) {
+	pointSize = pointS;
+	glPointSize(pointSize);
+}

@@ -7,6 +7,7 @@
 
 #include "PointCloud.h"
 #include "Camara.h"
+#include "ProceduralUtils/ProceduralGenerator.h"
 
 namespace PPCX {
 	/**
@@ -20,43 +21,43 @@ namespace PPCX {
 
 	class Renderer {
 	private:
-		static Renderer *instancia; ///< Puntero al único objeto de la clase
+		static Renderer* instancia; ///< Puntero al único objeto de la clase
 		Renderer();
 
 		glm::vec3 colorFondo = { 0.2, 0.2, 0.2 };
+		float pointSize = 1.0f;
 
 		bool triangulo = false, tetraedro = false;
-		std::vector<PPCX::PointCloud *> modelos;
+		ProceduralGenerator procGenerator;
 
 		PPCX::Camara camara;
 
 	public:
 		virtual ~Renderer();
 
-		static Renderer *getInstancia();
+		static Renderer* getInstancia();
 
-		void inicializaOpenGL();
+		void inicializaOpenGL() const;
 
-		void refrescar() const;
-
-		void setColorFondo(glm::vec3 color);
+		void refrescar();
 
 		void actualizarColorFondo() const;
 
-		const GLubyte *getPropiedadGL(GLenum propiedad);
+		void cargaModelo(const std::string& path, const bool& newScene);
 
-		void activarUtilidadGL(GLenum utility);
+		void setColorFondo(glm::vec3 color);
+
+		const GLubyte* getPropiedadGL(GLenum propiedad);
 
 		void setViewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
-		void limpiarGL(GLbitfield mascara);
-
-		void cargaModelo(const std::string& path);
-
-		Camara &getCamara();
+		Camara& getCamara();
 
 		glm::vec3& getColorFondo();
 
+		float getPointSize() const;
+
+		void setPointSize(float pointS);
 	};
 }
 

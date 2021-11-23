@@ -10,13 +10,11 @@
 
 GUI::GUI() :
 	_showAboutUs(false), _showControls(false), _showFileDialog(false),
-	_showPointCloudDialog(false), _showRenderingSettings(false)
-{
+	_showPointCloudDialog(false), _showRenderingSettings(false) {
 
 }
 
-void GUI::createMenu()
-{
+void GUI::createMenu() {
 	const ImGuiIO& io = ImGui::GetIO();
 
 	if (_showRenderingSettings)		showRenderingSettings();
@@ -25,24 +23,20 @@ void GUI::createMenu()
 	if (_showFileDialog)			showFileDialog();
 	if (_showPointCloudDialog)		showPointCloudDialog();
 
-	if (ImGui::BeginMainMenuBar())
-	{
-		if (ImGui::BeginMenu(ICON_FA_COG "Settings"))
-		{
+	if (ImGui::BeginMainMenuBar()) {
+		if (ImGui::BeginMenu(ICON_FA_COG "Settings")) {
 			ImGui::MenuItem(ICON_FA_CUBE "Rendering", nullptr, &_showRenderingSettings);
 			ImGui::MenuItem(ICON_FA_SAVE "Open Point Cloud", nullptr, &_showFileDialog);
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu(ICON_FA_QUESTION_CIRCLE "Help"))
-		{
+		if (ImGui::BeginMenu(ICON_FA_QUESTION_CIRCLE "Help")) {
 			ImGui::MenuItem(ICON_FA_INFO "About the project", nullptr, &_showAboutUs);
 			ImGui::MenuItem(ICON_FA_GAMEPAD "Controls", nullptr, &_showControls);
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu(ICON_FA_SITEMAP "Procedural Options"))
-		{
+		if (ImGui::BeginMenu(ICON_FA_SITEMAP "Procedural Options")) {
 			ImGui::MenuItem(ICON_FA_INFO "About the project", nullptr, &_showAboutUs);
 			ImGui::EndMenu();
 		}
@@ -57,19 +51,15 @@ void GUI::createMenu()
 	}
 }
 
-void GUI::leaveSpace(const unsigned numSlots)
-{
-	for (int i = 0; i < numSlots; ++i)
-	{
+void GUI::leaveSpace(const unsigned numSlots) {
+	for (int i = 0; i < numSlots; ++i) {
 		ImGui::Spacing();
 	}
 }
 
-void GUI::renderHelpMarker(const char* message)
-{
+void GUI::renderHelpMarker(const char* message) {
 	ImGui::TextDisabled(ICON_FA_QUESTION);
-	if (ImGui::IsItemHovered())
-	{
+	if (ImGui::IsItemHovered()) {
 		ImGui::BeginTooltip();
 		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 		ImGui::TextUnformatted(message);
@@ -78,20 +68,16 @@ void GUI::renderHelpMarker(const char* message)
 	}
 }
 
-void GUI::showAboutUsWindow()
-{
-	if (ImGui::Begin("About the project", &_showAboutUs))
-	{
+void GUI::showAboutUsWindow() {
+	if (ImGui::Begin("About the project", &_showAboutUs)) {
 		ImGui::Text("This code belongs to a research project from University of Jaen (GGGJ group).");
 	}
 
 	ImGui::End();
 }
 
-void GUI::showControls()
-{
-	if (ImGui::Begin("Scene controls", &_showControls))
-	{
+void GUI::showControls() {
+	if (ImGui::Begin("Scene controls", &_showControls)) {
 		ImGui::Columns(2, "ControlColumns"); // 4-ways, with border
 		ImGui::Separator();
 		ImGui::Text("Movement"); ImGui::NextColumn();
@@ -102,8 +88,7 @@ void GUI::showControls()
 		const char* movement[] = { "Orbit (XZ)", "Undo Orbit (XZ)", "Orbit (Y)", "Undo Orbit (Y)", "Dolly", "Truck", "Boom", "Crane", "Reset Camera", "Take Screenshot", "Continue Animation", "Zoom +/-", "Pan", "Tilt" };
 		const char* controls[] = { "X", "Ctrl + X", "Y", "Ctrl + Y", "W, S", "D, A", "Up arrow", "Down arrow", "R", "K", "I", "Scroll wheel", "Move mouse horizontally(hold button)", "Move mouse vertically (hold button)" };
 
-		for (int i = 0; i < NUM_MOVEMENTS; i++)
-		{
+		for (int i = 0; i < NUM_MOVEMENTS; i++) {
 			ImGui::Text(movement[i]); ImGui::NextColumn();
 			ImGui::Text(controls[i]); ImGui::NextColumn();
 		}
@@ -116,16 +101,13 @@ void GUI::showControls()
 	ImGui::End();
 }
 
-void GUI::showFileDialog()
-{
+void GUI::showFileDialog() {
 	ImGuiFileDialog::Instance()->OpenDialog("Choose Point Cloud", "Choose File", ".ply", ".");
 
 	// display
-	if (ImGuiFileDialog::Instance()->Display("Choose Point Cloud"))
-	{
+	if (ImGuiFileDialog::Instance()->Display("Choose Point Cloud")) {
 		// action if OK
-		if (ImGuiFileDialog::Instance()->IsOk())
-		{
+		if (ImGuiFileDialog::Instance()->IsOk()) {
 			const std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
 			_pointCloudPath = filePathName.substr(0, filePathName.find_last_of('.'));
 			_showPointCloudDialog = true;
@@ -137,11 +119,9 @@ void GUI::showFileDialog()
 	}
 }
 
-void GUI::showPointCloudDialog()
-{
-	if (ImGui::Begin("Open Point Cloud Dialog", &_showPointCloudDialog))
-	{
-		static bool aggregate;
+void GUI::showPointCloudDialog() {
+	if (ImGui::Begin("Open Point Cloud Dialog", &_showPointCloudDialog)) {
+		static bool newScene;
 		this->leaveSpace(1);
 
 		ImGui::Text("Open point cloud");
@@ -149,7 +129,7 @@ void GUI::showPointCloudDialog()
 
 		this->leaveSpace(1);
 
-		ImGui::Checkbox("Aggregate", &aggregate);
+		ImGui::Checkbox("New Scene", &newScene);
 
 		ImGui::PushID(0);
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(1 / 7.0f, 0.6f, 0.6f));
@@ -158,9 +138,8 @@ void GUI::showPointCloudDialog()
 
 		this->leaveSpace(2);
 
-		if (ImGui::Button("Open Point Cloud"))
-		{
-			PPCX::Renderer::getInstancia()->cargaModelo(_pointCloudPath);
+		if (ImGui::Button("Open Point Cloud")) {
+			PPCX::Renderer::getInstancia()->cargaModelo(_pointCloudPath, newScene);
 			_showPointCloudDialog = false;
 		}
 
@@ -171,31 +150,30 @@ void GUI::showPointCloudDialog()
 	ImGui::End();
 }
 
-void GUI::showRenderingSettings()
-{
+void GUI::showRenderingSettings() {
 	if (ImGui::Begin("Rendering Settings", &_showRenderingSettings)) {
 		glm::vec3 color = PPCX::Renderer::getInstancia()->getColorFondo();
 		ImGui::ColorEdit3("Background color", &color[0]);
 		PPCX::Renderer::getInstancia()->setColorFondo(color);
 
+		
+
 		this->leaveSpace(3);
 
-		if (ImGui::BeginTabBar("LiDARTabBar"))
-		{
-			if (ImGui::BeginTabItem("General settings"))
-			{
+		if (ImGui::BeginTabBar("LiDARTabBar")) {
+			if (ImGui::BeginTabItem("General settings")) {
 				ImGui::EndTabItem();
 			}
 
-			if (ImGui::BeginTabItem("Point Cloud"))
-			{
+			if (ImGui::BeginTabItem("Point Cloud")) {
 				this->leaveSpace(1);
-
+				float value = PPCX::Renderer::getInstancia()->getPointSize();
+				ImGui::SliderFloat("Point size", &value, 0.1f, 10.0f);
+				PPCX::Renderer::getInstancia()->setPointSize(value);
 				ImGui::EndTabItem();
 			}
 
-			if (ImGui::BeginTabItem("Wireframe"))
-			{
+			if (ImGui::BeginTabItem("Wireframe")) {
 				this->leaveSpace(1);
 
 				ImGui::EndTabItem();
@@ -208,8 +186,7 @@ void GUI::showRenderingSettings()
 }
 
 
-GUI::~GUI()
-{
+GUI::~GUI() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
@@ -217,8 +194,7 @@ GUI::~GUI()
 
 /// [Public methods]
 
-void GUI::initialize(GLFWwindow* window, const int openGLMinorVersion)
-{
+void GUI::initialize(GLFWwindow* window, const int openGLMinorVersion) {
 	const std::string openGLVersion = "#version 4" + std::to_string(openGLMinorVersion) + "0 core";
 
 	IMGUI_CHECKVERSION();
@@ -231,8 +207,7 @@ void GUI::initialize(GLFWwindow* window, const int openGLMinorVersion)
 	ImGui_ImplOpenGL3_Init(openGLVersion.c_str());
 }
 
-void GUI::render()
-{
+void GUI::render() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -241,23 +216,21 @@ void GUI::render()
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	
+
 }
 
 // ---------------- IMGUI ------------------
 
-void GUI::loadImGUIStyle()
-{
+void GUI::loadImGUIStyle() {
 	ImGui::StyleColorsDark();
 
 	this->loadFonts();
 }
 
-void GUI::loadFonts()
-{
+void GUI::loadFonts() {
 	ImFontConfig cfg;
 	ImGuiIO& io = ImGui::GetIO();
-	
+
 	std::copy_n("Lato", 5, cfg.Name);
 	io.Fonts->AddFontFromMemoryCompressedBase85TTF(lato_compressed_data_base85, 15.0f, &cfg);
 

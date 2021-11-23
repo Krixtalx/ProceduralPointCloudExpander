@@ -26,6 +26,8 @@ namespace PPCX {
 		void nuevoIBO(std::vector<GLuint> datos, GLenum freqAct);
 
 	public:
+		PointCloud(std::string shaderProgram, const glm::vec3& pos = { 0, 0, 0 });
+
 		PointCloud(std::string shaderProgram, const std::vector<PointModel>& puntos, const AABB& aabb, const glm::vec3& pos = {0, 0, 0});
 
 		PointCloud(PointCloud &orig);
@@ -38,13 +40,15 @@ namespace PPCX {
 
 		void actualizarNube();
 		
-		void dibujarModelo(glm::mat4 matrizMVP);
+		void dibujarModelo(glm::mat4 matrizMVP) const;
 
-		const std::vector<PointModel>& getPoints();
+		std::vector<PointModel>& getPoints();
 
-		unsigned getNumberOfPoints();
+		unsigned getNumberOfPoints() const;
 
 		const AABB& getAABB();
+
+		float getDensity() const;
 
 	};
 }

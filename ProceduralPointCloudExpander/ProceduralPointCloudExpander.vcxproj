@@ -123,6 +123,7 @@
       <ShowIncludes>true</ShowIncludes>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <TranslateIncludes>true</TranslateIncludes>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,6 +148,7 @@
       <TranslateIncludes>true</TranslateIncludes>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

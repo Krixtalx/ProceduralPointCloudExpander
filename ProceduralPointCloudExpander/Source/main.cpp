@@ -33,8 +33,7 @@ void callbackRefrescoVentana(GLFWwindow* ventana) {
 	try {
 		PPCX::Renderer::getInstancia()->refrescar();
 		GUI::getInstance()->render();
-	}
-	catch (std::runtime_error& e) {
+	} catch (std::runtime_error& e) {
 		std::cerr << e.what() << std::endl;
 	}
 	glfwSwapBuffers(ventana);
@@ -52,44 +51,31 @@ void callbackFramebufferSize(GLFWwindow* window, int width, int height) {
 void callbackTecla(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
-	}
-	else if (key == GLFW_KEY_W && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_W && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().truck(-1.0f * deltaTime);
-	}
-	else if (key == GLFW_KEY_S && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_S && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().truck(1.0f * deltaTime);
-	}
-	else if (key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().dolly(-1.0f * deltaTime);
-	}
-	else if (key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().dolly(1.0f * deltaTime);
-	}
-	else if (key == GLFW_KEY_Z && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_Z && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().boom(1.0f * deltaTime);
-	}
-	else if (key == GLFW_KEY_X && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_X && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().crane(1.0f * deltaTime);
-	}
-	else if (key == GLFW_KEY_I && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_I && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().zoom(-4 * deltaTime);
-	}
-	else if (key == GLFW_KEY_O && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_O && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().zoom(4 * deltaTime);
-	}
-	else if (key == GLFW_KEY_Q && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_Q && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().orbitX(50 * deltaTime);
-	}
-	else if (key == GLFW_KEY_E && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_E && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().orbitX(-50 * deltaTime);
-	}
-	else if (key == GLFW_KEY_T && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_T && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().orbitY(50 * deltaTime);
-	}
-	else if (key == GLFW_KEY_G && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_G && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().orbitY(-50 * deltaTime);
-	}
-	else if (key == GLFW_KEY_R && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+	} else if (key == GLFW_KEY_R && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().reset();
 	}
 
@@ -107,8 +93,7 @@ void callbackBotonRaton(GLFWwindow* window, int button, int action, int mods) {
 			botonDerechoPulsado = true;
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
-	}
-	else if (action == GLFW_RELEASE) {
+	} else if (action == GLFW_RELEASE) {
 		if (button == 1) {
 			botonDerechoPulsado = false;
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -145,7 +130,7 @@ int main() {
 	// - Tamaño, título de la ventana, en ventana y no en pantalla completa,
 	// sin compartir recursos con otras ventanas.
 	GLFWwindow* window = glfwCreateWindow(PPCX::anchoVentanaPorDefecto, PPCX::altoVentanaPorDefecto,
-		"Procedural Point Cloud Expander", nullptr, nullptr);
+		"PPCX: Procedural Point Cloud eXpander", nullptr, nullptr);
 	// - Comprobamos si la creación de la ventana ha tenido éxito.
 	if (window == nullptr) {
 		std::cerr << "Failed to open GLFW window" << std::endl;
@@ -165,8 +150,7 @@ int main() {
 	//Realizamos esta llamada para forzar la creación del Renderer y asi poder capturar el posible error sin problema
 	try {
 		PPCX::Renderer::getInstancia();
-	}
-	catch (std::runtime_error& e) {
+	} catch (std::runtime_error& e) {
 		std::cerr << e.what() << std::endl;
 		std::cout << "Finishing application..." << std::endl;
 		glfwDestroyWindow(window); // - Cerramos y destruimos la ventana de la aplicación.
