@@ -160,6 +160,7 @@ void ProceduralGenerator::subdivideCloud() {
 		stride[i] = size[i] / axisSubdivision[i];
 	}
 
+	#pragma omp parallel for
 	for (int i = 0; i < points.size(); i++) {
 		glm::vec3 relativePoint = points[i]._point - minPoint;
 		unsigned x = floor(relativePoint[0] / stride[0]);
@@ -168,11 +169,12 @@ void ProceduralGenerator::subdivideCloud() {
 			x--;
 		if (y == axisSubdivision[1])
 			y--;
+		#pragma omp critical
 		subdivisions[x][y]->addPoint(i);
 	}
 
 	std::cout << "Computing height..." << std::endl;
-#pragma omp parallel for collapse(2)
+	#pragma omp parallel for collapse(2)
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
 			subdivisions[x][y]->computeHeight();
@@ -253,6 +255,7 @@ void ProceduralGenerator::test() {
 	std::iota(srf.knots_v.begin(), srf.knots_v.end(), 0);
 
 	std::vector<glm::vec3> vec;
+	
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
 			glm::vec3 aux = subdivisions[x][y]->getMidPoint();
@@ -268,12 +271,12 @@ void ProceduralGenerator::test() {
 		glm::vec3 minPoint = aabb.min();
 		glm::vec3 maxPoint = aabb.max();
 		PointModel point;
-#pragma omp parallel for private(point)
+		#pragma omp parallel for private(point)
 		for (int x = 0; x < axisSubdivision[0] * 5; x++) {
 			for (int y = 0; y < axisSubdivision[1] * 5; y++) {
 				point._point = tinynurbs::surfacePoint(srf, x * 0.2f, y * 0.2f);
 				point.saveRGB(subdivisions[floor(x / 5)][floor(y / 5)]->getColor());
-#pragma omp critical
+				#pragma omp critical
 				clouds[1]->nuevoPunto(point);
 			}
 		}

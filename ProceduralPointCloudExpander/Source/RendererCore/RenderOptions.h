@@ -2,8 +2,8 @@
 // Created by Niskp on 08/10/2021.
 //
 
-#ifndef PAG_RENDEROPTIONS_H
-#define PAG_RENDEROPTIONS_H
+#ifndef RENDEROPTIONS_H
+#define RENDEROPTIONS_H
 
 namespace PPCX {
 	enum paramShader {
@@ -20,4 +20,4 @@ namespace PPCX {
 
 };
 
-#endif //PAG_RENDEROPTIONS_H
+#endif //RENDEROPTIONS_H
