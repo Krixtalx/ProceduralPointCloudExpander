@@ -89,8 +89,13 @@ const GLubyte* PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
 
 void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene) {
 	PointCloud* pCloud = PlyLoader::loadPointCloud(path);
-	if (pCloud)
+	if (pCloud) {
 		procGenerator.newPointCloud(pCloud, newScene);
+		glm::vec3 pos = pCloud->getAABB().center() + pCloud->getAABB().extent();
+		pos = glm::rotate(glm::pi<float>() / 4.0f, glm::vec3(1.0f, 0.0f, 1.0f))*glm::vec4(pos, 1.0f);
+		camara.setPosicion(pos);
+		camara.setPuntoMira(pCloud->getAABB().center());
+	}
 	else
 		std::cerr << "Point cloud load has failed" << std::endl;
 }

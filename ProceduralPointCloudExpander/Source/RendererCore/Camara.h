@@ -71,6 +71,10 @@ namespace PPCX {
 		void setAlto(GLuint alto);
 
 		void setAncho(GLuint ancho);
+
+		void setPosicion(glm::vec3 pos);
+
+		void setPuntoMira(glm::vec3 punto);
 	};
 }
 

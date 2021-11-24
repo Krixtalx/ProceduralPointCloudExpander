@@ -10,8 +10,8 @@
 /**
  * Constructor por defecto. Inicializa la cámara con unos parametros predeterminados
  */
-PPCX::Camara::Camara() : posicion(0, 0, 2.5f), puntoMira(0, 0, 0),
-                        up(0, 1, 0), zNear(1.0f), zFar(100), alto(PPCX::altoVentanaPorDefecto),
+PPCX::Camara::Camara() : posicion(0, 3.0f, 10.0f), puntoMira(0, 0, 0),
+                        up(0, 0, 1), zNear(0.5f), zFar(130), alto(PPCX::altoVentanaPorDefecto),
                         ancho(PPCX::anchoVentanaPorDefecto) {
 
 	fovX = glm::radians(60.0);
@@ -44,6 +44,7 @@ PPCX::Camara::Camara(const glm::vec3 &posicion, const glm::vec3 &puntoMira, cons
  * @return matrizMVP
  */
 glm::mat4 PPCX::Camara::matrizMVP() const {
+	//std::cout << puntoMira.x << " - " << puntoMira.y << " - " << puntoMira.z << std::endl;
 	const glm::mat4 vision = glm::lookAt(posicion, puntoMira, up);
 	const glm::mat4 proyeccion = glm::perspective(fovY, aspecto(), zNear, zFar);
 	//Multiplicamos de manera inversa: Modelado-Vision-Proyeccion -> Proyeccion-Vision-Modelado
@@ -129,9 +130,12 @@ void PPCX::Camara::crane(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::pan(float mov) {
-	const glm::mat4 rotacion = glm::rotate(glm::radians(mov * 0.02f), v);
+	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), v);
 	puntoMira = glm::vec3(rotacion * glm::vec4(puntoMira - posicion, 1)) + posicion;
-	calcularEjes();
+	u = glm::vec3(rotacion * glm::vec4(u, 0.0f));
+	v = glm::vec3(rotacion * glm::vec4(v, 0.0f));
+	n = glm::vec3(rotacion * glm::vec4(n, 0.0f));
+	up = glm::normalize(glm::cross(n, u));
 }
 
 /**
@@ -139,10 +143,20 @@ void PPCX::Camara::pan(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::tilt(float mov) {
-	const glm::mat4 rotacion = glm::rotate(glm::radians(mov * 0.02f), u);
+	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), u);
+
+	const glm::vec3 aux = glm::vec3(rotacion * glm::vec4(n, 0.0f));
+	float alpha = glm::acos(glm::dot(aux, glm::vec3(0.0f, 1.0f, 0.0f)));
+
+	if (alpha < mov || alpha >(glm::pi<float>() - mov)) {
+		return;
+	}
+
 	puntoMira = glm::vec3(rotacion * glm::vec4(puntoMira - posicion, 1)) + posicion;
-	calcularEjes();
-	up = v; // Igualamos up a v para evitar que n pueda ser igual a up. Ver explicación en la documentación
+	u = glm::vec3(rotacion * glm::vec4(u, 0.0f));
+	v = glm::vec3(rotacion * glm::vec4(v, 0.0f));
+	n = aux;
+	up = glm::normalize(glm::cross(n, u));
 }
 
 /**
@@ -150,9 +164,12 @@ void PPCX::Camara::tilt(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::orbitX(float mov) {
-	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), v);
+	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), glm::vec3(.0f, .0f, 1.0f));
 	posicion = glm::vec3(rotacion * glm::vec4(posicion - puntoMira, 1)) + puntoMira;
-	calcularEjes();
+	u = glm::vec3(rotacion * glm::vec4(u, 0.0f));
+	v = glm::vec3(rotacion * glm::vec4(v, 0.0f));
+	n = glm::vec3(rotacion * glm::vec4(n, 0.0f));
+	up = glm::normalize(glm::cross(n, u));
 }
 
 /**
@@ -162,8 +179,10 @@ void PPCX::Camara::orbitX(float mov) {
 void PPCX::Camara::orbitY(float mov) {
 	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), u);
 	posicion = glm::vec3(rotacion * glm::vec4(posicion - puntoMira, 1)) + puntoMira;
-	calcularEjes();
-	up = v; // Igualamos up a v para evitar que n pueda ser igual a up. Ver explicación en la documentación
+	u = glm::vec3(rotacion * glm::vec4(u, 0.0f));
+	v = glm::vec3(rotacion * glm::vec4(v, 0.0f));
+	n = glm::vec3(rotacion * glm::vec4(n, 0.0f));
+	up = glm::normalize(glm::cross(n, u));
 }
 
 /**
@@ -184,12 +203,7 @@ void PPCX::Camara::zoom(float angulo) {
  * Situa la cámara en la posición por defecto.
  */
 void PPCX::Camara::reset() {
-	posicion = glm::vec3(0, 0, 2.5);
-	puntoMira = glm::vec3(0, 0, 0);
-	up = glm::vec3(0, 1, 0);
-	fovX = glm::radians(80.0f);
-	calcularEjes();
-	calcularFovY();
+	
 }
 
 
@@ -211,4 +225,14 @@ void PPCX::Camara::setAlto(GLuint alto) {
 
 void PPCX::Camara::setAncho(GLuint ancho) {
 	Camara::ancho = ancho;
+}
+
+void PPCX::Camara::setPosicion(glm::vec3 pos) {
+	posicion = pos;
+	calcularEjes();
+}
+
+void PPCX::Camara::setPuntoMira(glm::vec3 punto) {
+	puntoMira = punto;
+	calcularEjes();
 }

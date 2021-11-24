@@ -103,8 +103,8 @@ void callbackBotonRaton(GLFWwindow* window, int button, int action, int mods) {
 
 void callbackMovimientoRaton(GLFWwindow* window, const double xpos, const double ypos) {
 	if (!GUI::getInstance()->isMouseActive() && botonDerechoPulsado) {
-		PPCX::Renderer::getInstancia()->getCamara().pan((xpos - prevXPos) * deltaTime * 10);
-		PPCX::Renderer::getInstancia()->getCamara().tilt((ypos - prevYPos) * deltaTime * 10);
+		PPCX::Renderer::getInstancia()->getCamara().pan((xpos - prevXPos) * deltaTime * 0.05);
+		PPCX::Renderer::getInstancia()->getCamara().tilt((ypos - prevYPos) * deltaTime * 0.05);
 	}
 	prevXPos = xpos;
 	prevYPos = ypos;
