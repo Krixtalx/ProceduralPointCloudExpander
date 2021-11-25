@@ -29,6 +29,8 @@ void ProceduralGenerator::newPointCloud(PPCX::PointCloud * pCloud, bool newScene
 			delete subdivisions[x][y];
 		}
 	}
+	delete clouds[1];
+	clouds[1] = nullptr;
 	if (newScene || !clouds[0]) {
 		for (const auto& cloud : clouds) {
 			delete cloud;
@@ -216,7 +218,7 @@ void ProceduralGenerator::saveHeightMap() const {
 	}
 
 	Image* image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
-	image->saveImage("heightmap.png");
+	//image->saveImage("heightmap.png");
 }
 
 /**
@@ -238,7 +240,7 @@ void ProceduralGenerator::saveTextureMap() {
 		}
 	}
 	const auto image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
-	image->saveImage("texturemap.png");
+	//image->saveImage("texturemap.png");
 }
 
 void ProceduralGenerator::test() {
@@ -247,15 +249,14 @@ void ProceduralGenerator::test() {
 	clouds[1] = new PPCX::PointCloud("DefaultSP");
 
 	tinynurbs::Surface<float> srf;
-	srf.degree_u = 5;
-	srf.degree_v = 5;
+	srf.degree_u = 3;
+	srf.degree_v = 3;
 	srf.knots_u.resize(axisSubdivision[0] + srf.degree_u + 1);
 	srf.knots_v.resize(axisSubdivision[1] + srf.degree_v + 1);
 	std::iota(srf.knots_u.begin(), srf.knots_u.end(), 0);
 	std::iota(srf.knots_v.begin(), srf.knots_v.end(), 0);
 
 	std::vector<glm::vec3> vec;
-	
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
 			glm::vec3 aux = subdivisions[x][y]->getMidPoint();

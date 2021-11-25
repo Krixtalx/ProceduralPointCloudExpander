@@ -46,3 +46,6 @@
 *.tlog
 *.ipch
 *.command
+*.db-shm
+*.db-wal
+*.opendb

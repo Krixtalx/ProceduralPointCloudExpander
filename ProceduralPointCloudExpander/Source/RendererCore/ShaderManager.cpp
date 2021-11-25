@@ -87,8 +87,16 @@ void PPCX::ShaderManager::activarSP(const std::string &nombreSP) {
  */
 void PPCX::ShaderManager::setUniform(const std::string &nombreSP, const std::string &variable, glm::mat4 matrizMVP) {
 	const auto SP = shaderPrograms.find(nombreSP);
+	std::string nombreLocation = nombreSP + variable;
 	if (SP != shaderPrograms.end()) {
-		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
+		const auto loc = uniformsLocation.find(nombreLocation);
+		GLint location = -1;
+		if (loc != uniformsLocation.end())
+			location = loc->second;
+		else {
+			location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
+			uniformsLocation.insert(std::make_pair(nombreLocation, location));
+		}
 		if (location >= 0) {
 			glUniformMatrix4fv(location, 1, false, glm::value_ptr(matrizMVP));
 		} else
@@ -109,8 +117,16 @@ void PPCX::ShaderManager::setUniform(const std::string &nombreSP, const std::str
  */
 void PPCX::ShaderManager::setUniform(const std::string &nombreSP, const std::string &variable, glm::vec3 vec) {
 	const auto SP = shaderPrograms.find(nombreSP);
+	std::string nombreLocation = nombreSP + variable;
 	if (SP != shaderPrograms.end()) {
-		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
+		const auto loc = uniformsLocation.find(nombreLocation);
+		GLint location = -1;
+		if (loc != uniformsLocation.end())
+			location = loc->second;
+		else {
+			location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
+			uniformsLocation.insert(std::make_pair(nombreLocation, location));
+		}
 		if (location >= 0) {
 			glUniform3fv(location, 1, glm::value_ptr(vec));
 		} else

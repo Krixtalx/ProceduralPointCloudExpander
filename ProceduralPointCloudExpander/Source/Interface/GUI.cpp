@@ -37,15 +37,11 @@ void GUI::createMenu() {
 		}
 
 		if (ImGui::BeginMenu(ICON_FA_SITEMAP "Procedural Options")) {
-			ImGui::MenuItem(ICON_FA_INFO "About the project", nullptr, &_showAboutUs);
 			ImGui::EndMenu();
 		}
 
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(io.DisplaySize.x - 125);
-		GUI::renderHelpMarker("Avoids some movements to also modify the camera parameters");
-
-		ImGui::SameLine(0, 20);
+		ImGui::SetCursorPosX(io.DisplaySize.x - 105);
 		ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
 		ImGui::EndMainMenuBar();
 	}
@@ -70,7 +66,7 @@ void GUI::renderHelpMarker(const char* message) {
 
 void GUI::showAboutUsWindow() {
 	if (ImGui::Begin("About the project", &_showAboutUs)) {
-		ImGui::Text("This code belongs to a research project from University of Jaen (GGGJ group).");
+		ImGui::Text("This code is developed by Jose Antonio Collado Araque as a part of a research project from University of Jaen (GGGJ group).");
 	}
 
 	ImGui::End();
@@ -160,11 +156,7 @@ void GUI::showRenderingSettings() {
 
 		this->leaveSpace(3);
 
-		if (ImGui::BeginTabBar("LiDARTabBar")) {
-			if (ImGui::BeginTabItem("General settings")) {
-				ImGui::EndTabItem();
-			}
-
+		if (ImGui::BeginTabBar("")) {
 			if (ImGui::BeginTabItem("Point Cloud")) {
 				this->leaveSpace(1);
 				float value = PPCX::Renderer::getInstancia()->getPointSize();
@@ -172,13 +164,6 @@ void GUI::showRenderingSettings() {
 				PPCX::Renderer::getInstancia()->setPointSize(value);
 				ImGui::EndTabItem();
 			}
-
-			if (ImGui::BeginTabItem("Wireframe")) {
-				this->leaveSpace(1);
-
-				ImGui::EndTabItem();
-			}
-
 			ImGui::EndTabBar();
 		}
 	}
