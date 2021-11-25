@@ -32,9 +32,13 @@ namespace PPCX {
 		GLuint alto;
 		GLuint ancho;
 
+		float speedMultiplier = 1.0f;
+
 		void calcularEjes();
 
 		void calcularFovY();
+
+		Camara* backup;
 
 	public:
 		Camara();
@@ -60,6 +64,8 @@ namespace PPCX {
 
 		void orbitY(float mov);
 
+		void increaseZFar(float mov);
+
 		void reset();
 
 		glm::mat4 matrizMVP() const;
@@ -75,6 +81,8 @@ namespace PPCX {
 		void setPosicion(glm::vec3 pos);
 
 		void setPuntoMira(glm::vec3 punto);
+
+		void setSpeedMultiplier(float speed);
 	};
 }
 

@@ -11,8 +11,8 @@
  * Constructor por defecto. Inicializa la cámara con unos parametros predeterminados
  */
 PPCX::Camara::Camara() : posicion(0, 3.0f, 10.0f), puntoMira(0, 0, 0),
-                        up(0, 0, 1), zNear(0.5f), zFar(130), alto(PPCX::altoVentanaPorDefecto),
-                        ancho(PPCX::anchoVentanaPorDefecto) {
+up(0, 0, 1), zNear(0.5f), zFar(200), alto(PPCX::altoVentanaPorDefecto),
+ancho(PPCX::anchoVentanaPorDefecto) {
 
 	fovX = glm::radians(60.0);
 	calcularFovY();
@@ -30,10 +30,10 @@ PPCX::Camara::Camara() : posicion(0, 3.0f, 10.0f), puntoMira(0, 0, 0),
  * @param alto del viewport
  * @param ancho del viewport
  */
-PPCX::Camara::Camara(const glm::vec3 &posicion, const glm::vec3 &puntoMira, const glm::vec3 &up, GLfloat zNear,
-                    GLfloat zFar, GLfloat fovX, GLuint alto, GLuint ancho) : posicion(posicion), puntoMira(puntoMira),
-                                                                             up(up), zNear(zNear), zFar(zFar),
-                                                                             alto(alto), ancho(ancho) {
+PPCX::Camara::Camara(const glm::vec3& posicion, const glm::vec3& puntoMira, const glm::vec3& up, GLfloat zNear,
+					 GLfloat zFar, GLfloat fovX, GLuint alto, GLuint ancho) : posicion(posicion), puntoMira(puntoMira),
+	up(up), zNear(zNear), zFar(zFar),
+	alto(alto), ancho(ancho) {
 	this->fovX = glm::radians(fovX);
 	calcularFovY();
 	calcularEjes();
@@ -87,12 +87,12 @@ void PPCX::Camara::calcularFovY() {
  * ------------------------------Movimientos de la camara------------------------
  */
 
-/**
- * Movimiento truck de la camara. Mueve la camara hacia delante o hacia atrás
- * @param mov magnitud del movimiento
- */
+ /**
+  * Movimiento truck de la camara. Mueve la camara hacia delante o hacia atrás
+  * @param mov magnitud del movimiento
+  */
 void PPCX::Camara::truck(float mov) {
-	const glm::mat4 translacion = glm::translate(n * mov);
+	const glm::mat4 translacion = glm::translate(n * mov * speedMultiplier);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
 }
@@ -102,7 +102,7 @@ void PPCX::Camara::truck(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::dolly(float mov) {
-	const glm::mat4 translacion = glm::translate(u * mov);
+	const glm::mat4 translacion = glm::translate(u * mov * speedMultiplier);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
 }
@@ -112,7 +112,7 @@ void PPCX::Camara::dolly(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::boom(float mov) {
-	const glm::mat4 translacion = glm::translate(v * mov);
+	const glm::mat4 translacion = glm::translate(v * mov * speedMultiplier);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
 }
@@ -185,6 +185,10 @@ void PPCX::Camara::orbitY(float mov) {
 	up = glm::normalize(glm::cross(n, u));
 }
 
+void PPCX::Camara::increaseZFar(float mov) {
+	zFar += mov;
+}
+
 /**
  * Realiza el zoom modificando el fov
  * @param angulo variación del ángulo
@@ -203,7 +207,12 @@ void PPCX::Camara::zoom(float angulo) {
  * Situa la cámara en la posición por defecto.
  */
 void PPCX::Camara::reset() {
-	
+	this->posicion = backup->posicion;
+	this->puntoMira = backup->puntoMira;
+	this->alto = backup->alto;
+	this->ancho = backup->ancho;
+	this->up = glm::vec3(.0f, .0f, 1.0f);
+	calcularEjes();
 }
 
 
@@ -211,28 +220,40 @@ void PPCX::Camara::reset() {
  * ------------------------------Getters y setters------------------------
  */
 
-/**
- * Calcula y devuelve la relacion de aspecto
- * @return relacion de aspecto del viewport
- */
+ /**
+  * Calcula y devuelve la relacion de aspecto
+  * @return relacion de aspecto del viewport
+  */
 GLfloat PPCX::Camara::aspecto() const {
 	return (GLfloat(ancho) / GLfloat(alto));
 }
 
 void PPCX::Camara::setAlto(GLuint alto) {
 	Camara::alto = alto;
+	delete backup;
+	backup = new Camara(*this);
 }
 
 void PPCX::Camara::setAncho(GLuint ancho) {
 	Camara::ancho = ancho;
+	delete backup;
+	backup = new Camara(*this);
 }
 
 void PPCX::Camara::setPosicion(glm::vec3 pos) {
 	posicion = pos;
 	calcularEjes();
+	delete backup;
+	backup = new Camara(*this);
 }
 
 void PPCX::Camara::setPuntoMira(glm::vec3 punto) {
 	puntoMira = punto;
 	calcularEjes();
+	delete backup;
+	backup = new Camara(*this);
+}
+
+void PPCX::Camara::setSpeedMultiplier(float speed) {
+	speedMultiplier = speed;
 }

@@ -4,6 +4,7 @@
 #include "RendererCore/RenderOptions.h"
 
 double prevXPos = 0, prevYPos = 0;
+bool botonIzquierdoPulsado;
 bool botonDerechoPulsado;
 float deltaTime = 0.1f;
 float ultimoFrame = 0.0f;
@@ -15,15 +16,15 @@ void actualizarDeltaTime() {
 }
 
 void GLAPIENTRY MessageCallback(GLenum source,
-	GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar* message,
-	const void* userParam) {
+								GLenum type,
+								GLuint id,
+								GLenum severity,
+								GLsizei length,
+								const GLchar* message,
+								const void* userParam) {
 	if (type == 0x824C) {
 		fprintf(stderr, "GL DEBUG CALLBACK: ** GL ERROR ** type = 0x%x, severity = 0x%x, message = %s\n",
-			type, severity, message);
+				type, severity, message);
 	}
 }
 
@@ -63,22 +64,13 @@ void callbackTecla(GLFWwindow* window, int key, int scancode, int action, int mo
 		PPCX::Renderer::getInstancia()->getCamara().boom(1.0f * deltaTime);
 	} else if (key == GLFW_KEY_X && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().crane(1.0f * deltaTime);
-	} else if (key == GLFW_KEY_I && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().zoom(-4 * deltaTime);
-	} else if (key == GLFW_KEY_O && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().zoom(4 * deltaTime);
-	} else if (key == GLFW_KEY_Q && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().orbitX(50 * deltaTime);
-	} else if (key == GLFW_KEY_E && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().orbitX(-50 * deltaTime);
-	} else if (key == GLFW_KEY_T && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().orbitY(50 * deltaTime);
-	} else if (key == GLFW_KEY_G && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().orbitY(-50 * deltaTime);
 	} else if (key == GLFW_KEY_R && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().reset();
+	} else if (key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(deltaTime);
+	} else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(-deltaTime);
 	}
-
 }
 
 // - Esta función callback será llamada cada vez que se pulse algún botón
@@ -91,27 +83,38 @@ void callbackBotonRaton(GLFWwindow* window, int button, int action, int mods) {
 	if (action == GLFW_PRESS) {
 		if (button == 1) {
 			botonDerechoPulsado = true;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			botonIzquierdoPulsado = false;
+		} else if (button == 0) {
+			botonIzquierdoPulsado = true;
+			botonDerechoPulsado = false;
 		}
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	} else if (action == GLFW_RELEASE) {
 		if (button == 1) {
 			botonDerechoPulsado = false;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		} else if (button == 0) {
+			botonIzquierdoPulsado = false;
 		}
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 }
 
 void callbackMovimientoRaton(GLFWwindow* window, const double xpos, const double ypos) {
-	if (!GUI::getInstance()->isMouseActive() && botonDerechoPulsado) {
-		PPCX::Renderer::getInstancia()->getCamara().pan((xpos - prevXPos) * deltaTime * 0.05);
-		PPCX::Renderer::getInstancia()->getCamara().tilt((ypos - prevYPos) * deltaTime * 0.05);
+	if (!GUI::getInstance()->isMouseActive()) {
+		if (botonIzquierdoPulsado) {
+			PPCX::Renderer::getInstancia()->getCamara().orbitX(-(xpos - prevXPos) * deltaTime * 0.1);
+			PPCX::Renderer::getInstancia()->getCamara().orbitY((ypos - prevYPos) * deltaTime * 0.1);
+		} else if (botonDerechoPulsado) {
+			PPCX::Renderer::getInstancia()->getCamara().pan((xpos - prevXPos) * deltaTime * 0.05);
+			PPCX::Renderer::getInstancia()->getCamara().tilt((ypos - prevYPos) * deltaTime * 0.05);
+		}
 	}
 	prevXPos = xpos;
 	prevYPos = ypos;
 }
 
 void callbackScroll(GLFWwindow* window, double xoffset, double yoffset) {
-	PPCX::Renderer::getInstancia()->getCamara().zoom(yoffset * deltaTime);
+	PPCX::Renderer::getInstancia()->getCamara().zoom(-yoffset * deltaTime*5);
 }
 
 int main() {
@@ -130,7 +133,7 @@ int main() {
 	// - Tamaño, título de la ventana, en ventana y no en pantalla completa,
 	// sin compartir recursos con otras ventanas.
 	GLFWwindow* window = glfwCreateWindow(PPCX::anchoVentanaPorDefecto, PPCX::altoVentanaPorDefecto,
-		"PPCX: Procedural Point Cloud eXpander", nullptr, nullptr);
+										  "PPCX: Procedural Point Cloud eXpander", nullptr, nullptr);
 	// - Comprobamos si la creación de la ventana ha tenido éxito.
 	if (window == nullptr) {
 		std::cerr << "Failed to open GLFW window" << std::endl;

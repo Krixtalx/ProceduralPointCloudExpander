@@ -84,9 +84,9 @@ void GUI::showControls() {
 		ImGui::Text("Control"); ImGui::NextColumn();
 		ImGui::Separator();
 
-		const int NUM_MOVEMENTS = 14;
-		const char* movement[] = { "Orbit (XZ)", "Undo Orbit (XZ)", "Orbit (Y)", "Undo Orbit (Y)", "Dolly", "Truck", "Boom", "Crane", "Reset Camera", "Take Screenshot", "Continue Animation", "Zoom +/-", "Pan", "Tilt" };
-		const char* controls[] = { "X", "Ctrl + X", "Y", "Ctrl + Y", "W, S", "D, A", "Up arrow", "Down arrow", "R", "K", "I", "Scroll wheel", "Move mouse horizontally(hold button)", "Move mouse vertically (hold button)" };
+		const int NUM_MOVEMENTS = 12;
+		const char* movement[] = { "Orbit (XZ)", "Orbit (Y)", "Truck", "Dolly", "Boom", "Crane", "Reset Camera", "Take Screenshot", "Zoom +/-", "Pan", "Tilt", "Increase/Decrease zFar"};
+		const char* controls[] = { "Move mouse horizontally(hold left button)", "Move mouse vertically (hold left button)", "W, S", "A, D", "Z", "X", "R", "K", "Scroll wheel", "Move mouse horizontally(hold right button)", "Move mouse vertically (hold right button)", "+/-"};
 
 		for (int i = 0; i < NUM_MOVEMENTS; i++) {
 			ImGui::Text(movement[i]); ImGui::NextColumn();
