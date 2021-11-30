@@ -249,8 +249,8 @@ void ProceduralGenerator::test() {
 	clouds[1] = new PPCX::PointCloud("DefaultSP");
 
 	tinynurbs::Surface<float> srf;
-	srf.degree_u = 3;
-	srf.degree_v = 3;
+	srf.degree_u = 5;
+	srf.degree_v = 5;
 	srf.knots_u.resize(axisSubdivision[0] + srf.degree_u + 1);
 	srf.knots_v.resize(axisSubdivision[1] + srf.degree_v + 1);
 	std::iota(srf.knots_u.begin(), srf.knots_u.end(), 0);

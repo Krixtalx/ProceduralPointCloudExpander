@@ -133,7 +133,7 @@ void PPCX::PointCloud::dibujarModelo(glm::mat4 matrizMVP) const {
 		glBindVertexArray(idVAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-		glDrawElements(GL_TRIANGLES, vbo.size(), GL_UNSIGNED_INT, nullptr); //Al ser una nube de puntos vbo.size = ibo.size
+		glDrawElements(GL_POINTS, vbo.size(), GL_UNSIGNED_INT, nullptr); //Al ser una nube de puntos vbo.size = ibo.size
 	} catch (std::runtime_error& e) {
 		throw;
 	}
