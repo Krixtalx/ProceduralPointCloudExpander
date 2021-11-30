@@ -162,6 +162,9 @@ void GUI::showRenderingSettings() {
 				float value = PPCX::Renderer::getInstancia()->getPointSize();
 				ImGui::SliderFloat("Point size", &value, 0.1f, 10.0f);
 				PPCX::Renderer::getInstancia()->setPointSize(value);
+
+				ImGui::Checkbox("Original cloud", &PPCX::Renderer::getInstancia()->getPointCloudVisible(0));
+				ImGui::Checkbox("NURBS cloud", &PPCX::Renderer::getInstancia()->getPointCloudVisible(1));
 				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();

@@ -396,6 +396,25 @@ template <typename T> glm::vec<3, T> surfacePoint(const RationalSurface<T> &srf,
 }
 
 /**
+ * Evaluate point on a non-rational NURBS surface
+ * @param[in] srf RationalSurface object
+ * @param[in] u Parameter to evaluate the surface at.
+ * @param[in] v Parameter to evaluate the surface at.
+ * @return Resulting point on the surface at (u, v).
+ */
+template <typename T> glm::vec<3, T> surfacePoint(const RationalSurface<T>& srf, T u, T v, const array2<glm::vec<4, T>>& Cw) {
+
+    typedef glm::vec<4, T> tvecnp1;
+
+    // Compute point using homogenous coordinates
+    tvecnp1 pointw =
+        internal::surfacePoint(srf.degree_u, srf.degree_v, srf.knots_u, srf.knots_v, Cw, u, v);
+
+    // Convert back to cartesian coordinates
+    return util::homogenousToCartesian(pointw);
+}
+
+/**
  * Evaluate derivatives on a non-rational NURBS surface
  * @param[in] degree_u Degree of the given surface in u-direction.
  * @param[in] degree_v Degree of the given surface in v-direction.

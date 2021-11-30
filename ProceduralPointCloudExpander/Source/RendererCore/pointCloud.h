@@ -20,6 +20,8 @@ namespace PPCX {
 		std::string shaderProgram;
 		glm::vec3 posicion;
 		AABB aabb;
+
+		bool visible = true;
 		
 		void nuevoVBO(GLenum freqAct);
 
@@ -50,6 +52,7 @@ namespace PPCX {
 
 		float getDensity() const;
 
+		bool& getVisible();
 	};
 }
 

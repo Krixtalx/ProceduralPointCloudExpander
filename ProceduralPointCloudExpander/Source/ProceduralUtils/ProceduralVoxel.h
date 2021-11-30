@@ -37,5 +37,9 @@ public:
 	glm::vec3 getMidPoint();
 
 	glm::vec3 getColor();
+
+	unsigned getNumberOfPoints();
+
+	unsigned numberPointsToDensity(float density);
 };
 

@@ -58,6 +58,8 @@ namespace PPCX {
 		float getPointSize() const;
 
 		void setPointSize(float pointS);
+		
+		bool& getPointCloudVisible(unsigned cloud);
 	};
 }
 

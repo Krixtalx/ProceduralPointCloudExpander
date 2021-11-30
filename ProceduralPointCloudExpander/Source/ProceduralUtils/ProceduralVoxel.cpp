@@ -20,7 +20,7 @@ void ProceduralVoxel::computeHeight() {
 	const unsigned size = pointsIndex.size();
 	if (size != 0) {
 		height = 0;
-		auto &points = nube->getPoints();
+		auto& points = nube->getPoints();
 		for (size_t i = 0; i < size; i++) {
 			height += points[pointsIndex[i]]._point[2];
 		}
@@ -70,4 +70,16 @@ glm::vec3 ProceduralVoxel::getMidPoint() {
 
 glm::vec3 ProceduralVoxel::getColor() {
 	return color;
+}
+
+unsigned ProceduralVoxel::getNumberOfPoints() {
+	return pointsIndex.size();
+}
+
+unsigned ProceduralVoxel::numberPointsToDensity(float density) {
+	glm::vec3 size = aabb->size();
+	unsigned number = size.x * size.y * density;
+	if (number > pointsIndex.size())
+		return number - pointsIndex.size();
+	return 0;
 }

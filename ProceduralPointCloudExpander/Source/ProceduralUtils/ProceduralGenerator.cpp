@@ -2,6 +2,7 @@
 #include "ProceduralGenerator.h"
 #include "tinynurbs.h"
 #include "Utilities/Image.h"
+#include <random>
 
 ProceduralGenerator::ProceduralGenerator() = default;
 
@@ -44,10 +45,18 @@ void ProceduralGenerator::newPointCloud(PPCX::PointCloud * pCloud, bool newScene
 		clouds[0]->actualizarNube();
 	}
 	this->aabb = clouds[0]->getAABB();
+	cloudDensity = clouds[0]->getDensity();
 	readParameters("proceduralParameters.ini");
 	createVoxelGrid();
 	subdivideCloud();
-	test();
+	computeNURBS();
+}
+
+bool& ProceduralGenerator::getPointCloudVisibility(unsigned cloud) {
+	if (clouds[cloud])
+		return clouds[cloud]->getVisible();
+	else
+		return clouds[0]->getVisible();
 }
 
 
@@ -77,8 +86,6 @@ void ProceduralGenerator::readParameters(const std::string & path) {
 		for (size_t i = 0; i < 2; i++) {
 			axisSubdivision[i] = round(size[i] / gsd);
 		}
-		//axisSubdivisionOriginal[0] = 1000;
-		//axisSubdivisionOriginal[1] = 500;
 	}
 }
 
@@ -184,8 +191,8 @@ void ProceduralGenerator::subdivideCloud() {
 		}
 	}
 
-	saveHeightMap();
-	saveTextureMap();
+	//saveHeightMap();
+	//saveTextureMap();
 }
 
 /**
@@ -218,7 +225,7 @@ void ProceduralGenerator::saveHeightMap() const {
 	}
 
 	Image* image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
-	//image->saveImage("heightmap.png");
+	image->saveImage("heightmap.png");
 }
 
 /**
@@ -240,15 +247,15 @@ void ProceduralGenerator::saveTextureMap() {
 		}
 	}
 	const auto image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
-	//image->saveImage("texturemap.png");
+	image->saveImage("texturemap.png");
 }
 
-void ProceduralGenerator::test() {
+void ProceduralGenerator::computeNURBS() {
 	std::cout << "Nurbs..." << std::endl;
 	delete clouds[1];
 	clouds[1] = new PPCX::PointCloud("DefaultSP");
 
-	tinynurbs::Surface<float> srf;
+	tinynurbs::RationalSurface<float> srf;
 	srf.degree_u = 5;
 	srf.degree_v = 5;
 	srf.knots_u.resize(axisSubdivision[0] + srf.degree_u + 1);
@@ -256,34 +263,58 @@ void ProceduralGenerator::test() {
 	std::iota(srf.knots_u.begin(), srf.knots_u.end(), 0);
 	std::iota(srf.knots_v.begin(), srf.knots_v.end(), 0);
 
-	std::vector<glm::vec3> vec;
+	std::vector<glm::vec3> controlPoints;
+	std::vector<float> weights;
+	unsigned numPoints = clouds[0]->getNumberOfPoints();
+	float density;
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
 			glm::vec3 aux = subdivisions[x][y]->getMidPoint();
 			if (aux[2] == FLT_MAX)
 				meanHeight(x, y);
 			aux = subdivisions[x][y]->getMidPoint();
-			vec.push_back(aux);
+			controlPoints.push_back(aux);
+			density = (float)subdivisions[x][y]->getNumberOfPoints()/ (float)clouds[0]->getNumberOfPoints()+0.000001f;
+			weights.push_back(density);
 		}
 	}
 
-	srf.control_points = { axisSubdivision[0], axisSubdivision[1], vec };
+	srf.control_points = { axisSubdivision[0], axisSubdivision[1], controlPoints };
+	srf.weights = { axisSubdivision[0], axisSubdivision[1], weights };
+
+	tinynurbs::array2<glm::vec<4, float>> Cw;
+	Cw.resize(srf.control_points.rows(), srf.control_points.cols());
+	for (int i = 0; i < srf.control_points.rows(); i++) {
+		for (int j = 0; j < srf.control_points.cols(); j++) {
+			Cw(i, j) =
+				glm::vec<4, float>(tinynurbs::util::cartesianToHomogenous(srf.control_points(i, j), srf.weights(i, j)));
+		}
+	}
+
 	if (tinynurbs::surfaceIsValid(srf)) {
 		glm::vec3 minPoint = aabb.min();
 		glm::vec3 maxPoint = aabb.max();
 		PointModel point;
-		#pragma omp parallel for private(point)
-		for (int x = 0; x < axisSubdivision[0] * 5; x++) {
-			for (int y = 0; y < axisSubdivision[1] * 5; y++) {
-				point._point = tinynurbs::surfacePoint(srf, x * 0.2f, y * 0.2f);
-				point.saveRGB(subdivisions[floor(x / 5)][floor(y / 5)]->getColor());
-				#pragma omp critical
-				clouds[1]->nuevoPunto(point);
+		std::default_random_engine generator(11);
+		
+		#pragma omp parallel for private(point, generator)
+		for (int x = 0; x < axisSubdivision[0]; x++) {
+			for (int y = 0; y < axisSubdivision[1]; y++) {
+				unsigned limit = subdivisions[x][y]->numberPointsToDensity(cloudDensity);
+				std::uniform_real_distribution<float> disX(x, x+1);
+				std::uniform_real_distribution<float> disY(y, y+1);
+				for (int i = 0; i < limit; i++) {
+					float valX = disX(generator);
+					float valY = disY(generator);
+					point._point = tinynurbs::surfacePoint(srf, valX, valY, Cw);
+					point.saveRGB(subdivisions[floor(valX)][floor(valY)]->getColor());
+					//point.saveRGB({ 1,0,0 });
+					#pragma omp critical
+					clouds[1]->nuevoPunto(point);
+				}
 			}
 		}
 
 		clouds[1]->actualizarNube();
 	}
 }
-
-

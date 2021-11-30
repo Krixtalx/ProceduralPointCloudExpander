@@ -96,11 +96,11 @@ void PPCX::PointCloud::nuevoVBO(GLenum freqAct) {
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PointModel),
-		nullptr);
+						  nullptr);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(PointModel),
-		(static_cast<GLubyte*>(nullptr) + sizeof(glm::vec3)));
+						  (static_cast<GLubyte*>(nullptr) + sizeof(glm::vec3)));
 }
 
 /**
@@ -125,17 +125,20 @@ void PPCX::PointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct) {
  * Función a la que se llama cuando se debe de dibujar el modelo
  */
 void PPCX::PointCloud::dibujarModelo(glm::mat4 matrizMVP) const {
-	try {
-		matrizMVP = matrizMVP * translate(posicion);
-		ShaderManager::getInstancia()->activarSP(shaderProgram);
-		ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrizMVP);
+	if (visible) {
+		try {
 
-		glBindVertexArray(idVAO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-		glDrawElements(GL_POINTS, vbo.size(), GL_UNSIGNED_INT, nullptr); //Al ser una nube de puntos vbo.size = ibo.size
-	} catch (std::runtime_error& e) {
-		throw;
+			matrizMVP = matrizMVP * translate(posicion);
+			ShaderManager::getInstancia()->activarSP(shaderProgram);
+			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrizMVP);
+
+			glBindVertexArray(idVAO);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+			glDrawElements(GL_POINTS, vbo.size(), GL_UNSIGNED_INT, nullptr); //Al ser una nube de puntos vbo.size = ibo.size
+		} catch (std::runtime_error& e) {
+			throw;
+		}
 	}
 }
 
@@ -154,5 +157,9 @@ const AABB& PPCX::PointCloud::getAABB() {
 float PPCX::PointCloud::getDensity() const {
 	const int numberPoints = vbo.size();
 	const glm::vec3 AABBSize = aabb.size();
-	return numberPoints / (AABBSize.x * AABBSize.y * AABBSize.z);
+	return numberPoints / (AABBSize.x * AABBSize.y);
+}
+
+bool& PPCX::PointCloud::getVisible() {
+	return visible;
 }

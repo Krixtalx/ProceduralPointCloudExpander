@@ -21,11 +21,12 @@ protected:
 	void subdivideCloud();
 	void saveHeightMap() const;
 	void saveTextureMap();
-	void test();
+	void computeNURBS();
 
 public:
 	ProceduralGenerator();
 	~ProceduralGenerator();
 	void drawClouds(glm::mat4 matrizMVP);
 	void newPointCloud(PPCX::PointCloud* pCloud, bool newScene);
+	bool& getPointCloudVisibility(unsigned cloud);
 };

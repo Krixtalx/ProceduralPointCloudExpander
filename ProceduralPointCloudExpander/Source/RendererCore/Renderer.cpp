@@ -142,3 +142,7 @@ void PPCX::Renderer::setPointSize(float pointS) {
 	pointSize = pointS;
 	glPointSize(pointSize);
 }
+
+bool& PPCX::Renderer::getPointCloudVisible(unsigned cloud) {
+	return procGenerator.getPointCloudVisibility(cloud);
+}
