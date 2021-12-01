@@ -67,9 +67,9 @@ void callbackTecla(GLFWwindow* window, int key, int scancode, int action, int mo
 	} else if (key == GLFW_KEY_R && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().reset();
 	} else if (key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(deltaTime);
+		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(deltaTime*10);
 	} else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(-deltaTime);
+		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(-deltaTime*5);
 	}
 }
 

@@ -58,6 +58,10 @@ void ProceduralVoxel::setHeight(float h) {
 	height = h;
 }
 
+void ProceduralVoxel::setColor(glm::vec3 color) {
+	this->color = color;
+}
+
 float ProceduralVoxel::getHeight() {
 	return height;
 }

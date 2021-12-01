@@ -127,8 +127,7 @@ void PPCX::PointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct) {
 void PPCX::PointCloud::dibujarModelo(glm::mat4 matrizMVP) const {
 	if (visible) {
 		try {
-
-			matrizMVP = matrizMVP * translate(posicion);
+			//matrizMVP = matrizMVP * translate(posicion);
 			ShaderManager::getInstancia()->activarSP(shaderProgram);
 			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrizMVP);
 

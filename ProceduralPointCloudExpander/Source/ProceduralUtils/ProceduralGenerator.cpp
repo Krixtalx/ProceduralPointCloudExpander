@@ -119,6 +119,36 @@ void ProceduralGenerator::meanHeight(unsigned x, unsigned y) {
 	}
 }
 
+/**
+ * @brief compute the height of a proceduralVoxel as the mean of the inmediate neightbour
+ * @param x index of the subdivision
+ * @param y index of the subdivision
+*/
+void ProceduralGenerator::meanColor(unsigned x, unsigned y) {
+	glm::vec3 mean = { 0,0,0 };
+	char counter = 0;
+	for (int i = -1; i < 2; i++) {
+		for (int j = -1; j < 2; j++) {
+			int auxX = x + i;
+			auxX = std::min((int)axisSubdivision[0] - 1, std::max(0, auxX));
+			int auxY = y + j;
+			auxY = std::min((int)axisSubdivision[1] - 1, std::max(0, auxY));
+			if (auxX != x || auxY != y) {
+				counter++;
+				const glm::vec3 color = subdivisions[auxX][auxY]->getColor();
+				if (subdivisions[auxX][auxY]->getHeight() != FLT_MAX)
+					mean += color;
+				else
+					counter--;
+			}
+		}
+	}
+	if (counter > 0) {
+		mean /= counter;
+		subdivisions[x][y]->setColor(mean);
+	}
+}
+
 
 /**
  * @brief Initialize the voxel grid
@@ -172,8 +202,8 @@ void ProceduralGenerator::subdivideCloud() {
 	#pragma omp parallel for
 	for (int i = 0; i < points.size(); i++) {
 		glm::vec3 relativePoint = points[i]._point - minPoint;
-		unsigned x = floor(relativePoint[0] / stride[0]);
-		unsigned y = floor(relativePoint[1] / stride[1]);
+		int x = floor(relativePoint.x / stride[0]);
+		int y = floor(relativePoint.y / stride[1]);
 		if (x == axisSubdivision[0])
 			x--;
 		if (y == axisSubdivision[1])
@@ -251,7 +281,7 @@ void ProceduralGenerator::saveTextureMap() {
 }
 
 void ProceduralGenerator::computeNURBS() {
-	std::cout << "Nurbs..." << std::endl;
+	std::cout << "Creating nurbs..." << std::endl;
 	delete clouds[1];
 	clouds[1] = new PPCX::PointCloud("DefaultSP");
 
@@ -270,11 +300,13 @@ void ProceduralGenerator::computeNURBS() {
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
 			glm::vec3 aux = subdivisions[x][y]->getMidPoint();
-			if (aux[2] == FLT_MAX)
+			if (aux[2] == FLT_MAX) {
 				meanHeight(x, y);
+				meanColor(x, y);
+			}
 			aux = subdivisions[x][y]->getMidPoint();
 			controlPoints.push_back(aux);
-			density = (float)subdivisions[x][y]->getNumberOfPoints()/ (float)clouds[0]->getNumberOfPoints()+0.000001f;
+			density = (float)(subdivisions[x][y]->getNumberOfPoints()+1)/ (float)clouds[0]->getNumberOfPoints();
 			weights.push_back(density);
 		}
 	}
@@ -291,11 +323,13 @@ void ProceduralGenerator::computeNURBS() {
 		}
 	}
 
+	std::cout << "Generating nurbs cloud..." << std::endl;
 	if (tinynurbs::surfaceIsValid(srf)) {
 		glm::vec3 minPoint = aabb.min();
 		glm::vec3 maxPoint = aabb.max();
 		PointModel point;
-		std::default_random_engine generator(11);
+		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::default_random_engine generator(seed);
 		
 		#pragma omp parallel for private(point, generator)
 		for (int x = 0; x < axisSubdivision[0]; x++) {
@@ -307,14 +341,14 @@ void ProceduralGenerator::computeNURBS() {
 					float valX = disX(generator);
 					float valY = disY(generator);
 					point._point = tinynurbs::surfacePoint(srf, valX, valY, Cw);
-					point.saveRGB(subdivisions[floor(valX)][floor(valY)]->getColor());
-					//point.saveRGB({ 1,0,0 });
+					point.saveRGB(subdivisions[x][y]->getColor());
 					#pragma omp critical
 					clouds[1]->nuevoPunto(point);
 				}
 			}
+			
 		}
-
+		std::cout << "Updating nurbs cloud visualization..." << std::endl;
 		clouds[1]->actualizarNube();
 	}
 }

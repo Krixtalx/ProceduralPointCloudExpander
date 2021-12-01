@@ -16,6 +16,7 @@ private:
 protected:
 	void readParameters(const std::string& path);
 	void meanHeight(unsigned x, unsigned y);
+	void meanColor(unsigned x, unsigned y);
 	glm::vec3 getColor(float pointX, float pointY);
 	void createVoxelGrid();
 	void subdivideCloud();

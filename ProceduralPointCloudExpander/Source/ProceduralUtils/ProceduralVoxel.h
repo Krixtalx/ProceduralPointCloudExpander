@@ -31,6 +31,7 @@ public:
 	bool isInside(PointModel point);
 
 	void setHeight(float h);
+	void setColor(glm::vec3 color);
 
 	float getHeight();
 
