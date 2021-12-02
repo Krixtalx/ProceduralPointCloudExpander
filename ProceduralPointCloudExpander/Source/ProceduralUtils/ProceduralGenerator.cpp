@@ -113,7 +113,7 @@ void ProceduralGenerator::meanHeight(unsigned x, unsigned y) {
 			}
 		}
 	}
-	if (counter > 0) {
+	if (counter > 1) {
 		mean /= counter;
 		subdivisions[x][y]->setHeight(mean);
 	}
@@ -143,7 +143,7 @@ void ProceduralGenerator::meanColor(unsigned x, unsigned y) {
 			}
 		}
 	}
-	if (counter > 0) {
+	if (counter > 1) {
 		mean /= counter;
 		subdivisions[x][y]->setColor(mean);
 	}
@@ -286,12 +286,27 @@ void ProceduralGenerator::computeNURBS() {
 	clouds[1] = new PPCX::PointCloud("DefaultSP");
 
 	tinynurbs::RationalSurface<float> srf;
-	srf.degree_u = 5;
-	srf.degree_v = 5;
-	srf.knots_u.resize(axisSubdivision[0] + srf.degree_u + 1);
-	srf.knots_v.resize(axisSubdivision[1] + srf.degree_v + 1);
-	std::iota(srf.knots_u.begin(), srf.knots_u.end(), 0);
-	std::iota(srf.knots_v.begin(), srf.knots_v.end(), 0);
+	int degree = 5;
+	srf.degree_u = degree;
+	srf.degree_v = degree;
+	srf.knots_u.resize(axisSubdivision[0] + degree + 1);
+	srf.knots_v.resize(axisSubdivision[1] + degree + 1);
+	for (int i = 0; i < srf.knots_u.size() / (degree + 1); i++) {
+		for (int j = 0; j < degree + 1; j++) {
+			srf.knots_u[i * (degree + 1) + j] = i;
+		}
+	}
+	for (int i = 0; i < srf.knots_v.size() / (degree + 1); i++) {
+		for (int j = 0; j < degree + 1; j++) {
+			srf.knots_v[i * (degree + 1) + j] = i;
+		}
+	}
+
+	/*std::iota(srf.knots_u.begin() + degree + 1, srf.knots_u.end() - (degree + 1), degree + 1);
+	std::iota(srf.knots_v.begin() + degree + 1, srf.knots_v.end() - (degree + 1), degree + 1);*/
+
+	//std::iota(srf.knots_u.begin(), srf.knots_u.end(), 0);
+	//std::iota(srf.knots_v.begin(), srf.knots_v.end(), 0);
 
 	std::vector<glm::vec3> controlPoints;
 	std::vector<float> weights;
@@ -306,7 +321,7 @@ void ProceduralGenerator::computeNURBS() {
 			}
 			aux = subdivisions[x][y]->getMidPoint();
 			controlPoints.push_back(aux);
-			density = (float)(subdivisions[x][y]->getNumberOfPoints()+1)/ (float)clouds[0]->getNumberOfPoints();
+			density = (float)(subdivisions[x][y]->getNumberOfPoints() + 1); /*/ ((float)clouds[0]->getNumberOfPoints() + axisSubdivision[0] * axisSubdivision[1]);*/
 			weights.push_back(density);
 		}
 	}
@@ -314,40 +329,60 @@ void ProceduralGenerator::computeNURBS() {
 	srf.control_points = { axisSubdivision[0], axisSubdivision[1], controlPoints };
 	srf.weights = { axisSubdivision[0], axisSubdivision[1], weights };
 
-	tinynurbs::array2<glm::vec<4, float>> Cw;
-	Cw.resize(srf.control_points.rows(), srf.control_points.cols());
-	for (int i = 0; i < srf.control_points.rows(); i++) {
-		for (int j = 0; j < srf.control_points.cols(); j++) {
-			Cw(i, j) =
-				glm::vec<4, float>(tinynurbs::util::cartesianToHomogenous(srf.control_points(i, j), srf.weights(i, j)));
-		}
-	}
-
-	std::cout << "Generating nurbs cloud..." << std::endl;
 	if (tinynurbs::surfaceIsValid(srf)) {
+		std::cout << "Generating nurbs cloud..." << std::endl;
+		tinynurbs::array2<glm::vec<4, float>> Cw;
+		Cw.resize(srf.control_points.rows(), srf.control_points.cols());
+		for (int i = 0; i < srf.control_points.rows(); i++) {
+			for (int j = 0; j < srf.control_points.cols(); j++) {
+				Cw(i, j) =
+					glm::vec<4, float>(tinynurbs::util::cartesianToHomogenous(srf.control_points(i, j), srf.weights(i, j)));
+			}
+		}
+
 		glm::vec3 minPoint = aabb.min();
 		glm::vec3 maxPoint = aabb.max();
 		PointModel point;
+
+		/*point._point = tinynurbs::surfacePoint(srf, .0f, .0f, Cw);
+		std::cout << point._point.x << " - " << point._point.y << " - " << point._point.z << std::endl;
+		std::cout << minPoint.x << " - " << minPoint.y << " - " << minPoint.z << std::endl;*/
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 		std::default_random_engine generator(seed);
-		
+		std::uniform_real_distribution<float> genColor(0, 0.1f);
 		#pragma omp parallel for private(point, generator)
 		for (int x = 0; x < axisSubdivision[0]; x++) {
 			for (int y = 0; y < axisSubdivision[1]; y++) {
-				unsigned limit = subdivisions[x][y]->numberPointsToDensity(cloudDensity);
-				std::uniform_real_distribution<float> disX(x, x+1);
-				std::uniform_real_distribution<float> disY(y, y+1);
+				unsigned limit = subdivisions[x][y]->numberPointsToDensity(cloudDensity * 2);
+				std::uniform_real_distribution<float> disX(x, x + 1);
+				std::uniform_real_distribution<float> disY(y, y + 1);
 				for (int i = 0; i < limit; i++) {
 					float valX = disX(generator);
 					float valY = disY(generator);
 					point._point = tinynurbs::surfacePoint(srf, valX, valY, Cw);
-					point.saveRGB(subdivisions[x][y]->getColor());
-					#pragma omp critical
-					clouds[1]->nuevoPunto(point);
+					/*point._point.x += (gsd / 2) * (degree);
+					point._point.y += (gsd / 2) * (degree);*/
+					/*std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;*/
+					int posColorX = valX + 0.5f;
+					int posColorY = valY + 0.5f;
+					if (posColorX >= axisSubdivision[0])
+						posColorX = axisSubdivision[0] - 1;
+					if (posColorY >= axisSubdivision[1])
+						posColorY = axisSubdivision[1] - 1;
+					glm::vec3 color = subdivisions[posColorX][posColorY]->getColor();
+					color.r += genColor(generator);
+					color.g += genColor(generator);
+					color.b += genColor(generator);
+					point.saveRGB(color);
+					if (point._point.z < maxPoint.z + 100 && point._point.z > minPoint.z - 50) {
+						#pragma omp critical
+						clouds[1]->nuevoPunto(point);
+					}
 				}
 			}
-			
+
 		}
+
 		std::cout << "Updating nurbs cloud visualization..." << std::endl;
 		clouds[1]->actualizarNube();
 	}

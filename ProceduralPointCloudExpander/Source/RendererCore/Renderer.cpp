@@ -92,10 +92,12 @@ void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene) 
 	if (pCloud) {
 		procGenerator.newPointCloud(pCloud, newScene);
 		glm::vec3 pos = pCloud->getAABB().max();
-		pos = glm::rotate(glm::pi<float>() / 4.0f, glm::vec3(1.0f, 0.0f, 1.0f))*glm::vec4(pos, 0.0f);
+		camara.increaseZFar(glm::distance(pos, pCloud->getAABB().center()));
+		pos = glm::rotate(glm::pi<float>() / 6.0f, glm::vec3(1.0f, .0f, 1.0f))*glm::vec4(pos, 0.0f);
 		camara.setPosicion(pos);
 		camara.setPuntoMira(pCloud->getAABB().center());
 		camara.setSpeedMultiplier((pCloud->getAABB().size().x + pCloud->getAABB().size().y) * 0.02f);
+		
 	}
 	else
 		std::cerr << "Point cloud load has failed" << std::endl;
