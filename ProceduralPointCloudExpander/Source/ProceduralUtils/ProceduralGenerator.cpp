@@ -113,7 +113,7 @@ void ProceduralGenerator::meanHeight(unsigned x, unsigned y) {
 			}
 		}
 	}
-	if (counter > 1) {
+	if (counter > 0) {
 		mean /= counter;
 		subdivisions[x][y]->setHeight(mean);
 	}
@@ -143,7 +143,7 @@ void ProceduralGenerator::meanColor(unsigned x, unsigned y) {
 			}
 		}
 	}
-	if (counter > 1) {
+	if (counter > 0) {
 		mean /= counter;
 		subdivisions[x][y]->setColor(mean);
 	}
@@ -291,15 +291,13 @@ void ProceduralGenerator::computeNURBS() {
 	srf.degree_v = degree;
 	srf.knots_u.resize(axisSubdivision[0] + degree + 1);
 	srf.knots_v.resize(axisSubdivision[1] + degree + 1);
-	for (int i = 0; i < srf.knots_u.size() / (degree + 1); i++) {
-		for (int j = 0; j < degree + 1; j++) {
-			srf.knots_u[i * (degree + 1) + j] = i;
-		}
+	for (int i = 0; i < srf.knots_u.size(); i++) {
+		srf.knots_u[i] = (int)i / (degree + 1);
+
 	}
-	for (int i = 0; i < srf.knots_v.size() / (degree + 1); i++) {
-		for (int j = 0; j < degree + 1; j++) {
-			srf.knots_v[i * (degree + 1) + j] = i;
-		}
+	for (int i = 0; i < srf.knots_v.size(); i++) {
+		srf.knots_v[i] = (int)i / (degree + 1);
+
 	}
 
 	/*std::iota(srf.knots_u.begin() + degree + 1, srf.knots_u.end() - (degree + 1), degree + 1);
@@ -321,7 +319,7 @@ void ProceduralGenerator::computeNURBS() {
 			}
 			aux = subdivisions[x][y]->getMidPoint();
 			controlPoints.push_back(aux);
-			density = (float)(subdivisions[x][y]->getNumberOfPoints() + 1); /*/ ((float)clouds[0]->getNumberOfPoints() + axisSubdivision[0] * axisSubdivision[1]);*/
+			density = (float)(subdivisions[x][y]->getNumberOfPoints() + 1) / ((float)clouds[0]->getNumberOfPoints());
 			weights.push_back(density);
 		}
 	}
@@ -349,7 +347,7 @@ void ProceduralGenerator::computeNURBS() {
 		std::cout << minPoint.x << " - " << minPoint.y << " - " << minPoint.z << std::endl;*/
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 		std::default_random_engine generator(seed);
-		std::uniform_real_distribution<float> genColor(0, 0.1f);
+		std::uniform_real_distribution<float> genColor(0, 0.05f);
 		#pragma omp parallel for private(point, generator)
 		for (int x = 0; x < axisSubdivision[0]; x++) {
 			for (int y = 0; y < axisSubdivision[1]; y++) {
@@ -362,7 +360,7 @@ void ProceduralGenerator::computeNURBS() {
 					point._point = tinynurbs::surfacePoint(srf, valX, valY, Cw);
 					/*point._point.x += (gsd / 2) * (degree);
 					point._point.y += (gsd / 2) * (degree);*/
-					/*std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;*/
+					std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;
 					int posColorX = valX + 0.5f;
 					int posColorY = valY + 0.5f;
 					if (posColorX >= axisSubdivision[0])
@@ -380,7 +378,6 @@ void ProceduralGenerator::computeNURBS() {
 					}
 				}
 			}
-
 		}
 
 		std::cout << "Updating nurbs cloud visualization..." << std::endl;
