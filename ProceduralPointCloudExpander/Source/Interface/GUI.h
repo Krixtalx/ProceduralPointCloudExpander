@@ -4,8 +4,7 @@
 
 /**
 *	@file GUI.h
-*	@authors Alfonso López Ruiz (alr00048@red.ujaen.es)
-*	@date 08/05/2019
+*	@authors Alfonso López Ruiz (alr00048@red.ujaen.es), José Antonio Collado Araque (jaca0011@red.ujaen.es)
 */
 
 /**
@@ -24,6 +23,8 @@ protected:
 	bool							_showFileDialog;					//!< Shows a file dialog that allows opening a point cloud in .ply format
 	bool							_showPointCloudDialog;				//!< 
 	bool							_showRenderingSettings;				//!< Displays a window which allows the user to modify the rendering parameters
+
+	bool							sceneLoaded = false;
 
 protected:
 	/**
@@ -80,6 +81,10 @@ protected:
 	*	@brief Shows a window with general rendering configuration.
 	*/
 	void showRenderingSettings();
+
+	void loadStyle();
+
+	void createDockspace();
 
 public:
 	/**

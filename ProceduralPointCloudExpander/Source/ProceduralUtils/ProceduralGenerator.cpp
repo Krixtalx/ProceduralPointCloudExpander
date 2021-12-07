@@ -84,7 +84,7 @@ void ProceduralGenerator::readParameters(const std::string & path) {
 		parametersFile.close();
 		glm::vec3 size = aabb.size();
 		for (size_t i = 0; i < 2; i++) {
-			axisSubdivision[i] = round(size[i] / gsd);
+			axisSubdivision[i] = size[i] / gsd;
 		}
 	}
 }
@@ -228,7 +228,7 @@ void ProceduralGenerator::subdivideCloud() {
 /**
  * @brief Saves the current voxel grid as a png file in gray scale that represents a height map
 */
-void ProceduralGenerator::saveHeightMap() const {
+void ProceduralGenerator::saveHeightMap(std::string path) const {
 	const float minPointZ = aabb.min()[2];
 	const float relativeMaxPointZ = aabb.max()[2] - minPointZ;
 	float relativeHeightValue;
@@ -255,13 +255,13 @@ void ProceduralGenerator::saveHeightMap() const {
 	}
 
 	Image* image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
-	image->saveImage("heightmap.png");
+	image->saveImage(path);
 }
 
 /**
  * @brief Saves the current voxel grid as a png file in RGB scale that could be used as a texture of the terrain
 */
-void ProceduralGenerator::saveTextureMap() {
+void ProceduralGenerator::saveTextureMap(std::string path) {
 	const float minPointZ = aabb.min()[2];
 	float relativeMaxPointZ = aabb.max()[2] - minPointZ;
 	float relativeHeightValue;
@@ -277,7 +277,7 @@ void ProceduralGenerator::saveTextureMap() {
 		}
 	}
 	const auto image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
-	image->saveImage("texturemap.png");
+	image->saveImage(path);
 }
 
 void ProceduralGenerator::computeNURBS() {
@@ -297,14 +297,13 @@ void ProceduralGenerator::computeNURBS() {
 	}
 	for (int i = 0; i < srf.knots_v.size(); i++) {
 		srf.knots_v[i] = (int)i / (degree + 1);
-
 	}
 
 	/*std::iota(srf.knots_u.begin() + degree + 1, srf.knots_u.end() - (degree + 1), degree + 1);
 	std::iota(srf.knots_v.begin() + degree + 1, srf.knots_v.end() - (degree + 1), degree + 1);*/
 
-	//std::iota(srf.knots_u.begin(), srf.knots_u.end(), 0);
-	//std::iota(srf.knots_v.begin(), srf.knots_v.end(), 0);
+	/*std::iota(srf.knots_u.begin(), srf.knots_u.end(), 0);
+	std::iota(srf.knots_v.begin(), srf.knots_v.end(), 0);*/
 
 	std::vector<glm::vec3> controlPoints;
 	std::vector<float> weights;
@@ -360,7 +359,7 @@ void ProceduralGenerator::computeNURBS() {
 					point._point = tinynurbs::surfacePoint(srf, valX, valY, Cw);
 					/*point._point.x += (gsd / 2) * (degree);
 					point._point.y += (gsd / 2) * (degree);*/
-					std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;
+					/*std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;*/
 					int posColorX = valX + 0.5f;
 					int posColorY = valY + 0.5f;
 					if (posColorX >= axisSubdivision[0])

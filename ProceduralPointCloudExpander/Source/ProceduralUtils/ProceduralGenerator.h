@@ -13,15 +13,16 @@ private:
 	PPCX::PointCloud* clouds[2];
 	float cloudDensity;
 
-protected:
 	void readParameters(const std::string& path);
 	void meanHeight(unsigned x, unsigned y);
 	void meanColor(unsigned x, unsigned y);
 	glm::vec3 getColor(float pointX, float pointY);
 	void createVoxelGrid();
 	void subdivideCloud();
-	void saveHeightMap() const;
-	void saveTextureMap();
+
+protected:
+	void saveHeightMap(std::string path) const;
+	void saveTextureMap(std::string path);
 	void computeNURBS();
 
 public:
