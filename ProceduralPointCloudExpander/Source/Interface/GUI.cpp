@@ -133,7 +133,7 @@ void GUI::showPointCloudDialog() {
 }
 
 void GUI::showRenderingSettings() {
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
 	ImGui::SetNextWindowBgAlpha(0.6f);
 	if (ImGui::Begin("Rendering Settings", &_showRenderingSettings, window_flags)) {
 		glm::vec3 color = PPCX::Renderer::getInstancia()->getColorFondo();
@@ -212,7 +212,7 @@ void GUI::loadFonts() {
 	ImFontConfig cfg;
 	ImGuiIO& io = ImGui::GetIO();
 
-	io.Fonts->AddFontFromFileTTF("Assets/Fonts/Ruda-Bold.ttf", 14.0f);
+	io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto-Bold.ttf", 14.0f);
 
 	static constexpr ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
 	cfg.MergeMode = true;
@@ -247,10 +247,10 @@ void GUI::loadStyle() {
 	style->Colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
 	style->Colors[ImGuiCol_ChildBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
 	style->Colors[ImGuiCol_PopupBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
-	style->Colors[ImGuiCol_Border] = ImVec4(0.40f, 0.40f, 0.43f, 0.88f);
+	style->Colors[ImGuiCol_Border] = ImVec4(0.10f, 0.10f, 0.13f, 0.88f);
 	style->Colors[ImGuiCol_BorderShadow] = ImVec4(0.52f, 0.51f, 0.58f, 0.00f);
-	style->Colors[ImGuiCol_FrameBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
-	style->Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+	style->Colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.19f, 0.22f, 1.00f);
+	style->Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.34f, 0.33f, 0.39f, 1.00f);
 	style->Colors[ImGuiCol_FrameBgActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
 	style->Colors[ImGuiCol_TitleBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
 	style->Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(1.00f, 0.98f, 0.95f, 0.75f);
