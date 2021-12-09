@@ -114,7 +114,7 @@ void GUI::showFileDialog() {
 
 void GUI::showPointCloudDialog() {
 	if (ImGui::Begin("Open Point Cloud", &_showPointCloudDialog, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking)) {
-		bool newScene = false;
+		static bool newScene = false;
 		this->leaveSpace(1);
 
 		ImGui::Checkbox("New Scene", &newScene);
@@ -125,6 +125,7 @@ void GUI::showPointCloudDialog() {
 			PPCX::Renderer::getInstancia()->cargaModelo(_pointCloudPath, newScene);
 			_showPointCloudDialog = false;
 			sceneLoaded = true;
+			newScene = false;
 		}
 
 	}

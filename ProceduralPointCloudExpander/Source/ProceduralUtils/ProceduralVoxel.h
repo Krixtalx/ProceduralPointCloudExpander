@@ -35,7 +35,7 @@ public:
 
 	float getHeight();
 
-	glm::vec3 getMidPoint();
+	glm::vec3 getRepresentativePoint();
 
 	glm::vec3 getColor();
 

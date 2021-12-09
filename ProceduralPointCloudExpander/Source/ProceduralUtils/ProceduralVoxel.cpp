@@ -66,8 +66,8 @@ float ProceduralVoxel::getHeight() {
 	return height;
 }
 
-glm::vec3 ProceduralVoxel::getMidPoint() {
-	glm::vec3 aux = aabb->center();
+glm::vec3 ProceduralVoxel::getRepresentativePoint() {
+	glm::vec3 aux = aabb->min();
 	aux[2] = height;
 	return aux;
 }

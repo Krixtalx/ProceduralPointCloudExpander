@@ -286,21 +286,35 @@ void ProceduralGenerator::computeNURBS() {
 	clouds[1] = new PPCX::PointCloud("DefaultSP");
 
 	tinynurbs::RationalSurface<float> srf;
-	int degree = 5;
+	int degree = 2;
 	srf.degree_u = degree;
 	srf.degree_v = degree;
 	srf.knots_u.resize(axisSubdivision[0] + degree + 1);
 	srf.knots_v.resize(axisSubdivision[1] + degree + 1);
-	for (int i = 0; i < srf.knots_u.size(); i++) {
+	/*for (int i = 0; i < srf.knots_u.size(); i++) {
 		srf.knots_u[i] = (int)i / (degree + 1);
 
 	}
 	for (int i = 0; i < srf.knots_v.size(); i++) {
 		srf.knots_v[i] = (int)i / (degree + 1);
-	}
+	}*/
 
-	/*std::iota(srf.knots_u.begin() + degree + 1, srf.knots_u.end() - (degree + 1), degree + 1);
-	std::iota(srf.knots_v.begin() + degree + 1, srf.knots_v.end() - (degree + 1), degree + 1);*/
+	for (int i = 0; i < (degree + 1); i++) {
+		srf.knots_u[i] = 0;
+
+	}
+	for (int i = 0; i < (degree + 1); i++) {
+		srf.knots_v[i] = 0;
+	}
+	std::iota(srf.knots_u.begin() + degree + 1, srf.knots_u.end() - (degree + 1), 1);
+	std::iota(srf.knots_v.begin() + degree + 1, srf.knots_v.end() - (degree + 1), 1);
+	for (int i = axisSubdivision[0]; i < srf.knots_u.size(); i++) {
+		srf.knots_u[i] = axisSubdivision[0] - degree;
+
+	}
+	for (int i = axisSubdivision[1]; i < srf.knots_v.size(); i++) {
+		srf.knots_v[i] = axisSubdivision[1] - degree;
+	}
 
 	/*std::iota(srf.knots_u.begin(), srf.knots_u.end(), 0);
 	std::iota(srf.knots_v.begin(), srf.knots_v.end(), 0);*/
@@ -311,14 +325,14 @@ void ProceduralGenerator::computeNURBS() {
 	float density;
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
-			glm::vec3 aux = subdivisions[x][y]->getMidPoint();
+			glm::vec3 aux = subdivisions[x][y]->getRepresentativePoint();
 			if (aux[2] == FLT_MAX) {
 				meanHeight(x, y);
 				meanColor(x, y);
 			}
-			aux = subdivisions[x][y]->getMidPoint();
+			aux = subdivisions[x][y]->getRepresentativePoint();
 			controlPoints.push_back(aux);
-			density = (float)(subdivisions[x][y]->getNumberOfPoints() + 1) / ((float)clouds[0]->getNumberOfPoints());
+			density = (float)(subdivisions[x][y]->getNumberOfPoints() + 1);
 			weights.push_back(density);
 		}
 	}
@@ -379,7 +393,7 @@ void ProceduralGenerator::computeNURBS() {
 			}
 		}
 
-		std::cout << "Updating nurbs cloud visualization..." << std::endl;
+		std::cout << "Updating nurbs cloud visualization..." << std::endl << std::endl;
 		clouds[1]->actualizarNube();
 	}
 }
