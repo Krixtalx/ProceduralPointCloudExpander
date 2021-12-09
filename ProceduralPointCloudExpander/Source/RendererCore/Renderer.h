@@ -24,10 +24,9 @@ namespace PPCX {
 		static Renderer* instancia; ///< Puntero al único objeto de la clase
 		Renderer();
 
-		glm::vec3 colorFondo = { 0.2, 0.2, 0.2 };
+		glm::vec3 colorFondo = { 0.1, 0.1, 0.15 };
 		float pointSize = 1.0f;
 
-		bool triangulo = false, tetraedro = false;
 		ProceduralGenerator procGenerator;
 
 		PPCX::Camara camara;
@@ -59,7 +58,7 @@ namespace PPCX {
 
 		void setPointSize(float pointS);
 		
-		bool& getPointCloudVisible(unsigned cloud);
+		ProceduralGenerator* getProceduralGenerator();
 	};
 }
 

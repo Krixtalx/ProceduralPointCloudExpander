@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utilities/Singleton.h"
+#include "ProceduralUtils/ProceduralGenerator.h"
 
 /**
 *	@file GUI.h
@@ -10,8 +11,7 @@
 /**
 *	@brief Wrapper for GUI graphics which allows the user to interact with the scene.
 */
-class GUI final : public Singleton<GUI>
-{
+class GUI final : public Singleton<GUI> {
 	friend class Singleton<GUI>;
 
 protected:
@@ -23,8 +23,9 @@ protected:
 	bool							_showFileDialog;					//!< Shows a file dialog that allows opening a point cloud in .ply format
 	bool							_showPointCloudDialog;				//!< 
 	bool							_showRenderingSettings;				//!< Displays a window which allows the user to modify the rendering parameters
-
+	bool							_showProceduralSettings;
 	bool							sceneLoaded = false;
+	ProceduralGenerator* procGenerator = nullptr;
 
 protected:
 	/**
@@ -82,6 +83,10 @@ protected:
 	*/
 	void showRenderingSettings();
 
+	void showProceduralSettings();
+
+	void showProgressBar();
+
 	void loadStyle();
 
 	void createDockspace();
@@ -106,5 +111,5 @@ public:
 
 	void loadFonts();
 
-	bool isMouseActive() { return ImGui::GetIO().WantCaptureMouse; }
+	bool isMouseActive() { return ImGui::GetIO().WantCaptureMouse;}
 };

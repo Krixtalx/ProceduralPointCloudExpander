@@ -7,7 +7,7 @@
 
 
 PPCX::PointCloud::PointCloud(std::string shaderProgram, const glm::vec3& pos) :
-	idVBO(UINT_MAX), idIBO(UINT_MAX),
+	idVAO(UINT_MAX), idVBO(UINT_MAX), idIBO(UINT_MAX),
 	shaderProgram(std::move(shaderProgram)),
 	posicion(pos) {
 	//Creamos nuestro VAO
@@ -21,15 +21,13 @@ PPCX::PointCloud::PointCloud(std::string shaderProgram, const glm::vec3& pos) :
  * @param pos Posicion inicial de la nube de puntos
  */
 PPCX::PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& puntos, const AABB& aabb, const glm::vec3& pos) :
-	idVBO(UINT_MAX), idIBO(UINT_MAX),
+	idVAO(UINT_MAX), idVBO(UINT_MAX), idIBO(UINT_MAX),
 	shaderProgram(std::move(shaderProgram)),
 	aabb(aabb),
 	posicion(pos) {
-	//Creamos nuestro VAO
-	glGenVertexArrays(1, &idVAO);
-	glBindVertexArray(idVAO);
+
 	nuevosPuntos(puntos);
-	actualizarNube();
+	needUpdating = true;
 }
 
 /**
@@ -40,7 +38,6 @@ PPCX::PointCloud::PointCloud(PointCloud& orig) : vbo(orig.vbo), shaderProgram(or
 	//Creamos nuestro VAO
 	glGenVertexArrays(1, &idVAO);
 	glBindVertexArray(idVAO);
-
 
 	nuevoVBO(GL_STATIC_DRAW);
 }
@@ -69,14 +66,17 @@ void PPCX::PointCloud::nuevosPuntos(const std::vector<PointModel>& puntos) {
 }
 
 void PPCX::PointCloud::actualizarNube() {
+	if (idVAO == UINT_MAX) {
+		glGenVertexArrays(1, &idVAO);
+		glBindVertexArray(idVAO);
+	}
 	nuevoVBO(GL_STATIC_DRAW);
 	std::vector<unsigned> ibo;
 	ibo.resize(vbo.size());
 	std::iota(ibo.begin(), ibo.end(), 0);
 	nuevoIBO(ibo, GL_STATIC_DRAW);
+	needUpdating = false;
 }
-
-
 
 /**
  * Instancia un VBO en el contexto OpenGL y lo guarda en vbos

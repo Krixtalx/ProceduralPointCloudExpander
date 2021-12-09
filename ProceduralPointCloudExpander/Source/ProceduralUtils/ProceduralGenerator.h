@@ -4,6 +4,7 @@
 #include <RendererCore/pointCloud.h>
 
 class ProceduralGenerator {
+	friend class GUI;
 private:
 	unsigned axisSubdivision[2];
 	float gsd;
@@ -12,6 +13,7 @@ private:
 	AABB aabb;
 	PPCX::PointCloud* clouds[2];
 	float cloudDensity;
+	float progress = 2.0f;
 
 	void readParameters(const std::string& path);
 	void meanHeight(unsigned x, unsigned y);

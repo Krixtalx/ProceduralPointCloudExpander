@@ -28,6 +28,8 @@ namespace PPCX {
 		void nuevoIBO(std::vector<GLuint> datos, GLenum freqAct);
 
 	public:
+		bool needUpdating=false;
+
 		PointCloud(std::string shaderProgram, const glm::vec3& pos = { 0, 0, 0 });
 
 		PointCloud(std::string shaderProgram, const std::vector<PointModel>& puntos, const AABB& aabb, const glm::vec3& pos = {0, 0, 0});

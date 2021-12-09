@@ -64,7 +64,7 @@ void PPCX::Renderer::inicializaOpenGL() const {
 /**
  * Método para hacer el refresco de la escena
  */
-void PPCX::Renderer::refrescar(){
+void PPCX::Renderer::refrescar() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	const glm::mat4 matrizMVP = camara.matrizMVP();
@@ -93,14 +93,14 @@ void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene) 
 		procGenerator.newPointCloud(pCloud, newScene);
 		glm::vec3 pos = pCloud->getAABB().max();
 		camara.increaseZFar(glm::distance(pos, pCloud->getAABB().center()));
-		pos = glm::rotate(glm::pi<float>() / 6.0f, glm::vec3(1.0f, .0f, 1.0f))*glm::vec4(pos, 0.0f);
+		pos = glm::rotate(glm::pi<float>() / 6.0f, glm::vec3(1.0f, .0f, 1.0f)) * glm::vec4(pos, 0.0f);
 		camara.setPosicion(pos);
 		camara.setPuntoMira(pCloud->getAABB().center());
 		camara.setSpeedMultiplier((pCloud->getAABB().size().x + pCloud->getAABB().size().y) * 0.02f);
-		
-	}
-	else
+
+	} else {
 		std::cerr << "Point cloud load has failed" << std::endl;
+	}
 }
 
 /**
@@ -145,6 +145,6 @@ void PPCX::Renderer::setPointSize(float pointS) {
 	glPointSize(pointSize);
 }
 
-bool& PPCX::Renderer::getPointCloudVisible(unsigned cloud) {
-	return procGenerator.getPointCloudVisibility(cloud);
+ProceduralGenerator* PPCX::Renderer::getProceduralGenerator() {
+	return &procGenerator;
 }

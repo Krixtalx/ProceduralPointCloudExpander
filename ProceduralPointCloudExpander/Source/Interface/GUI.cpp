@@ -11,7 +11,7 @@
 GUI::GUI() :
 	_showAboutUs(false), _showControls(false), _showFileDialog(false),
 	_showPointCloudDialog(false), _showRenderingSettings(false) {
-
+	procGenerator = PPCX::Renderer::getInstancia()->getProceduralGenerator();
 }
 
 void GUI::createMenu() {
@@ -22,15 +22,13 @@ void GUI::createMenu() {
 	if (_showControls)				showControls();
 	if (_showFileDialog)			showFileDialog();
 	if (_showPointCloudDialog)		showPointCloudDialog();
+	if (_showProceduralSettings)	showProceduralSettings();
 
 	if (ImGui::BeginMainMenuBar()) {
 		ImGui::MenuItem(ICON_FA_SAVE "Open Point Cloud", nullptr, &_showFileDialog);
 		if (sceneLoaded)
 			ImGui::MenuItem(ICON_FA_CUBE "Rendering", nullptr, &_showRenderingSettings);
-
-		if (ImGui::BeginMenu(ICON_FA_SITEMAP "Procedural Options")) {
-			ImGui::EndMenu();
-		}
+		ImGui::MenuItem(ICON_FA_SITEMAP "Procedural settings", nullptr, &_showProceduralSettings);
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(io.DisplaySize.x - 130);
@@ -70,28 +68,29 @@ void GUI::showAboutUsWindow() {
 }
 
 void GUI::showControls() {
+	ImGui::SetNextWindowBgAlpha(0.6f);
 	if (ImGui::Begin("Scene controls", &_showControls, ImGuiWindowFlags_NoCollapse)) {
-		ImGui::Columns(2, "ControlColumns"); // 4-ways, with border
-		ImGui::Separator();
-		ImGui::Text("Movement"); ImGui::NextColumn();
-		ImGui::Text("Control"); ImGui::NextColumn();
-		ImGui::Separator();
+		if (ImGui::BeginTable("ControlsTable", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_PreciseWidths)) {
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::Text("     Movement"); ImGui::TableNextColumn();
+			ImGui::Text("     Control");
 
-		const int NUM_MOVEMENTS = 12;
-		const char* movement[] = { "Orbit (XZ)", "Orbit (Y)", "Truck", "Dolly", "Boom", "Crane", "Reset Camera", "Take Screenshot", "Zoom +/-", "Pan", "Tilt", "Increase/Decrease zFar" };
-		const char* controls[] = { "Move mouse horizontally(hold left button)", "Move mouse vertically (hold left button)", "W, S", "A, D", "Z", "X", "R", "K", "Scroll wheel", "Move mouse horizontally(hold right button)", "Move mouse vertically (hold right button)", "+/-" };
+			const int NUM_MOVEMENTS = 12;
+			const char* movement[] = { "Orbit (XZ)", "Orbit (Y)", "Truck", "Dolly", "Boom", "Crane", "Reset Camera", "Take Screenshot", "Zoom +/-", "Pan", "Tilt", "Increase/Decrease zFar" };
+			const char* controls[] = { "Move mouse horizontally(hold left button)", "Move mouse vertically (hold left button)", "W, S", "A, D", "Z", "X", "R", "K", "Scroll wheel", "Move mouse horizontally(hold right button)", "Move mouse vertically (hold right button)", "+/-" };
 
-		for (int i = 0; i < NUM_MOVEMENTS; i++) {
-			ImGui::Text(movement[i]); ImGui::NextColumn();
-			ImGui::Text(controls[i]); ImGui::NextColumn();
+			for (int i = 0; i < NUM_MOVEMENTS; i++) {
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::Text(movement[i]);
+				ImGui::TableNextColumn();
+				ImGui::Text(controls[i]);
+			}
+			ImGui::EndTable();
 		}
-
-		ImGui::Columns(1);
-		ImGui::Separator();
-
+		ImGui::End();
 	}
-
-	ImGui::End();
 }
 
 void GUI::showFileDialog() {
@@ -122,15 +121,16 @@ void GUI::showPointCloudDialog() {
 		this->leaveSpace(2);
 
 		if (ImGui::Button("Open Point Cloud")) {
-			PPCX::Renderer::getInstancia()->cargaModelo(_pointCloudPath, newScene);
+			procGenerator->progress = .0f;
+			std::thread hilo(&PPCX::Renderer::cargaModelo, PPCX::Renderer::getInstancia(), _pointCloudPath, newScene);
+			hilo.detach();
 			_showPointCloudDialog = false;
 			sceneLoaded = true;
 			newScene = false;
 		}
-
+		ImGui::End();
 	}
-
-	ImGui::End();
+	
 }
 
 void GUI::showRenderingSettings() {
@@ -149,21 +149,83 @@ void GUI::showRenderingSettings() {
 				ImGui::SliderFloat("Point size", &value, 0.1f, 10.0f);
 				PPCX::Renderer::getInstancia()->setPointSize(value);
 
-				ImGui::Checkbox("Original cloud", &PPCX::Renderer::getInstancia()->getPointCloudVisible(0));
-				ImGui::Checkbox("NURBS cloud", &PPCX::Renderer::getInstancia()->getPointCloudVisible(1));
+				ImGui::Checkbox("Original cloud", &procGenerator->getPointCloudVisibility(0));
+				ImGui::Checkbox("NURBS cloud", &procGenerator->getPointCloudVisibility(1));
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Statistics")) {
-				this->leaveSpace(1);
-				ImGui::Text("Number of points loaded: ");
-				ImGui::Text("Number of points in original point cloud: ");
-				ImGui::Text("Number of points in nurbs point cloud: ");
+				if (ImGui::BeginTable("table1", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_PreciseWidths)) {
+					ImGui::TableNextRow();
+					ImGui::TableNextColumn();
+					ImGui::Text("Number of points loaded"); ImGui::TableNextColumn();
+					ImGui::Text("%i", procGenerator->clouds[0]->getNumberOfPoints() + procGenerator->clouds[1]->getNumberOfPoints());
+					ImGui::TableNextRow(); ImGui::TableNextColumn();
+
+					ImGui::Text("Number of points in original point cloud"); ImGui::TableNextColumn();
+					ImGui::Text("%i", procGenerator->clouds[0]->getNumberOfPoints());
+					ImGui::TableNextRow(); ImGui::TableNextColumn();
+
+					ImGui::Text("Number of points in nurbs point cloud"); ImGui::TableNextColumn();
+					ImGui::Text("%i", procGenerator->clouds[1]->getNumberOfPoints());
+					ImGui::TableNextRow(); ImGui::TableNextColumn();
+
+					ImGui::Text("Number of subdivisions in x"); ImGui::TableNextColumn();
+					ImGui::Text("%i", procGenerator->axisSubdivision[0]);
+					ImGui::TableNextRow(); ImGui::TableNextColumn();
+
+					ImGui::Text("Number of subdivisions in y"); ImGui::TableNextColumn();
+					ImGui::Text("%i", procGenerator->axisSubdivision[1]);
+					ImGui::TableNextRow(); ImGui::TableNextColumn();
+
+					ImGui::Text("Cloud density"); ImGui::TableNextColumn();
+					ImGui::Text("%f", procGenerator->cloudDensity);
+					ImGui::TableNextRow(); ImGui::TableNextColumn();
+
+					ImGui::EndTable();
+				}
 				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();
 		}
 	}
 	ImGui::End();
+}
+
+void GUI::showProceduralSettings() {
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
+	ImGui::SetNextWindowBgAlpha(0.6f);
+	if (ImGui::Begin("Procedural Settings", &_showProceduralSettings, window_flags)) {
+		if (ImGui::BeginTabBar("")) {
+			if (ImGui::BeginTabItem("NURBS")) {
+				this->leaveSpace(1);
+				ImGui::EndTabItem();
+			}
+		}
+	}
+	ImGui::End();
+}
+
+void GUI::showProgressBar() {
+	if (procGenerator->progress < 1.0f) {
+		if (ImGui::Begin("Progress", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse)) {
+			if (procGenerator->progress < .2f)
+				ImGui::Text("Loading point cloud...");
+			else if(procGenerator->progress < .4f)
+				ImGui::Text("Creating voxel grid...");
+			else if (procGenerator->progress < .5f)
+				ImGui::Text("Computing height and colors...");
+			else if (procGenerator->progress < .6f)
+				ImGui::Text("Creating nurbs...");
+			else if (procGenerator->progress < .75f)
+				ImGui::Text("Generating nurbs cloud...");
+			else
+				ImGui::Text("Finishing...");
+			//ImGui::PushStyleColor(ImGuiCol_, ImVec4(0.32f, 0.39f, 0.87f, 1.00f));
+			ImGui::ProgressBar(procGenerator->progress);
+			//ImGui::PopStyleColor();
+			ImGui::End();
+		}
+	}
 }
 
 
@@ -195,6 +257,7 @@ void GUI::render() {
 
 	this->createDockspace();
 	this->createMenu();
+	this->showProgressBar();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

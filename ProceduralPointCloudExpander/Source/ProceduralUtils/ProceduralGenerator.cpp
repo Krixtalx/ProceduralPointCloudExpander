@@ -18,9 +18,12 @@ ProceduralGenerator::~ProceduralGenerator() {
 }
 
 void ProceduralGenerator::drawClouds(glm::mat4 matrizMVP) {
-	for (const auto& cloud : clouds) {
-		if (cloud)
+	for (PPCX::PointCloud*& cloud : clouds) {
+		if (cloud) {
+			if (cloud->needUpdating)
+				cloud->actualizarNube();
 			cloud->dibujarModelo(matrizMVP);
+		}
 	}
 }
 
@@ -37,15 +40,15 @@ void ProceduralGenerator::newPointCloud(PPCX::PointCloud * pCloud, bool newScene
 			delete cloud;
 		}
 		clouds[0] = pCloud;
+		cloudDensity = clouds[0]->getDensity();
 	} else {
 		const auto vec = pCloud->getPoints();
 		for (auto i : vec) {
 			clouds[0]->nuevoPunto(i);
 		}
-		clouds[0]->actualizarNube();
+		clouds[0]->needUpdating=true;
 	}
 	this->aabb = clouds[0]->getAABB();
-	cloudDensity = clouds[0]->getDensity();
 	readParameters("proceduralParameters.ini");
 	createVoxelGrid();
 	subdivideCloud();
@@ -155,6 +158,7 @@ void ProceduralGenerator::meanColor(unsigned x, unsigned y) {
 */
 void ProceduralGenerator::createVoxelGrid() {
 	std::cout << "Creating voxel grid..." << std::endl;
+	this->progress = 0.2f;
 	glm::vec3 size = aabb.size();
 	const glm::vec3 minPoint = aabb.min();
 	float stride[3];
@@ -188,6 +192,7 @@ void ProceduralGenerator::createVoxelGrid() {
 */
 void ProceduralGenerator::subdivideCloud() {
 	std::cout << "Subdividing cloud..." << std::endl;
+	this->progress = 0.4f;
 	unsigned pointCloudSize = clouds[0]->getNumberOfPoints();
 	const std::vector<PointModel> points = clouds[0]->getPoints();
 
@@ -213,6 +218,7 @@ void ProceduralGenerator::subdivideCloud() {
 	}
 
 	std::cout << "Computing height..." << std::endl;
+	this->progress = 0.5f;
 	#pragma omp parallel for collapse(2)
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
@@ -282,8 +288,8 @@ void ProceduralGenerator::saveTextureMap(std::string path) {
 
 void ProceduralGenerator::computeNURBS() {
 	std::cout << "Creating nurbs..." << std::endl;
+	this->progress = 0.6f;
 	delete clouds[1];
-	clouds[1] = new PPCX::PointCloud("DefaultSP");
 
 	tinynurbs::RationalSurface<float> srf;
 	int degree = 2;
@@ -342,6 +348,7 @@ void ProceduralGenerator::computeNURBS() {
 
 	if (tinynurbs::surfaceIsValid(srf)) {
 		std::cout << "Generating nurbs cloud..." << std::endl;
+		this->progress = .75f;
 		tinynurbs::array2<glm::vec<4, float>> Cw;
 		Cw.resize(srf.control_points.rows(), srf.control_points.cols());
 		for (int i = 0; i < srf.control_points.rows(); i++) {
@@ -354,6 +361,8 @@ void ProceduralGenerator::computeNURBS() {
 		glm::vec3 minPoint = aabb.min();
 		glm::vec3 maxPoint = aabb.max();
 		PointModel point;
+		std::vector<PointModel> points;
+		AABB newAABB;
 
 		/*point._point = tinynurbs::surfacePoint(srf, .0f, .0f, Cw);
 		std::cout << point._point.x << " - " << point._point.y << " - " << point._point.z << std::endl;
@@ -387,13 +396,15 @@ void ProceduralGenerator::computeNURBS() {
 					point.saveRGB(color);
 					if (point._point.z < maxPoint.z + 100 && point._point.z > minPoint.z - 50) {
 						#pragma omp critical
-						clouds[1]->nuevoPunto(point);
+						points.push_back(point);
+						#pragma omp critical
+						newAABB.update(point._point);
 					}
 				}
 			}
 		}
-
-		std::cout << "Updating nurbs cloud visualization..." << std::endl << std::endl;
-		clouds[1]->actualizarNube();
+		clouds[1] = new PPCX::PointCloud("DefaultSP", points, newAABB);
+		clouds[1]->needUpdating = true;
+		this->progress = 2.0f;
 	}
 }
