@@ -348,7 +348,7 @@ void ProceduralGenerator::computeNURBS() {
 
 	if (tinynurbs::surfaceIsValid(srf)) {
 		std::cout << "Generating nurbs cloud..." << std::endl;
-		this->progress = .75f;
+		this->progress = .70f;
 		tinynurbs::array2<glm::vec<4, float>> Cw;
 		Cw.resize(srf.control_points.rows(), srf.control_points.cols());
 		for (int i = 0; i < srf.control_points.rows(); i++) {
@@ -404,7 +404,6 @@ void ProceduralGenerator::computeNURBS() {
 			}
 		}
 		clouds[1] = new PPCX::PointCloud("DefaultSP", points, newAABB);
-		clouds[1]->needUpdating = true;
 		this->progress = 2.0f;
 	}
 }

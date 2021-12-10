@@ -17,7 +17,7 @@ GUI::GUI() :
 void GUI::createMenu() {
 	const ImGuiIO& io = ImGui::GetIO();
 
-	if (_showRenderingSettings)		showRenderingSettings();
+	if (_showRenderingSettings && procGenerator->progress >= 1.0f)		showRenderingSettings();
 	if (_showAboutUs)				showAboutUsWindow();
 	if (_showControls)				showControls();
 	if (_showFileDialog)			showFileDialog();
@@ -26,7 +26,7 @@ void GUI::createMenu() {
 
 	if (ImGui::BeginMainMenuBar()) {
 		ImGui::MenuItem(ICON_FA_SAVE "Open Point Cloud", nullptr, &_showFileDialog);
-		if (sceneLoaded)
+		if (sceneLoaded && procGenerator->progress >= 1.0f)
 			ImGui::MenuItem(ICON_FA_CUBE "Rendering", nullptr, &_showRenderingSettings);
 		ImGui::MenuItem(ICON_FA_SITEMAP "Procedural settings", nullptr, &_showProceduralSettings);
 
@@ -130,7 +130,7 @@ void GUI::showPointCloudDialog() {
 		}
 		ImGui::End();
 	}
-	
+
 }
 
 void GUI::showRenderingSettings() {
@@ -154,7 +154,7 @@ void GUI::showRenderingSettings() {
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Statistics")) {
-				if (ImGui::BeginTable("table1", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_PreciseWidths)) {
+				if (ImGui::BeginTable("table1", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedFit)) {
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
 					ImGui::Text("Number of points loaded"); ImGui::TableNextColumn();
@@ -210,7 +210,7 @@ void GUI::showProgressBar() {
 		if (ImGui::Begin("Progress", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse)) {
 			if (procGenerator->progress < .2f)
 				ImGui::Text("Loading point cloud...");
-			else if(procGenerator->progress < .4f)
+			else if (procGenerator->progress < .4f)
 				ImGui::Text("Creating voxel grid...");
 			else if (procGenerator->progress < .5f)
 				ImGui::Text("Computing height and colors...");
@@ -220,9 +220,9 @@ void GUI::showProgressBar() {
 				ImGui::Text("Generating nurbs cloud...");
 			else
 				ImGui::Text("Finishing...");
-			//ImGui::PushStyleColor(ImGuiCol_, ImVec4(0.32f, 0.39f, 0.87f, 1.00f));
+			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.32f, 0.39f, 0.87f, 1.00f));
 			ImGui::ProgressBar(procGenerator->progress);
-			//ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
 			ImGui::End();
 		}
 	}
