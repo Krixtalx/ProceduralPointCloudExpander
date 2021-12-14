@@ -35,9 +35,9 @@
 #include <memory>
 #include <numeric>
 #include <sstream>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
-#include <time.h>
+#include <ctime>
 #include <thread>
 
 #include <omp.h>

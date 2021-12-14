@@ -115,10 +115,10 @@ PPCX::PointCloud* PlyLoader::readFromPly(const std::string& _filename)
 				baseIndex = index * 3;
 
 				_points[index] = PointModel{
-					glm::vec3(pointsRawFloat[baseIndex], pointsRawFloat[baseIndex + 1],
-							  pointsRawFloat[baseIndex + 2]),
-					PointModel::getRGBColor(glm::vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
-													  colorsRaw[baseIndex + 2]))
+					vec3(pointsRawFloat[baseIndex], pointsRawFloat[baseIndex + 1],
+					     pointsRawFloat[baseIndex + 2]),
+					PointModel::getRGBColor(vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
+					                             colorsRaw[baseIndex + 2]))
 				};
 				_aabb.update(_points[index]._point);
 			}
@@ -130,10 +130,10 @@ PPCX::PointCloud* PlyLoader::readFromPly(const std::string& _filename)
 				baseIndex = index * 3;
 
 				_points[index] = PointModel{
-					glm::vec3(pointsRawDouble[baseIndex], pointsRawDouble[baseIndex + 1],
-							  pointsRawDouble[baseIndex + 2]),
-					PointModel::getRGBColor(glm::vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
-													  colorsRaw[baseIndex + 2]))
+					vec3(pointsRawDouble[baseIndex], pointsRawDouble[baseIndex + 1],
+					     pointsRawDouble[baseIndex + 2]),
+					PointModel::getRGBColor(vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
+					                             colorsRaw[baseIndex + 2]))
 				};
 				_aabb.update(_points[index]._point);
 			}

@@ -18,7 +18,7 @@ namespace PPCX {
 		std::vector<PointModel> vbo;
 
 		std::string shaderProgram;
-		glm::vec3 posicion;
+		vec3 posicion;
 		AABB aabb;
 
 		bool visible = true;
@@ -30,9 +30,9 @@ namespace PPCX {
 	public:
 		bool needUpdating=false;
 
-		PointCloud(std::string shaderProgram, const glm::vec3& pos = { 0, 0, 0 });
+		PointCloud(std::string shaderProgram, const vec3& pos = { 0, 0, 0 });
 
-		PointCloud(std::string shaderProgram, const std::vector<PointModel>& puntos, const AABB& aabb, const glm::vec3& pos = {0, 0, 0});
+		PointCloud(std::string shaderProgram, const std::vector<PointModel>& puntos, const AABB& aabb, const vec3& pos = {0, 0, 0});
 
 		PointCloud(PointCloud &orig);
 
@@ -44,7 +44,7 @@ namespace PPCX {
 
 		void actualizarNube();
 		
-		void dibujarModelo(glm::mat4 matrizMVP) const;
+		void dibujarModelo(mat4 matrizMVP) const;
 
 		std::vector<PointModel>& getPoints();
 

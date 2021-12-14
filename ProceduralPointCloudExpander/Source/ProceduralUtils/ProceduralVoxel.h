@@ -10,7 +10,7 @@ private:
 	PPCX::PointCloud* nube;
 	std::vector<unsigned> pointsIndex;
 	float height = FLT_MAX;
-	glm::vec3 color = { 0, 0, 0 };
+	vec3 color = { 0, 0, 0 };
 
 public:
 
@@ -26,21 +26,21 @@ public:
 
 	void computeColor();
 
-	void checkPoints();
+	void checkPoints() const;
 
-	bool isInside(PointModel point);
+	bool isInside(PointModel point) const;
 
 	void setHeight(float h);
-	void setColor(glm::vec3 color);
+	void setColor(vec3 color);
 
-	float getHeight();
+	float getHeight() const;
 
-	glm::vec3 getRepresentativePoint();
+	vec3 getRepresentativePoint() const;
 
-	glm::vec3 getColor();
+	vec3 getColor() const;
 
-	unsigned getNumberOfPoints();
+	unsigned getNumberOfPoints() const;
 
-	unsigned numberPointsToDensity(float density);
+	unsigned numberPointsToDensity(float density) const;
 };
 

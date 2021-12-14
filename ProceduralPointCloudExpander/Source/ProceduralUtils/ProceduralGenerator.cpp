@@ -17,7 +17,7 @@ ProceduralGenerator::~ProceduralGenerator() {
 	}
 }
 
-void ProceduralGenerator::drawClouds(glm::mat4 matrizMVP) {
+void ProceduralGenerator::drawClouds(mat4 matrizMVP) {
 	for (PPCX::PointCloud*& cloud : clouds) {
 		if (cloud) {
 			if (cloud->needUpdating)
@@ -55,11 +55,10 @@ void ProceduralGenerator::newPointCloud(PPCX::PointCloud * pCloud, bool newScene
 	computeNURBS();
 }
 
-bool& ProceduralGenerator::getPointCloudVisibility(unsigned cloud) {
+bool& ProceduralGenerator::getPointCloudVisibility(unsigned cloud) const {
 	if (clouds[cloud])
 		return clouds[cloud]->getVisible();
-	else
-		return clouds[0]->getVisible();
+	return clouds[0]->getVisible();
 }
 
 
@@ -85,7 +84,7 @@ void ProceduralGenerator::readParameters(const std::string & path) {
 			}
 		}
 		parametersFile.close();
-		glm::vec3 size = aabb.size();
+		vec3 size = aabb.size();
 		for (size_t i = 0; i < 2; i++) {
 			axisSubdivision[i] = size[i] / gsd;
 		}
@@ -97,15 +96,15 @@ void ProceduralGenerator::readParameters(const std::string & path) {
  * @param x index of the subdivision
  * @param y index of the subdivision
 */
-void ProceduralGenerator::meanHeight(unsigned x, unsigned y) {
+void ProceduralGenerator::meanHeight(unsigned x, unsigned y) const {
 	float mean = 0;
 	char counter = 0;
 	for (int i = -1; i < 2; i++) {
 		for (int j = -1; j < 2; j++) {
 			int auxX = x + i;
-			auxX = std::min((int)axisSubdivision[0] - 1, std::max(0, auxX));
+			auxX = std::min(static_cast<int>(axisSubdivision[0]) - 1, std::max(0, auxX));
 			int auxY = y + j;
-			auxY = std::min((int)axisSubdivision[1] - 1, std::max(0, auxY));
+			auxY = std::min(static_cast<int>(axisSubdivision[1]) - 1, std::max(0, auxY));
 			if (auxX != x || auxY != y) {
 				counter++;
 				const float height = subdivisions[auxX][auxY]->getHeight();
@@ -127,18 +126,18 @@ void ProceduralGenerator::meanHeight(unsigned x, unsigned y) {
  * @param x index of the subdivision
  * @param y index of the subdivision
 */
-void ProceduralGenerator::meanColor(unsigned x, unsigned y) {
-	glm::vec3 mean = { 0,0,0 };
+void ProceduralGenerator::meanColor(unsigned x, unsigned y) const {
+	vec3 mean = { 0,0,0 };
 	char counter = 0;
 	for (int i = -1; i < 2; i++) {
 		for (int j = -1; j < 2; j++) {
 			int auxX = x + i;
-			auxX = std::min((int)axisSubdivision[0] - 1, std::max(0, auxX));
+			auxX = std::min(static_cast<int>(axisSubdivision[0]) - 1, std::max(0, auxX));
 			int auxY = y + j;
-			auxY = std::min((int)axisSubdivision[1] - 1, std::max(0, auxY));
+			auxY = std::min(static_cast<int>(axisSubdivision[1]) - 1, std::max(0, auxY));
 			if (auxX != x || auxY != y) {
 				counter++;
-				const glm::vec3 color = subdivisions[auxX][auxY]->getColor();
+				const vec3 color = subdivisions[auxX][auxY]->getColor();
 				if (subdivisions[auxX][auxY]->getHeight() != FLT_MAX)
 					mean += color;
 				else
@@ -159,8 +158,8 @@ void ProceduralGenerator::meanColor(unsigned x, unsigned y) {
 void ProceduralGenerator::createVoxelGrid() {
 	std::cout << "Creating voxel grid..." << std::endl;
 	this->progress = 0.2f;
-	glm::vec3 size = aabb.size();
-	const glm::vec3 minPoint = aabb.min();
+	vec3 size = aabb.size();
+	const vec3 minPoint = aabb.min();
 	float stride[3];
 
 	for (unsigned i = 0; i < 2; i++) {
@@ -173,7 +172,7 @@ void ProceduralGenerator::createVoxelGrid() {
 		subdivisions[x].resize(axisSubdivision[1]);
 		for (size_t y = 0; y < axisSubdivision[1]; y++) {
 			const auto newAABB = new AABB;
-			glm::vec3 point(minPoint);
+			vec3 point(minPoint);
 			point[0] += stride[0] * x;
 			point[1] += stride[1] * y;
 			newAABB->update(point);
@@ -196,8 +195,8 @@ void ProceduralGenerator::subdivideCloud() {
 	unsigned pointCloudSize = clouds[0]->getNumberOfPoints();
 	const std::vector<PointModel> points = clouds[0]->getPoints();
 
-	glm::vec3 size = aabb.size();
-	const glm::vec3 minPoint = aabb.min();
+	vec3 size = aabb.size();
+	const vec3 minPoint = aabb.min();
 	float stride[2];
 
 	for (unsigned i = 0; i < 2; i++) {
@@ -206,7 +205,7 @@ void ProceduralGenerator::subdivideCloud() {
 
 	#pragma omp parallel for
 	for (int i = 0; i < points.size(); i++) {
-		glm::vec3 relativePoint = points[i]._point - minPoint;
+		const vec3 relativePoint = points[i]._point - minPoint;
 		int x = floor(relativePoint.x / stride[0]);
 		int y = floor(relativePoint.y / stride[1]);
 		if (x == axisSubdivision[0])
@@ -250,8 +249,8 @@ void ProceduralGenerator::saveHeightMap(std::string path) const {
 			} else {
 				relativeHeightValue = 0;
 			}
-			color = std::min(255, int(relativeHeightValue * 256.0f));
-			glm::vec3 aux = subdivisions[x][y]->getColor();
+			color = std::min(255, static_cast<int>(relativeHeightValue * 256.0f));
+			vec3 aux = subdivisions[x][y]->getColor();
 			pixels->push_back(color);
 			pixels->push_back(color);
 			pixels->push_back(color);
@@ -260,21 +259,21 @@ void ProceduralGenerator::saveHeightMap(std::string path) const {
 		}
 	}
 
-	Image* image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
+	auto image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
 	image->saveImage(path);
 }
 
 /**
  * @brief Saves the current voxel grid as a png file in RGB scale that could be used as a texture of the terrain
 */
-void ProceduralGenerator::saveTextureMap(std::string path) {
+void ProceduralGenerator::saveTextureMap(std::string path) const {
 	const float minPointZ = aabb.min()[2];
 	float relativeMaxPointZ = aabb.max()[2] - minPointZ;
 	float relativeHeightValue;
 	const auto pixels = new std::vector<unsigned char>();
 	for (int y = 0; y < axisSubdivision[1]; y++) {
 		for (int x = 0; x < axisSubdivision[0]; x++) {
-			glm::vec3 color = subdivisions[x][y]->getColor();
+			vec3 color = subdivisions[x][y]->getColor();
 			pixels->push_back(color[0]);
 			pixels->push_back(color[1]);
 			pixels->push_back(color[2]);
@@ -302,11 +301,11 @@ void ProceduralGenerator::computeNURBS() {
 	srf.knots_u.resize(axisSubdivision[0] + degree + 1);
 	srf.knots_v.resize(axisSubdivision[1] + degree + 1);
 
-	for (unsigned i = 0; i < (degree + 1); i++) {
+	for (unsigned i = 0; i < degree + 1; i++) {
 		srf.knots_u[i] = 0;
 
 	}
-	for (unsigned i = 0; i < (degree + 1); i++) {
+	for (unsigned i = 0; i < degree + 1; i++) {
 		srf.knots_v[i] = 0;
 	}
 	std::iota(srf.knots_u.begin() + degree + 1, srf.knots_u.end() - (degree + 1), 1);
@@ -319,20 +318,20 @@ void ProceduralGenerator::computeNURBS() {
 		srf.knots_v[i] = axisSubdivision[1] - degree;
 	}
 
-	std::vector<glm::vec3> controlPoints;
+	std::vector<vec3> controlPoints;
 	std::vector<float> weights;
 	unsigned numPoints = clouds[0]->getNumberOfPoints();
 	float density;
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
-			glm::vec3 aux = subdivisions[x][y]->getRepresentativePoint();
+			vec3 aux = subdivisions[x][y]->getRepresentativePoint();
 			if (aux[2] == FLT_MAX) {
 				meanHeight(x, y);
 				meanColor(x, y);
 			}
 			aux = subdivisions[x][y]->getRepresentativePoint();
 			controlPoints.push_back(aux);
-			density = (float)(subdivisions[x][y]->getNumberOfPoints() + 1);
+			density = static_cast<float>(subdivisions[x][y]->getNumberOfPoints() + 1);
 			weights.push_back(density);
 		}
 	}
@@ -340,20 +339,20 @@ void ProceduralGenerator::computeNURBS() {
 	srf.control_points = { axisSubdivision[0], axisSubdivision[1], controlPoints };
 	srf.weights = { axisSubdivision[0], axisSubdivision[1], weights };
 
-	if (tinynurbs::surfaceIsValid(srf)) {
+	if (surfaceIsValid(srf)) {
 		std::cout << "Generating nurbs cloud..." << std::endl;
 		this->progress = .70f;
-		tinynurbs::array2<glm::vec<4, float>> Cw;
+		tinynurbs::array2<vec<4, float>> Cw;
 		Cw.resize(srf.control_points.rows(), srf.control_points.cols());
 		for (int i = 0; i < srf.control_points.rows(); i++) {
 			for (int j = 0; j < srf.control_points.cols(); j++) {
 				Cw(i, j) =
-					glm::vec<4, float>(tinynurbs::util::cartesianToHomogenous(srf.control_points(i, j), srf.weights(i, j)));
+					vec(tinynurbs::util::cartesianToHomogenous(srf.control_points(i, j), srf.weights(i, j)));
 			}
 		}
 
-		glm::vec3 minPoint = aabb.min();
-		glm::vec3 maxPoint = aabb.max();
+		vec3 minPoint = aabb.min();
+		vec3 maxPoint = aabb.max();
 		PointModel point;
 		std::vector<PointModel> points;
 		AABB newAABB;
@@ -373,7 +372,7 @@ void ProceduralGenerator::computeNURBS() {
 				for (int i = 0; i < limit; i++) {
 					float valX = disX(generator);
 					float valY = disY(generator);
-					point._point = tinynurbs::surfacePoint(srf, valX, valY, Cw);
+					point._point = surfacePoint(srf, valX, valY, Cw);
 					/*point._point.x += (gsd / 2) * (degree);
 					point._point.y += (gsd / 2) * (degree);*/
 					/*std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;*/
@@ -383,7 +382,7 @@ void ProceduralGenerator::computeNURBS() {
 						posColorX = axisSubdivision[0] - 1;
 					if (posColorY >= axisSubdivision[1])
 						posColorY = axisSubdivision[1] - 1;
-					glm::vec3 color = subdivisions[posColorX][posColorY]->getColor();
+					vec3 color = subdivisions[posColorX][posColorY]->getColor();
 					color.r += genColor(generator);
 					color.g += genColor(generator);
 					color.b += genColor(generator);

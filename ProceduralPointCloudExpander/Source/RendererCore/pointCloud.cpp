@@ -6,7 +6,7 @@
 #include "ShaderManager.h"
 
 
-PPCX::PointCloud::PointCloud(std::string shaderProgram, const glm::vec3& pos) :
+PPCX::PointCloud::PointCloud(std::string shaderProgram, const vec3& pos) :
 	idVAO(UINT_MAX), idVBO(UINT_MAX), idIBO(UINT_MAX),
 	shaderProgram(std::move(shaderProgram)),
 	posicion(pos) {
@@ -20,7 +20,8 @@ PPCX::PointCloud::PointCloud(std::string shaderProgram, const glm::vec3& pos) :
  * @param shaderProgram que se usará para renderizar el modelo
  * @param pos Posicion inicial de la nube de puntos
  */
-PPCX::PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& puntos, const AABB& aabb, const glm::vec3& pos) :
+PPCX::PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& puntos, const AABB& aabb, const
+                             vec3& pos) :
 	idVAO(UINT_MAX), idVBO(UINT_MAX), idIBO(UINT_MAX),
 	shaderProgram(std::move(shaderProgram)),
 	aabb(aabb),
@@ -100,7 +101,7 @@ void PPCX::PointCloud::nuevoVBO(GLenum freqAct) {
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(PointModel),
-						  (static_cast<GLubyte*>(nullptr) + sizeof(glm::vec3)));
+						  (static_cast<GLubyte*>(nullptr) + sizeof(vec3)));
 }
 
 /**
@@ -124,7 +125,7 @@ void PPCX::PointCloud::nuevoIBO(std::vector<GLuint> datos, GLenum freqAct) {
 /**
  * Función a la que se llama cuando se debe de dibujar el modelo
  */
-void PPCX::PointCloud::dibujarModelo(glm::mat4 matrizMVP) const {
+void PPCX::PointCloud::dibujarModelo(mat4 matrizMVP) const {
 	if (visible) {
 		try {
 			//matrizMVP = matrizMVP * translate(posicion);
@@ -155,7 +156,7 @@ const AABB& PPCX::PointCloud::getAABB() {
 
 float PPCX::PointCloud::getDensity() const {
 	const int numberPoints = vbo.size();
-	const glm::vec3 AABBSize = aabb.size();
+	const vec3 AABBSize = aabb.size();
 	return numberPoints / (AABBSize.x * AABBSize.y);
 }
 

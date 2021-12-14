@@ -168,7 +168,7 @@ void GUI::showRenderingSettings() {
 		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
 	ImGui::SetNextWindowBgAlpha(0.6f);
 	if (ImGui::Begin("Rendering Settings", &_showRenderingSettings, window_flags)) {
-		glm::vec3 color = PPCX::Renderer::getInstancia()->getColorFondo();
+		vec3 color = PPCX::Renderer::getInstancia()->getColorFondo();
 		ImGui::ColorEdit3("Background color", &color[0]);
 		PPCX::Renderer::getInstancia()->setColorFondo(color);
 		this->leaveSpace(3);
@@ -290,7 +290,7 @@ void GUI::render() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	GUI::createDockspace();
+	createDockspace();
 	this->createMenu();
 	this->showProgressBar();
 
@@ -303,7 +303,7 @@ void GUI::render() {
 
 void GUI::loadImGUIStyle() const {
 	ImGui::StyleColorsDark();
-	GUI::loadStyle();
+	loadStyle();
 	this->loadFonts();
 }
 

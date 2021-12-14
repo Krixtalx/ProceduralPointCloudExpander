@@ -15,11 +15,11 @@ PPCX::Renderer* PPCX::Renderer::instancia = nullptr;
  */
 PPCX::Renderer::Renderer() {
 	try {
-		PPCX::ShaderManager::getInstancia()->nuevoShader("VertexShader", GL_VERTEX_SHADER, "Source/Shaders/VertexShader.glsl");
-		PPCX::ShaderManager::getInstancia()->nuevoShader("FragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/FragmentShader.glsl");
-		PPCX::ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
-		PPCX::ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
-		PPCX::ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
+		ShaderManager::getInstancia()->nuevoShader("VertexShader", GL_VERTEX_SHADER, "Source/Shaders/VertexShader.glsl");
+		ShaderManager::getInstancia()->nuevoShader("FragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/FragmentShader.glsl");
+		ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
+		ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
+		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
 	} catch (std::runtime_error& e) {
 		throw;
 	}
@@ -67,7 +67,7 @@ void PPCX::Renderer::inicializaOpenGL() const {
 void PPCX::Renderer::refrescar() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	const glm::mat4 matrizMVP = camara.matrizMVP();
+	const mat4 matrizMVP = camara.matrizMVP();
 	procGenerator.drawClouds(matrizMVP);
 }
 
@@ -91,9 +91,9 @@ void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene) 
 	PointCloud* pCloud = PlyLoader::loadPointCloud(path);
 	if (pCloud) {
 		procGenerator.newPointCloud(pCloud, newScene);
-		glm::vec3 pos = pCloud->getAABB().max();
-		camara.increaseZFar(glm::distance(pos, pCloud->getAABB().center()));
-		pos = glm::rotate(glm::pi<float>() / 6.0f, glm::vec3(1.0f, .0f, 1.0f)) * glm::vec4(pos, 0.0f);
+		vec3 pos = pCloud->getAABB().max();
+		camara.increaseZFar(distance(pos, pCloud->getAABB().center()));
+		pos = rotate(glm::pi<float>() / 6.0f, vec3(1.0f, .0f, 1.0f)) * vec4(pos, 0.0f);
 		camara.setPosicion(pos);
 		camara.setPuntoMira(pCloud->getAABB().center());
 		camara.setSpeedMultiplier((pCloud->getAABB().size().x + pCloud->getAABB().size().y) * 0.02f);
@@ -123,7 +123,7 @@ void PPCX::Renderer::setViewport(GLint x, GLint y, GLsizei width, GLsizei height
 /**
  * Método para cambiar el colorSeleccionado de fondo de la escena
  */
-void PPCX::Renderer::setColorFondo(glm::vec3 color) {
+void PPCX::Renderer::setColorFondo(vec3 color) {
 	this->colorFondo = color;
 	actualizarColorFondo();
 }
@@ -132,7 +132,7 @@ PPCX::Camara& PPCX::Renderer::getCamara() {
 	return camara;
 }
 
-glm::vec3& PPCX::Renderer::getColorFondo() {
+vec3& PPCX::Renderer::getColorFondo() {
 	return colorFondo;
 }
 

@@ -14,8 +14,8 @@ namespace PPCX {
 
 		ShaderManager() = default;
 
-		std::map<std::string, PPCX::ShaderProgram*> shaderPrograms;
-		std::map<std::string, PPCX::Shader*> shaders;
+		std::map<std::string, ShaderProgram*> shaderPrograms;
+		std::map<std::string, Shader*> shaders;
 		std::map<std::string, GLuint> uniformsLocation;
 	public:
 		static ShaderManager *getInstancia();

@@ -11,8 +11,8 @@
  * Constructor por defecto. Inicializa la cámara con unos parametros predeterminados
  */
 PPCX::Camara::Camara() : posicion(0, 3.0f, 10.0f), puntoMira(0, 0, 0),
-up(0, 0, 1), zNear(0.5f), zFar(200), alto(PPCX::altoVentanaPorDefecto),
-ancho(PPCX::anchoVentanaPorDefecto) {
+up(0, 0, 1), zNear(0.5f), zFar(200), alto(altoVentanaPorDefecto),
+ancho(anchoVentanaPorDefecto) {
 
 	fovX = glm::radians(60.0);
 	calcularFovY();
@@ -45,7 +45,7 @@ PPCX::Camara::Camara(const glm::vec3& posicion, const glm::vec3& puntoMira, cons
  */
 glm::mat4 PPCX::Camara::matrizMVP() const {
 	//std::cout << puntoMira.x << " - " << puntoMira.y << " - " << puntoMira.z << std::endl;
-	const glm::mat4 vision = glm::lookAt(posicion, puntoMira, up);
+	const glm::mat4 vision = lookAt(posicion, puntoMira, up);
 	const glm::mat4 proyeccion = glm::perspective(fovY, aspecto(), zNear, zFar);
 	//Multiplicamos de manera inversa: Modelado-Vision-Proyeccion -> Proyeccion-Vision-Modelado
 	return proyeccion * vision; //Devuelve solo proyección*vision. El modelado lo aplicará el modelo
@@ -56,23 +56,23 @@ glm::mat4 PPCX::Camara::matrizMVP() const {
  * @return matrizMV
  */
 glm::mat4 PPCX::Camara::matrizMV() const {
-	return glm::lookAt(posicion, puntoMira, up); //Devuelve solo vision. El modelado lo aplicará el modelo
+	return lookAt(posicion, puntoMira, up); //Devuelve solo vision. El modelado lo aplicará el modelo
 }
 
 /**
  * Actualiza los ejes locales de la cámara recalculando su valor.
  */
 void PPCX::Camara::calcularEjes() {
-	n = glm::normalize(posicion - puntoMira);
+	n = normalize(posicion - puntoMira);
 
-	if (glm::all(glm::equal(n, up, 0.001f))) {
-		u = glm::normalize(glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), n));
-	} else if (glm::all(glm::equal(n, -up, 0.001f))) {
-		u = glm::normalize(glm::cross(glm::vec3(0.0f, 0.0f, -1.0f), n));
+	if (all(equal(n, up, 0.001f))) {
+		u = normalize(cross(glm::vec3(0.0f, 0.0f, 1.0f), n));
+	} else if (all(equal(n, -up, 0.001f))) {
+		u = normalize(cross(glm::vec3(0.0f, 0.0f, -1.0f), n));
 	} else {
-		u = glm::normalize(glm::cross(up, n));
+		u = normalize(cross(up, n));
 	}
-	v = glm::normalize(glm::cross(n, u));
+	v = normalize(cross(n, u));
 }
 
 /**
@@ -92,7 +92,7 @@ void PPCX::Camara::calcularFovY() {
   * @param mov magnitud del movimiento
   */
 void PPCX::Camara::truck(float mov) {
-	const glm::mat4 translacion = glm::translate(n * mov * speedMultiplier);
+	const glm::mat4 translacion = translate(n * mov * speedMultiplier);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
 }
@@ -102,7 +102,7 @@ void PPCX::Camara::truck(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::dolly(float mov) {
-	const glm::mat4 translacion = glm::translate(u * mov * speedMultiplier);
+	const glm::mat4 translacion = translate(u * mov * speedMultiplier);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
 }
@@ -112,7 +112,7 @@ void PPCX::Camara::dolly(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::boom(float mov) {
-	const glm::mat4 translacion = glm::translate(v * mov * speedMultiplier);
+	const glm::mat4 translacion = translate(v * mov * speedMultiplier);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
 }
@@ -130,12 +130,12 @@ void PPCX::Camara::crane(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::pan(float mov) {
-	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), v);
+	const glm::mat4 rotacion = rotate(glm::radians(mov), v);
 	puntoMira = glm::vec3(rotacion * glm::vec4(puntoMira - posicion, 1)) + posicion;
 	u = glm::vec3(rotacion * glm::vec4(u, 0.0f));
 	v = glm::vec3(rotacion * glm::vec4(v, 0.0f));
 	n = glm::vec3(rotacion * glm::vec4(n, 0.0f));
-	up = glm::normalize(glm::cross(n, u));
+	up = normalize(cross(n, u));
 }
 
 /**
@@ -143,10 +143,10 @@ void PPCX::Camara::pan(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::tilt(float mov) {
-	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), u);
+	const glm::mat4 rotacion = rotate(glm::radians(mov), u);
 
 	const glm::vec3 aux = glm::vec3(rotacion * glm::vec4(n, 0.0f));
-	float alpha = glm::acos(glm::dot(aux, glm::vec3(0.0f, 1.0f, 0.0f)));
+	float alpha = glm::acos(dot(aux, glm::vec3(0.0f, 1.0f, 0.0f)));
 
 	if (alpha < mov || alpha >(glm::pi<float>() - mov)) {
 		return;
@@ -156,7 +156,7 @@ void PPCX::Camara::tilt(float mov) {
 	u = glm::vec3(rotacion * glm::vec4(u, 0.0f));
 	v = glm::vec3(rotacion * glm::vec4(v, 0.0f));
 	n = aux;
-	up = glm::normalize(glm::cross(n, u));
+	up = normalize(cross(n, u));
 }
 
 /**
@@ -164,12 +164,12 @@ void PPCX::Camara::tilt(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::orbitX(float mov) {
-	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), glm::vec3(.0f, .0f, 1.0f));
+	const glm::mat4 rotacion = rotate(glm::radians(mov), glm::vec3(.0f, .0f, 1.0f));
 	posicion = glm::vec3(rotacion * glm::vec4(posicion - puntoMira, 1)) + puntoMira;
 	u = glm::vec3(rotacion * glm::vec4(u, 0.0f));
 	v = glm::vec3(rotacion * glm::vec4(v, 0.0f));
 	n = glm::vec3(rotacion * glm::vec4(n, 0.0f));
-	up = glm::normalize(glm::cross(n, u));
+	up = normalize(cross(n, u));
 }
 
 /**
@@ -177,12 +177,12 @@ void PPCX::Camara::orbitX(float mov) {
  * @param mov magnitud del movimiento
  */
 void PPCX::Camara::orbitY(float mov) {
-	const glm::mat4 rotacion = glm::rotate(glm::radians(mov), u);
+	const glm::mat4 rotacion = rotate(glm::radians(mov), u);
 	posicion = glm::vec3(rotacion * glm::vec4(posicion - puntoMira, 1)) + puntoMira;
 	u = glm::vec3(rotacion * glm::vec4(u, 0.0f));
 	v = glm::vec3(rotacion * glm::vec4(v, 0.0f));
 	n = glm::vec3(rotacion * glm::vec4(n, 0.0f));
-	up = glm::normalize(glm::cross(n, u));
+	up = normalize(cross(n, u));
 }
 
 void PPCX::Camara::increaseZFar(float mov) {

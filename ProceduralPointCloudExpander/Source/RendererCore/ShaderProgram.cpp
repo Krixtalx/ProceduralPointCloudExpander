@@ -31,7 +31,7 @@ PPCX::ShaderProgram::~ShaderProgram() {
  * @param shader Puntero al shader a añadir
  * @throw runtime_error en caso de que el puntero sea nulo
  */
-void PPCX::ShaderProgram::addShader(PPCX::Shader *shader) {
+void PPCX::ShaderProgram::addShader(Shader*shader) {
 	if (shader != nullptr) {
 		shaders.push_back(shader);
 		glAttachShader(idSP, shader->getShaderId());

@@ -60,7 +60,7 @@ void Image::flipImageVertically(std::vector<unsigned char>& image, const uint16_
 
 void Image::flipImageVertically()
 {
-	Image::flipImageVertically(_image, _width, _height, _depth);
+	flipImageVertically(_image, _width, _height, _depth);
 }
 
 void Image::saveImage(const std::string& filename)
