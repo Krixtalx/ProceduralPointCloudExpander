@@ -46,7 +46,7 @@ void ProceduralGenerator::newPointCloud(PPCX::PointCloud * pCloud, bool newScene
 		for (auto i : vec) {
 			clouds[0]->nuevoPunto(i);
 		}
-		clouds[0]->needUpdating=true;
+		clouds[0]->needUpdating = true;
 	}
 	this->aabb = clouds[0]->getAABB();
 	readParameters("proceduralParameters.ini");
@@ -286,6 +286,10 @@ void ProceduralGenerator::saveTextureMap(std::string path) {
 	image->saveImage(path);
 }
 
+void ProceduralGenerator::savePointCloud(std::string path) {
+	//PPCX::PointCloud 
+}
+
 void ProceduralGenerator::computeNURBS() {
 	std::cout << "Creating nurbs..." << std::endl;
 	this->progress = 0.6f;
@@ -297,33 +301,23 @@ void ProceduralGenerator::computeNURBS() {
 	srf.degree_v = degree;
 	srf.knots_u.resize(axisSubdivision[0] + degree + 1);
 	srf.knots_v.resize(axisSubdivision[1] + degree + 1);
-	/*for (int i = 0; i < srf.knots_u.size(); i++) {
-		srf.knots_u[i] = (int)i / (degree + 1);
 
-	}
-	for (int i = 0; i < srf.knots_v.size(); i++) {
-		srf.knots_v[i] = (int)i / (degree + 1);
-	}*/
-
-	for (int i = 0; i < (degree + 1); i++) {
+	for (unsigned i = 0; i < (degree + 1); i++) {
 		srf.knots_u[i] = 0;
 
 	}
-	for (int i = 0; i < (degree + 1); i++) {
+	for (unsigned i = 0; i < (degree + 1); i++) {
 		srf.knots_v[i] = 0;
 	}
 	std::iota(srf.knots_u.begin() + degree + 1, srf.knots_u.end() - (degree + 1), 1);
 	std::iota(srf.knots_v.begin() + degree + 1, srf.knots_v.end() - (degree + 1), 1);
-	for (int i = axisSubdivision[0]; i < srf.knots_u.size(); i++) {
+	for (unsigned i = axisSubdivision[0]; i < srf.knots_u.size(); i++) {
 		srf.knots_u[i] = axisSubdivision[0] - degree;
 
 	}
-	for (int i = axisSubdivision[1]; i < srf.knots_v.size(); i++) {
+	for (unsigned i = axisSubdivision[1]; i < srf.knots_v.size(); i++) {
 		srf.knots_v[i] = axisSubdivision[1] - degree;
 	}
-
-	/*std::iota(srf.knots_u.begin(), srf.knots_u.end(), 0);
-	std::iota(srf.knots_v.begin(), srf.knots_v.end(), 0);*/
 
 	std::vector<glm::vec3> controlPoints;
 	std::vector<float> weights;

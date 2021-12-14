@@ -21,12 +21,13 @@ protected:
 	bool							_showAboutUs;						//!< About us window
 	bool							_showControls;						//!< Shows application controls
 	bool							_showFileDialog;					//!< Shows a file dialog that allows opening a point cloud in .ply format
+	bool							_showSaveDialog;					//!< Shows a file dialog used to indicate the save path of the files
 	bool							_showPointCloudDialog;				//!< 
 	bool							_showRenderingSettings;				//!< Displays a window which allows the user to modify the rendering parameters
 	bool							_showProceduralSettings;
 	bool							sceneLoaded = false;
-	ProceduralGenerator* procGenerator = nullptr;
-
+	ProceduralGenerator*			procGenerator = nullptr;
+	int								saveOption = -1; // 0 - Point cloud, 1 - heightmap, 2 - texturemap
 protected:
 	/**
 	*	@brief Constructor of GUI context provided by a graphics library (Dear ImGui).
@@ -51,7 +52,7 @@ protected:
 	/**
 	*	@brief
 	*/
-	void loadImGUIStyle();
+	void loadImGUIStyle() const;
 
 	/**
 	*	@brief Renders a help icon with a message.
@@ -85,11 +86,13 @@ protected:
 
 	void showProceduralSettings();
 
-	void showProgressBar();
+	void showProgressBar() const;
 
-	void loadStyle();
+	void showSaveWindow();
 
-	void createDockspace();
+	static void loadStyle();
+
+	static void createDockspace();
 
 public:
 	/**
@@ -102,14 +105,14 @@ public:
 	*	@param window Window provided by GLFW.
 	*	@param openGLMinorVersion Minor version of OpenGL 4.
 	*/
-	void initialize(GLFWwindow* window, const int openGLMinorVersion);
+	void initialize(GLFWwindow* window, const int openGLMinorVersion) const;
 
 	/**
 	*	@brief Renders the interface components.
 	*/
 	void render();
 
-	void loadFonts();
+	void loadFonts() const;
 
-	bool isMouseActive() { return ImGui::GetIO().WantCaptureMouse;}
+	bool isMouseActive() { return ImGui::GetIO().WantCaptureMouse; }
 };

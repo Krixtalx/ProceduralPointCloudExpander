@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "GUI.h"
-#include "Interface/Fonts/lato.hpp"
 #include "Interface/Fonts/IconsFontAwesome5.h"
 #include "imfiledialog/ImGuiFileDialog.h"
 #include "RendererCore/Renderer.h"
@@ -10,9 +9,8 @@
 
 GUI::GUI() :
 	_showAboutUs(false), _showControls(false), _showFileDialog(false),
-	_showPointCloudDialog(false), _showRenderingSettings(false) {
-	procGenerator = PPCX::Renderer::getInstancia()->getProceduralGenerator();
-}
+	_showSaveDialog(false), _showPointCloudDialog(false), _showRenderingSettings(false), _showProceduralSettings(false),
+	procGenerator(PPCX::Renderer::getInstancia()->getProceduralGenerator()) {}
 
 void GUI::createMenu() {
 	const ImGuiIO& io = ImGui::GetIO();
@@ -21,11 +19,23 @@ void GUI::createMenu() {
 	if (_showAboutUs)				showAboutUsWindow();
 	if (_showControls)				showControls();
 	if (_showFileDialog)			showFileDialog();
+	if (_showSaveDialog)			showSaveWindow();
 	if (_showPointCloudDialog)		showPointCloudDialog();
 	if (_showProceduralSettings)	showProceduralSettings();
 
 	if (ImGui::BeginMainMenuBar()) {
-		ImGui::MenuItem(ICON_FA_SAVE "Open Point Cloud", nullptr, &_showFileDialog);
+		if (ImGui::BeginMenu(ICON_FA_FILE "File")) {
+			ImGui::MenuItem(ICON_FA_FOLDER_OPEN "Open point cloud", nullptr, &_showFileDialog);
+			if (sceneLoaded && procGenerator->progress >= 1.0f) {
+				if (ImGui::MenuItem(ICON_FA_SAVE "Save point cloud", nullptr, &_showSaveDialog))
+					saveOption = 0;
+				if (ImGui::MenuItem(ICON_FA_SAVE "Save height map", nullptr, &_showSaveDialog))
+					saveOption = 1;
+				if (ImGui::MenuItem(ICON_FA_SAVE "Save texture map", nullptr, &_showSaveDialog))
+					saveOption = 2;
+			}
+			ImGui::EndMenu();
+		}
 		if (sceneLoaded && procGenerator->progress >= 1.0f)
 			ImGui::MenuItem(ICON_FA_CUBE "Rendering", nullptr, &_showRenderingSettings);
 		ImGui::MenuItem(ICON_FA_SITEMAP "Procedural settings", nullptr, &_showProceduralSettings);
@@ -76,7 +86,7 @@ void GUI::showControls() {
 			ImGui::Text("     Movement"); ImGui::TableNextColumn();
 			ImGui::Text("     Control");
 
-			const int NUM_MOVEMENTS = 12;
+			constexpr int NUM_MOVEMENTS = 12;
 			const char* movement[] = { "Orbit (XZ)", "Orbit (Y)", "Truck", "Dolly", "Boom", "Crane", "Reset Camera", "Take Screenshot", "Zoom +/-", "Pan", "Tilt", "Increase/Decrease zFar" };
 			const char* controls[] = { "Move mouse horizontally(hold left button)", "Move mouse vertically (hold left button)", "W, S", "A, D", "Z", "X", "R", "K", "Scroll wheel", "Move mouse horizontally(hold right button)", "Move mouse vertically (hold right button)", "+/-" };
 
@@ -111,6 +121,26 @@ void GUI::showFileDialog() {
 	}
 }
 
+void GUI::showSaveWindow() {
+	ImGuiFileDialog::Instance()->OpenDialog("Choose save location", "Save", nullptr, ".png");
+
+	// display
+	if (ImGuiFileDialog::Instance()->Display("Choose save location")) {
+		// action if OK
+		if (ImGuiFileDialog::Instance()->IsOk()) {
+			_pointCloudPath = ImGuiFileDialog::Instance()->GetFilePathName();
+			if (saveOption == 1)
+				procGenerator->saveHeightMap(_pointCloudPath);
+			else if (saveOption == 2)
+				procGenerator->saveTextureMap(_pointCloudPath);
+		}
+
+		// close
+		ImGuiFileDialog::Instance()->Close();
+		_showSaveDialog = false;
+	}
+}
+
 void GUI::showPointCloudDialog() {
 	if (ImGui::Begin("Open Point Cloud", &_showPointCloudDialog, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking)) {
 		static bool newScene = false;
@@ -122,8 +152,8 @@ void GUI::showPointCloudDialog() {
 
 		if (ImGui::Button("Open Point Cloud")) {
 			procGenerator->progress = .0f;
-			std::thread hilo(&PPCX::Renderer::cargaModelo, PPCX::Renderer::getInstancia(), _pointCloudPath, newScene);
-			hilo.detach();
+			std::thread thread(&PPCX::Renderer::cargaModelo, PPCX::Renderer::getInstancia(), _pointCloudPath, newScene);
+			thread.detach();
 			_showPointCloudDialog = false;
 			sceneLoaded = true;
 			newScene = false;
@@ -134,7 +164,8 @@ void GUI::showPointCloudDialog() {
 }
 
 void GUI::showRenderingSettings() {
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
+	constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
 	ImGui::SetNextWindowBgAlpha(0.6f);
 	if (ImGui::Begin("Rendering Settings", &_showRenderingSettings, window_flags)) {
 		glm::vec3 color = PPCX::Renderer::getInstancia()->getColorFondo();
@@ -151,6 +182,7 @@ void GUI::showRenderingSettings() {
 
 				ImGui::Checkbox("Original cloud", &procGenerator->getPointCloudVisibility(0));
 				ImGui::Checkbox("NURBS cloud", &procGenerator->getPointCloudVisibility(1));
+				ImGui::Separator();
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Statistics")) {
@@ -192,7 +224,8 @@ void GUI::showRenderingSettings() {
 }
 
 void GUI::showProceduralSettings() {
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
+	constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoResize;
 	ImGui::SetNextWindowBgAlpha(0.6f);
 	if (ImGui::Begin("Procedural Settings", &_showProceduralSettings, window_flags)) {
 		if (ImGui::BeginTabBar("")) {
@@ -205,7 +238,7 @@ void GUI::showProceduralSettings() {
 	ImGui::End();
 }
 
-void GUI::showProgressBar() {
+void GUI::showProgressBar() const {
 	if (procGenerator->progress < 1.0f) {
 		if (ImGui::Begin("Progress", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse)) {
 			if (procGenerator->progress < .2f)
@@ -235,9 +268,11 @@ GUI::~GUI() {
 	ImGui::DestroyContext();
 }
 
+
+
 /// [Public methods]
 
-void GUI::initialize(GLFWwindow* window, const int openGLMinorVersion) {
+void GUI::initialize(GLFWwindow* window, const int openGLMinorVersion) const {
 	const std::string openGLVersion = "#version 4" + std::to_string(openGLMinorVersion) + "0 core";
 
 	IMGUI_CHECKVERSION();
@@ -255,7 +290,7 @@ void GUI::render() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	this->createDockspace();
+	GUI::createDockspace();
 	this->createMenu();
 	this->showProgressBar();
 
@@ -266,13 +301,13 @@ void GUI::render() {
 
 // ---------------- IMGUI ------------------
 
-void GUI::loadImGUIStyle() {
+void GUI::loadImGUIStyle() const {
 	ImGui::StyleColorsDark();
-	this->loadStyle();
+	GUI::loadStyle();
 	this->loadFonts();
 }
 
-void GUI::loadFonts() {
+void GUI::loadFonts() const {
 	ImFontConfig cfg;
 	ImGuiIO& io = ImGui::GetIO();
 

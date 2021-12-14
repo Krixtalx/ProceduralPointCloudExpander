@@ -25,6 +25,7 @@ private:
 protected:
 	void saveHeightMap(std::string path) const;
 	void saveTextureMap(std::string path);
+	void savePointCloud(std::string path);
 	void computeNURBS();
 
 public:

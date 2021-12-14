@@ -57,7 +57,7 @@ namespace PPCX {
 		float getPointSize() const;
 
 		void setPointSize(float pointS);
-		
+
 		ProceduralGenerator* getProceduralGenerator();
 	};
 }
