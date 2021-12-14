@@ -94,6 +94,8 @@ protected:
 
 	static void createDockspace();
 
+	bool Spinner(const char* label, float radius, int thickness, const ImU32& color);
+
 public:
 	/**
 	*	@brief Destructor.

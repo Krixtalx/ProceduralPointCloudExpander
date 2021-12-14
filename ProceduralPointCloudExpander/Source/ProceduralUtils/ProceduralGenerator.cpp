@@ -4,6 +4,8 @@
 #include "Utilities/Image.h"
 #include <random>
 
+#include "Utilities/PlyLoader.h"
+
 ProceduralGenerator::ProceduralGenerator() = default;
 
 ProceduralGenerator::~ProceduralGenerator() {
@@ -286,7 +288,11 @@ void ProceduralGenerator::saveTextureMap(std::string path) const {
 }
 
 void ProceduralGenerator::savePointCloud(std::string path) {
-	//PPCX::PointCloud 
+	std::vector<PPCX::PointCloud*> aux;
+	aux.push_back(clouds[0]);
+	aux.push_back(clouds[1]);
+	std::thread thread(&PlyLoader::savePointCloud, path, aux);
+	thread.detach();
 }
 
 void ProceduralGenerator::computeNURBS() {
