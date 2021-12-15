@@ -242,9 +242,11 @@ void GUI::showProceduralSettings() {
 				this->leaveSpace(1);
 				ImGui::EndTabItem();
 			}
+			ImGui::EndTabBar();
 		}
+		ImGui::End();
 	}
-	ImGui::End();
+	
 }
 
 void GUI::showProgressBar() const {
