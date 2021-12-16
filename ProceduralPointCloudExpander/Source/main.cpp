@@ -162,10 +162,10 @@ int main() {
 	}
 
 
-	std::cout << PPCX::Renderer::getInstancia()->getPropiedadGL(GL_RENDERER) << std::endl
-		<< PPCX::Renderer::getInstancia()->getPropiedadGL(GL_VENDOR) << std::endl
-		<< PPCX::Renderer::getInstancia()->getPropiedadGL(GL_VERSION) << std::endl
-		<< PPCX::Renderer::getInstancia()->getPropiedadGL(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+	std::cout << PPCX::Renderer::getPropiedadGL(GL_RENDERER) << std::endl
+		<< PPCX::Renderer::getPropiedadGL(GL_VENDOR) << std::endl
+		<< PPCX::Renderer::getPropiedadGL(GL_VERSION) << std::endl
+		<< PPCX::Renderer::getPropiedadGL(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
 	// - Registramos los callbacks que responderán a los eventos principales
 	glfwSetWindowRefreshCallback(window, callbackRefrescoVentana);

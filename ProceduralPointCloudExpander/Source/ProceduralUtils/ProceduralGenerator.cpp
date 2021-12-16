@@ -334,8 +334,9 @@ void ProceduralGenerator::computeNURBS() {
 			if (aux[2] == FLT_MAX) {
 				meanHeight(x, y);
 				meanColor(x, y);
+				aux = subdivisions[x][y]->getRepresentativePoint();
 			}
-			aux = subdivisions[x][y]->getRepresentativePoint();
+			
 			controlPoints.push_back(aux);
 			density = static_cast<float>(subdivisions[x][y]->getNumberOfPoints() + 1);
 			weights.push_back(density);
@@ -381,7 +382,7 @@ void ProceduralGenerator::computeNURBS() {
 					point._point = surfacePoint(srf, valX, valY, Cw);
 					/*point._point.x += (gsd / 2) * (degree);
 					point._point.y += (gsd / 2) * (degree);*/
-					/*std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;*/
+					std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;
 					int posColorX = valX + 0.5f;
 					int posColorY = valY + 0.5f;
 					if (posColorX >= axisSubdivision[0])

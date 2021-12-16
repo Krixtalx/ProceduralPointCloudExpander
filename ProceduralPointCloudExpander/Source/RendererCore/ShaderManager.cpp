@@ -37,7 +37,7 @@ PPCX::ShaderManager::~ShaderManager() {
  * @param tipoShader
  * @param ruta en la que se encuentra el código fuente
  */
-void PPCX::ShaderManager::nuevoShader(const std::string &nombreShader, GLenum tipoShader, const std::string &ruta) {
+void PPCX::ShaderManager::nuevoShader(const std::string &nombreShader, const GLenum tipoShader, const std::string &ruta) {
 	auto nuevoShader = new Shader(nombreShader, tipoShader, ruta);
 	shaders.insert(std::make_pair(nombreShader, nuevoShader));
 }
@@ -84,6 +84,7 @@ void PPCX::ShaderManager::activarSP(const std::string &nombreSP) {
  * Método para establecer una variable uniform dentro de un Shader Program
  * @param nombreSP nombre del ShaderProgram en el que establecer el uniform
  * @param variable nombre de la variable a establecer
+ * @param matrizMVP
  */
 void PPCX::ShaderManager::setUniform(const std::string &nombreSP, const std::string &variable, glm::mat4 matrizMVP) {
 	const auto SP = shaderPrograms.find(nombreSP);
@@ -114,6 +115,7 @@ void PPCX::ShaderManager::setUniform(const std::string &nombreSP, const std::str
  * Método para establecer una variable uniform dentro de un Shader Program
  * @param nombreSP nombre del ShaderProgram en el que establecer el uniform
  * @param variable nombre de la variable a establecer
+ * @param vec
  */
 void PPCX::ShaderManager::setUniform(const std::string &nombreSP, const std::string &variable, glm::vec3 vec) {
 	const auto SP = shaderPrograms.find(nombreSP);
@@ -145,10 +147,9 @@ void PPCX::ShaderManager::setUniform(const std::string &nombreSP, const std::str
  * @param tipoShader en que shader se encuentra la subrutina (GL_VERTEX_SHADER o GL_FRAGMENT_SHADER)
  * @param nombreSubrutina nombre de la subrutina a activar
  */
-void PPCX::ShaderManager::activarSubrutina(const std::string &nombreSP, GLenum tipoShader,
+void PPCX::ShaderManager::activarSubrutina(const std::string &nombreSP, const GLenum tipoShader,
                                           const std::string &nombreSubrutina) {
-	const auto SP = shaderPrograms.find(nombreSP);
-	if (SP != shaderPrograms.end()) {
+	if (const auto SP = shaderPrograms.find(nombreSP); SP != shaderPrograms.end()) {
 		const GLuint location = glGetSubroutineIndex(SP->second->getIdSP(), tipoShader, nombreSubrutina.c_str());
 		glUniformSubroutinesuiv(tipoShader, 1, &location);
 	} else {

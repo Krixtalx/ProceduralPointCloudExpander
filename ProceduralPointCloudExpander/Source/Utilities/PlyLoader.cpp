@@ -31,7 +31,6 @@ PPCX::PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
 	}
 
 	size_t numPoints;
-	PPCX::PointCloud* pointCloud;
 	std::vector<PointModel> points;
 	AABB _aabb;
 
@@ -42,20 +41,22 @@ PPCX::PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
 
 	fin.close();
 
-	pointCloud = new PPCX::PointCloud("DefaultSP", points, _aabb);
+	PPCX::PointCloud* pointCloud = new PPCX::PointCloud("DefaultSP", points, _aabb);
 
 	return pointCloud;
 }
 
 PPCX::PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 	std::vector<uint8_t> byteBuffer;
-	std::vector<PointModel> _points;
 
 	try {
+		std::vector<PointModel> _points;
 		std::shared_ptr<tinyply::PlyData> plyColors;
 		std::shared_ptr<tinyply::PlyData> plyPoints;
 		std::unique_ptr<std::istream> fileStream;
-		const std::string filename = _filename;
+		const std::string& filename = _filename;
+		bool haveColors = true;
+
 		fileStream.reset(new std::ifstream(filename, std::ios::binary));
 
 		if (!fileStream || fileStream->fail()) return nullptr;
@@ -66,12 +67,20 @@ PPCX::PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 		tinyply::PlyFile file;
 		file.parse_header(*fileStream);
 
-		try { plyPoints = file.request_properties_from_element("vertex", { "x", "y", "z" }); } catch (const std::exception& e) { std::cerr << "tinyply exception: " << e.what() << std::endl; }
+		try {
+			plyPoints = file.request_properties_from_element("vertex", { "x", "y", "z" });
+		} catch (const std::exception& e) {
+			std::cerr << "tinyply exception: " << e.what() << std::endl;
+		}
 
-		try { plyColors = file.request_properties_from_element("vertex", { "red", "green", "blue" }); } catch (const std::exception& e) { std::cerr << "tinyply exception: " << e.what() << std::endl; }
+		try {
+			plyColors = file.request_properties_from_element("vertex", { "red", "green", "blue" });
+		} catch (const std::invalid_argument& e) {
+			std::cerr << "tinyply exception: " << e.what() << std::endl;
+			haveColors = false;
+		}
 
 		file.read(*fileStream);
-
 
 		double* pointsRawDouble = nullptr;
 		float* pointsRawFloat = nullptr;
@@ -79,11 +88,16 @@ PPCX::PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 		const bool isDouble = plyPoints->t == tinyply::Type::FLOAT64;
 		const size_t numPoints = plyPoints->count;
 		const size_t numPointsBytes = numPoints * (!isDouble ? sizeof(float) : sizeof(double)) * 3;
-
-		const size_t numColors = plyColors->count;
+		size_t numColors;
+		if (haveColors)
+			numColors = plyColors->count;
+		else
+			numColors = plyPoints->count;
 		const size_t numColorsBytes = numColors * 1 * 3;
 
 		AABB _aabb;
+
+		std::cout << "Number of points: " << numPoints << std::endl;
 
 		// Allocate space
 		_points.resize(numPoints);
@@ -96,7 +110,14 @@ PPCX::PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 		}
 		const auto colorsRaw = new uint8_t[numColors * 3];
 
-		std::memcpy(colorsRaw, plyColors->buffer.get(), numColorsBytes);
+		if (haveColors)
+			std::memcpy(colorsRaw, plyColors->buffer.get(), numColorsBytes);
+		else {
+			for (int i = 0; i < numColors * 3; ++i) {
+				colorsRaw[i] = UINT8_MAX;
+			}
+		}
+
 
 		if (!isDouble) {
 			for (unsigned index = 0; index < numPoints; ++index) {
@@ -124,19 +145,17 @@ PPCX::PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 			}
 		}
 
-		auto nube = new PPCX::PointCloud("DefaultSP", _points, _aabb);
+		const auto nube = new PPCX::PointCloud("DefaultSP", _points, _aabb);
 		return nube;
 	} catch (const std::exception& e) {
 		std::cerr << "Caught tinyply exception: " << e.what() << std::endl;
 
 		return nullptr;
 	}
-
-	return nullptr;
 }
 
 PPCX::PointCloud* PlyLoader::loadPointCloud(const std::string& filename) {
-	std::string file = filename + APPBIN_EXTENSION;
+	const std::string file = filename + APPBIN_EXTENSION;
 	if (std::filesystem::exists(file)) {
 		return readFromBinary(file);
 	}
@@ -163,7 +182,7 @@ void PlyLoader::savePointCloud(const std::string& filename, std::vector<PPCX::Po
 		auto& pointModels = cloud->getPoints();
 		for (auto& pointModel : pointModels) {
 			points.push_back(pointModel._point);
-			const vec4 aux = pointModel.getRGBVec3()/255.0f;
+			const vec4 aux = pointModel.getRGBVec3() / 255.0f;
 			colors.emplace_back(vec3(aux.r, aux.g, aux.b));
 		}
 	}

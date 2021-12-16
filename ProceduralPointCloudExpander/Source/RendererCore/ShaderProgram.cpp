@@ -53,7 +53,7 @@ void PPCX::ShaderProgram::activateShaderProgram() {
 		}
 		glUseProgram(idSP);
 	} catch (std::runtime_error &e) {
-		throw;
+		throw e;
 	}
 }
 
