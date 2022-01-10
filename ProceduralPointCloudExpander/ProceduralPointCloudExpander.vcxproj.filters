@@ -153,6 +153,9 @@
     <ClCompile Include="Source\GeometryUtils\AABB.cpp">
       <Filter>Archivos de origen\GeometricUtils</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Utilities\Quadtree.cpp">
+      <Filter>Archivos de origen\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RendererCore\ShaderProgram.h">
@@ -241,6 +244,9 @@
     </ClInclude>
     <ClInclude Include="Source\GeometryUtils\AABB.h">
       <Filter>Archivos de encabezado\GeometricUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utilities\Quadtree.h">
+      <Filter>Archivos de encabezado\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

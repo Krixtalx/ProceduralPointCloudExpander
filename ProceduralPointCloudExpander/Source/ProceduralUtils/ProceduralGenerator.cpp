@@ -382,7 +382,7 @@ void ProceduralGenerator::computeNURBS() {
 					point._point = surfacePoint(srf, valX, valY, Cw);
 					/*point._point.x += (gsd / 2) * (degree);
 					point._point.y += (gsd / 2) * (degree);*/
-					std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;
+					//std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;
 					int posColorX = valX + 0.5f;
 					int posColorY = valY + 0.5f;
 					if (posColorX >= axisSubdivision[0])

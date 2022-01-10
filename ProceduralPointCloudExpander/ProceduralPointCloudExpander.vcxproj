@@ -200,6 +200,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\Utilities\Quadtree.cpp" />
     <ClCompile Include="Source\GeometryUtils\AABB.cpp" />
     <ClCompile Include="Source\Interface\Fonts\lato.cpp" />
     <ClCompile Include="Source\Interface\GUI.cpp" />
@@ -255,6 +256,7 @@
     <ClInclude Include="Source\Utilities\Image.h" />
     <ClInclude Include="Source\Utilities\PlyLoader.h" />
     <ClInclude Include="Source\Utilities\Point.h" />
+    <ClInclude Include="Source\Utilities\Quadtree.h" />
     <ClInclude Include="Source\Utilities\Singleton.h" />
   </ItemGroup>
   <ItemGroup>
