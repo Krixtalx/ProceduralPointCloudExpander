@@ -12,6 +12,7 @@ private:
 	std::array<std::unique_ptr<ProceduralVoxel>, 4> children;
 	float height = FLT_MAX;
 	vec3 color = { 0, 0, 0 };
+	bool leaf = true;
 
 public:
 
@@ -44,5 +45,7 @@ public:
 	unsigned getNumberOfPoints() const;
 
 	unsigned numberPointsToDensity(float density) const;
+
+	unsigned getDepth(unsigned currentDepth);
 };
 

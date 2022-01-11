@@ -21,3 +21,8 @@ void Quadtree::insert(const unsigned& pointIndex) const
 void Quadtree::reset() {
 	root.reset();
 }
+
+unsigned Quadtree::getDepth() {
+	return root->getDepth(0);
+}
+

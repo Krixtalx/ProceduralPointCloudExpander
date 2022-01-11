@@ -15,4 +15,6 @@ public:
 
 	void insert(const unsigned& pointIndex) const;
 	void reset();
+	unsigned getDepth();
+
 };

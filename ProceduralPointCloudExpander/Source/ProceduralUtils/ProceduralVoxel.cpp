@@ -8,9 +8,9 @@ ProceduralVoxel::ProceduralVoxel(const AABB& aabb) :aabb(aabb) {}
 ProceduralVoxel::~ProceduralVoxel() = default;
 
 void ProceduralVoxel::addPoint(const unsigned pointIndex) {
-	if (pointsIndex.size() < 200) {
+	if (leaf && pointsIndex.size() < 1000) {
 		pointsIndex.push_back(pointIndex);
-	} else {
+	} else if (leaf) {
 		std::vector<AABB> subAABBs = aabb.split(2, 2);
 		for (int i = 0; i < 4; ++i) {
 			children[i] = std::make_unique<ProceduralVoxel>(subAABBs[i]);
@@ -27,6 +27,15 @@ void ProceduralVoxel::addPoint(const unsigned pointIndex) {
 		}
 		pointsIndex.clear();
 		pointsIndex.resize(0);
+		leaf = false;
+	} else {
+		const glm::vec3 midPoint = aabb.center();
+		const std::vector<PointModel>& points = cloud->getPoints();
+		unsigned node = 0;
+		node = (points[pointIndex]._point.x >= midPoint.x) << 1;
+		node |= (points[pointIndex]._point.y >= midPoint.y);
+		children[node]->addPoint(pointIndex);
+
 	}
 }
 
@@ -76,7 +85,7 @@ void ProceduralVoxel::setColor(vec3 color) {
 	this->color = color;
 }
 
-void ProceduralVoxel::setPointCloud(PPCX::PointCloud* cloud) {
+void ProceduralVoxel::setPointCloud(PPCX::PointCloud * cloud) {
 	ProceduralVoxel::cloud = cloud;
 }
 
@@ -104,4 +113,17 @@ unsigned ProceduralVoxel::numberPointsToDensity(float density) const {
 	if (number > pointsIndex.size())
 		return number - pointsIndex.size();
 	return 0;
+}
+
+unsigned ProceduralVoxel::getDepth(unsigned currentDepth) {
+	if (leaf)
+		return currentDepth + 1;
+	else{
+		for (size_t i = 0; i < 4; i++) {
+			unsigned value = children[i]->getDepth(currentDepth + 1);
+			if (value > currentDepth)
+				currentDepth = value;
+		}
+		return currentDepth;
+	}
 }

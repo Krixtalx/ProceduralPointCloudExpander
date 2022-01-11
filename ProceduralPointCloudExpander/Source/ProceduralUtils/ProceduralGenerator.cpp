@@ -195,6 +195,7 @@ void ProceduralGenerator::subdivideCloud() {
 
 	std::cout << "Computing height..." << std::endl;
 	this->progress = 0.5f;
+	std::cout << "Depth: " << quadtree->getDepth() << std::endl;
 	/*#pragma omp parallel for collapse(2)
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
