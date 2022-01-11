@@ -3,29 +3,28 @@
 #include <ProceduralUtils/ProceduralVoxel.h>
 #include <RendererCore/pointCloud.h>
 
+#include "Utilities/Quadtree.h"
+
 class ProceduralGenerator {
 	friend class GUI;
 private:
-	unsigned axisSubdivision[2]{};
-	float gsd{};
-
-	std::vector<std::vector<ProceduralVoxel*>> subdivisions;
+	Quadtree* quadtree = nullptr;
 	AABB aabb;
 	PPCX::PointCloud* clouds[2]{};
 	float cloudDensity{};
 	float progress = 2.0f;
 
-	void readParameters(const std::string& path);
-	void meanHeight(unsigned x, unsigned y) const;
+	//void readParameters(const std::string& path);
+	/*void meanHeight(unsigned x, unsigned y) const;
 	void meanColor(unsigned x, unsigned y) const;
-	vec3 getColor(float pointX, float pointY);
-	void createVoxelGrid();
+	vec3 getColor(float pointX, float pointY);*/
+	//void createVoxelGrid();
 	void subdivideCloud();
 
 protected:
-	void saveHeightMap(std::string path) const;
-	void saveTextureMap(std::string path) const;
-	void savePointCloud(std::string path);
+	//void saveHeightMap(std::string path) const;
+	//void saveTextureMap(std::string path) const;
+	void savePointCloud(std::string path) const;
 	void computeNURBS();
 
 public:

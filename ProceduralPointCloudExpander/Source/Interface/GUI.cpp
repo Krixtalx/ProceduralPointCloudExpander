@@ -138,10 +138,10 @@ void GUI::showSaveWindow() {
 			_pointCloudPath = ImGuiFileDialog::Instance()->GetFilePathName();
 			if (saveOption == 0)
 				procGenerator->savePointCloud(_pointCloudPath);
-			else if (saveOption == 1)
-				procGenerator->saveHeightMap(_pointCloudPath);
-			else if (saveOption == 2)
-				procGenerator->saveTextureMap(_pointCloudPath);
+			//else if (saveOption == 1)
+				//procGenerator->saveHeightMap(_pointCloudPath);
+			//else if (saveOption == 2)
+				//procGenerator->saveTextureMap(_pointCloudPath);
 		}
 
 		// close
@@ -211,11 +211,11 @@ void GUI::showRenderingSettings() {
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
 
 					ImGui::Text("Number of subdivisions in x"); ImGui::TableNextColumn();
-					ImGui::Text("%i", procGenerator->axisSubdivision[0]);
+					//ImGui::Text("%i", procGenerator->axisSubdivision[0]);
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
 
 					ImGui::Text("Number of subdivisions in y"); ImGui::TableNextColumn();
-					ImGui::Text("%i", procGenerator->axisSubdivision[1]);
+					//ImGui::Text("%i", procGenerator->axisSubdivision[1]);
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
 
 					ImGui::Text("Cloud density"); ImGui::TableNextColumn();
@@ -246,7 +246,7 @@ void GUI::showProceduralSettings() {
 		}
 		ImGui::End();
 	}
-	
+
 }
 
 void GUI::showProgressBar() const {

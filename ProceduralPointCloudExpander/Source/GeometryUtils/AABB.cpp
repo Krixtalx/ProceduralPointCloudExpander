@@ -39,7 +39,7 @@ std::vector<AABB> AABB::split(const unsigned edgeDivisions) const
 				const vec3 min(_min.x + xSize * x, _min.y + ySize * y, _min.z + zSize * z);
 				const vec3 max(_min.x + xSize * (x + 1), _min.y + ySize * (y + 1), _min.z + zSize * (z + 1));
 
-				aabb.push_back(AABB(min, max));
+				aabb.emplace_back(min, max);
 			}
 		}
 	}
@@ -61,7 +61,7 @@ std::vector<AABB> AABB::split(const unsigned xEdgeDivisions, const unsigned yEdg
 				const vec3 min(_min.x + xSize * x, _min.y + ySize * y, _min.z + zSize * z);
 				const vec3 max(_min.x + xSize * (x + 1), _min.y + ySize * (y + 1), _min.z + zSize * (z + 1));
 
-				aabb.push_back(AABB(min, max));
+				aabb.emplace_back(min, max);
 			}
 		}
 	}
@@ -86,7 +86,7 @@ void AABB::update(const vec3& point)
 	if (point.z > _max.z) { _max.z = point.z; }
 }
 
-bool AABB::isInside(const vec3& point)
+bool AABB::isInside(const vec3& point) const
 {
 	return (point.x >= _min.x) && (point.y >= _min.y) && (point.z >= _min.z) && (point.x <= _max.x) && (point.y <= _max.y) && (point.z <= _max.z);
 }

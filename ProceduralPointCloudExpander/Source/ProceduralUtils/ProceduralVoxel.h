@@ -6,21 +6,20 @@
 
 class ProceduralVoxel {
 private:
-	AABB* aabb;
-	PPCX::PointCloud* nube;
+	AABB aabb;
+	static PPCX::PointCloud* cloud;
 	std::vector<unsigned> pointsIndex;
+	std::array<std::unique_ptr<ProceduralVoxel>, 4> children;
 	float height = FLT_MAX;
 	vec3 color = { 0, 0, 0 };
 
 public:
 
-	ProceduralVoxel(PPCX::PointCloud* pointCloud, AABB* aabb);
+	ProceduralVoxel(const AABB& aabb);
 
 	~ProceduralVoxel();
 
 	void addPoint(unsigned pointIndex);
-
-	void setAABB(AABB* aabb);
 
 	void computeHeight();
 
@@ -31,7 +30,10 @@ public:
 	bool isInside(PointModel point) const;
 
 	void setHeight(float h);
+
 	void setColor(vec3 color);
+
+	static void setPointCloud(PPCX::PointCloud* cloud);
 
 	float getHeight() const;
 

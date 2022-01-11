@@ -70,7 +70,7 @@ public:
 	/**
 	*	@brief Divides the axis as many times as axis edgeDivions, creating a set of smaller bounding boxes.
 	*/
-	std::vector<AABB> split(const unsigned xEdgeDivisions, const unsigned yEdgeDivisions, const unsigned zEdgeDivisions) const;
+	std::vector<AABB> split(const unsigned xEdgeDivisions, const unsigned yEdgeDivisions, const unsigned zEdgeDivisions = 1) const;
 
 	/**
 	*	@brief Updates the boundaries with a new axis aligned bounding box.
@@ -85,6 +85,6 @@ public:
 	/**
 	* @brief Checks if the point passed as a parameters is inside the bounding box
 	*/
-	bool isInside(const vec3& point);
+	bool isInside(const vec3& point) const;
 };
 
