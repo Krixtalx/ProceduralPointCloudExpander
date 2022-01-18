@@ -1,50 +1,34 @@
-//
-// Created by Niskp on 08/10/2021.
-//
+#pragma once
+#include "Model.h"
+#include "GeometryUtils/AABB.h"
 
-#ifndef PAG_MODELO_H
-#define PAG_MODELO_H
 
-#include <GeometryUtils/AABB.h>
-
-#include "Utilities/Point.h"
-
-namespace PPCX {
-	class PointCloud {
+class PointCloud : public PPCX::Model
+{
 	private:
-		GLuint idVAO{};
-		GLuint idVBO;
-		GLuint idIBO;
 		std::vector<PointModel> vbo;
-
-		std::string shaderProgram;
-		vec3 posicion;
 		AABB aabb;
-
-		bool visible = true;
 		
-		void nuevoVBO(GLenum freqAct);
+		void newVBO(GLenum freqAct);
 
-		void nuevoIBO(std::vector<GLuint> datos, GLenum freqAct);
+		void newIBO(std::vector<GLuint> data, GLenum freqAct);
 
 	public:
 		bool needUpdating=false;
 
-		PointCloud(std::string shaderProgram, const vec3& pos = { 0, 0, 0 });
-
-		PointCloud(std::string shaderProgram, const std::vector<PointModel>& puntos, const AABB& aabb, const vec3& pos = {0, 0, 0});
+		PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos = {0, 0, 0});
 
 		PointCloud(PointCloud &orig);
 
 		~PointCloud();
 
-		void nuevoPunto(const PointModel& punto);
+		void newPoint(const PointModel& point);
 
-		void nuevosPuntos(const std::vector<PointModel>& puntos);
+		void newPoints(const std::vector<PointModel>& points);
 
-		void actualizarNube();
-		
-		void dibujarModelo(mat4 matrizMVP) const;
+		void updateCloud();
+
+		void drawModel(mat4 MVPMatrix) const override;
 
 		std::vector<PointModel>& getPoints();
 
@@ -53,10 +37,5 @@ namespace PPCX {
 		const AABB& getAABB();
 
 		float getDensity() const;
+};
 
-		bool& getVisible();
-	};
-}
-
-
-#endif //PAG_MODELO_H

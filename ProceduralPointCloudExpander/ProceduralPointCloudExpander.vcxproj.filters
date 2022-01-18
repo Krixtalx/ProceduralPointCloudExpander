@@ -84,7 +84,7 @@
     <ClCompile Include="Source\RendererCore\Camara.cpp">
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
-    <ClCompile Include="Source\RendererCore\PointCloud.cpp">
+    <ClCompile Include="Source\RendererCore\Model.cpp">
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
     <ClCompile Include="Source\RendererCore\Renderer.cpp">
@@ -156,6 +156,9 @@
     <ClCompile Include="Source\Utilities\Quadtree.cpp">
       <Filter>Archivos de origen\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="Source\RendererCore\PointCloud.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RendererCore\ShaderProgram.h">
@@ -164,7 +167,7 @@
     <ClInclude Include="Source\RendererCore\Camara.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
-    <ClInclude Include="Source\RendererCore\PointCloud.h">
+    <ClInclude Include="Source\RendererCore\Model.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
     <ClInclude Include="Source\RendererCore\Renderer.h">
@@ -247,6 +250,9 @@
     </ClInclude>
     <ClInclude Include="Source\Utilities\Quadtree.h">
       <Filter>Archivos de encabezado\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\PointCloud.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

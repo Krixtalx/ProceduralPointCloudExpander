@@ -16,5 +16,7 @@ public:
 	void insert(const unsigned& pointIndex) const;
 	void reset();
 	unsigned getDepth();
+	unsigned getNumSubdivisions();
+	std::vector<std::shared_ptr<ProceduralVoxel>> getLeafs() const;
 
 };

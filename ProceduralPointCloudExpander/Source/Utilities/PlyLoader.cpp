@@ -4,11 +4,13 @@
 #include "Point.h"
 #include <filesystem>
 
+#include "RendererCore/PointCloud.h"
+
 constexpr auto PLY_EXTENSION = ".ply";
 constexpr auto APPBIN_EXTENSION = ".ppcxbin";
 bool PlyLoader::saving = false;
 
-bool PlyLoader::writeToBinary(const std::string& filename, PPCX::PointCloud* pointCloud) {
+bool PlyLoader::writeToBinary(const std::string& filename, PointCloud* pointCloud) {
 	std::ofstream fout(filename, std::ios::out | std::ios::binary);
 	if (!fout.is_open()) {
 		return false;
@@ -24,7 +26,7 @@ bool PlyLoader::writeToBinary(const std::string& filename, PPCX::PointCloud* poi
 	return true;
 }
 
-PPCX::PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
+PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
 	std::ifstream fin(filename, std::ios::in | std::ios::binary);
 	if (!fin.is_open()) {
 		return nullptr;
@@ -41,12 +43,12 @@ PPCX::PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
 
 	fin.close();
 
-	PPCX::PointCloud* pointCloud = new PPCX::PointCloud("DefaultSP", points, _aabb);
+	const auto pointCloud = new PointCloud("DefaultSP", points, _aabb);
 
 	return pointCloud;
 }
 
-PPCX::PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
+PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 	std::vector<uint8_t> byteBuffer;
 
 	try {
@@ -145,7 +147,7 @@ PPCX::PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 			}
 		}
 
-		const auto nube = new PPCX::PointCloud("DefaultSP", _points, _aabb);
+		const auto nube = new PointCloud("DefaultSP", _points, _aabb);
 		return nube;
 	} catch (const std::exception& e) {
 		std::cerr << "Caught tinyply exception: " << e.what() << std::endl;
@@ -154,19 +156,19 @@ PPCX::PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 	}
 }
 
-PPCX::PointCloud* PlyLoader::loadPointCloud(const std::string& filename) {
+PointCloud* PlyLoader::loadPointCloud(const std::string& filename) {
 	const std::string file = filename + APPBIN_EXTENSION;
 	if (std::filesystem::exists(file)) {
 		return readFromBinary(file);
 	}
 
-	PPCX::PointCloud* pointCloud = readFromPly(filename + PLY_EXTENSION);
+	PointCloud* pointCloud = readFromPly(filename + PLY_EXTENSION);
 	if (pointCloud)
 		writeToBinary(file, pointCloud);
 	return pointCloud;
 }
 
-void PlyLoader::savePointCloud(const std::string& filename, std::vector<PPCX::PointCloud*> clouds) {
+void PlyLoader::savePointCloud(const std::string& filename, std::vector<PointCloud*> clouds) {
 	std::cout << filename << std::endl;
 	std::filebuf fb_ascii;
 	fb_ascii.open(filename, std::ios::out);

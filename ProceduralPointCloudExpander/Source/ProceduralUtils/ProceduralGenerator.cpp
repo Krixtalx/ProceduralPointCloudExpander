@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include "ProceduralGenerator.h"
-#include "tinynurbs.h"
-#include "Utilities/Image.h"
 #include <random>
 
 #include "Utilities/PlyLoader.h"
@@ -15,16 +13,16 @@ ProceduralGenerator::~ProceduralGenerator() {
 }
 
 void ProceduralGenerator::drawClouds(mat4 matrizMVP) {
-	for (PPCX::PointCloud*& cloud : clouds) {
+	for (PointCloud*& cloud : clouds) {
 		if (cloud) {
 			if (cloud->needUpdating)
-				cloud->actualizarNube();
-			cloud->dibujarModelo(matrizMVP);
+				cloud->updateCloud();
+			cloud->drawModel(matrizMVP);
 		}
 	}
 }
 
-void ProceduralGenerator::newPointCloud(PPCX::PointCloud * pCloud, bool newScene) {
+void ProceduralGenerator::newPointCloud(PointCloud* pCloud, bool newScene) {
 	delete quadtree;
 	delete clouds[1];
 	clouds[1] = nullptr;
@@ -37,7 +35,7 @@ void ProceduralGenerator::newPointCloud(PPCX::PointCloud * pCloud, bool newScene
 	} else {
 		const auto vec = pCloud->getPoints();
 		for (auto i : vec) {
-			clouds[0]->nuevoPunto(i);
+			clouds[0]->newPoint(i);
 		}
 		clouds[0]->needUpdating = true;
 	}
@@ -48,7 +46,7 @@ void ProceduralGenerator::newPointCloud(PPCX::PointCloud * pCloud, bool newScene
 	computeNURBS();
 }
 
-bool& ProceduralGenerator::getPointCloudVisibility(unsigned cloud) const {
+bool& ProceduralGenerator::getPointCloudVisibility(const unsigned cloud) const {
 	if (clouds[cloud])
 		return clouds[cloud]->getVisible();
 	return clouds[0]->getVisible();
@@ -84,100 +82,6 @@ bool& ProceduralGenerator::getPointCloudVisibility(unsigned cloud) const {
 //	}
 //}
 
-/**
- * @brief compute the height of a proceduralVoxel as the mean of the inmediate neightbour
- * @param x index of the subdivision
- * @param y index of the subdivision
-*/
-//void ProceduralGenerator::meanHeight(unsigned x, unsigned y) const {
-//	float mean = 0;
-//	char counter = 0;
-//	for (int i = -1; i < 2; i++) {
-//		for (int j = -1; j < 2; j++) {
-//			int auxX = x + i;
-//			auxX = std::min(static_cast<int>(axisSubdivision[0]) - 1, std::max(0, auxX));
-//			int auxY = y + j;
-//			auxY = std::min(static_cast<int>(axisSubdivision[1]) - 1, std::max(0, auxY));
-//			if (auxX != x || auxY != y) {
-//				counter++;
-//				const float height = subdivisions[auxX][auxY]->getHeight();
-//				if (height != FLT_MAX)
-//					mean += height;
-//				else
-//					counter--;
-//			}
-//		}
-//	}
-//	if (counter > 0) {
-//		mean /= counter;
-//		subdivisions[x][y]->setHeight(mean);
-//	}
-//}
-
-/**
- * @brief compute the height of a proceduralVoxel as the mean of the inmediate neightbour
- * @param x index of the subdivision
- * @param y index of the subdivision
-*/
-//void ProceduralGenerator::meanColor(unsigned x, unsigned y) const {
-//	vec3 mean = { 0,0,0 };
-//	char counter = 0;
-//	for (int i = -1; i < 2; i++) {
-//		for (int j = -1; j < 2; j++) {
-//			int auxX = x + i;
-//			auxX = std::min(static_cast<int>(axisSubdivision[0]) - 1, std::max(0, auxX));
-//			int auxY = y + j;
-//			auxY = std::min(static_cast<int>(axisSubdivision[1]) - 1, std::max(0, auxY));
-//			if (auxX != x || auxY != y) {
-//				counter++;
-//				const vec3 color = subdivisions[auxX][auxY]->getColor();
-//				if (subdivisions[auxX][auxY]->getHeight() != FLT_MAX)
-//					mean += color;
-//				else
-//					counter--;
-//			}
-//		}
-//	}
-//	if (counter > 0) {
-//		mean /= counter;
-//		subdivisions[x][y]->setColor(mean);
-//	}
-//}
-
-
-/**
- * @brief Initialize the voxel grid
-*/
-//void ProceduralGenerator::createVoxelGrid() {
-//	std::cout << "Creating voxel grid..." << std::endl;
-//	this->progress = 0.2f;
-//	vec3 size = aabb.size();
-//	const vec3 minPoint = aabb.min();
-//	float stride[3];
-//
-//	for (unsigned i = 0; i < 2; i++) {
-//		stride[i] = size[i] / axisSubdivision[i];
-//	}
-//	stride[2] = size[2];
-//
-//	subdivisions.resize(axisSubdivision[0]);
-//	for (size_t x = 0; x < axisSubdivision[0]; x++) {
-//		subdivisions[x].resize(axisSubdivision[1]);
-//		for (size_t y = 0; y < axisSubdivision[1]; y++) {
-//			const auto newAABB = new AABB;
-//			vec3 point(minPoint);
-//			point[0] += stride[0] * x;
-//			point[1] += stride[1] * y;
-//			newAABB->update(point);
-//			point[0] += stride[0];
-//			point[1] += stride[1];
-//			point[2] += stride[2];
-//			newAABB->update(point);
-//			auto* procVoxel = new ProceduralVoxel(clouds[0], newAABB);
-//			subdivisions[x][y] = procVoxel;
-//		}
-//	}
-//}
 
 /**
  * @brief Assign each point of the PointCloud to the corresponding voxel in the voxel grid
@@ -193,17 +97,26 @@ void ProceduralGenerator::subdivideCloud() {
 		quadtree->insert(i);
 	}
 
-	std::cout << "Computing height..." << std::endl;
+	std::cout << "Computing height and color..." << std::endl;
 	this->progress = 0.5f;
 	std::cout << "Depth: " << quadtree->getDepth() << std::endl;
-	/*#pragma omp parallel for collapse(2)
-	for (int x = 0; x < axisSubdivision[0]; x++) {
-		for (int y = 0; y < axisSubdivision[1]; y++) {
-			subdivisions[x][y]->computeHeight();
-			subdivisions[x][y]->computeColor();
-		}
-	}*/
 
+	leafs = quadtree->getLeafs();
+	#pragma omp parallel for
+	for (int x = 0; x < leafs.size(); x++) {
+		leafs[x]->computeColor();
+		leafs[x]->computeHeight();
+	}
+
+	unsigned num = 0;
+	for (const auto &leaf : leafs)
+	{
+		num+=leaf->getNumberOfPoints();
+	}
+	std::cout<<"Num puntos cargados: " << clouds[0]->getNumberOfPoints()<<std::endl;
+	std::cout<<"Num Puntos: "<<num<<std::endl;
+	std::cout<<"Num nodos hoja: "<<leafs.size()<<std::endl;
+	std::cout<<"Num subdivisiones: "<<quadtree->getNumSubdivisions()<<std::endl;
 	//saveHeightMap();
 	//saveTextureMap();
 }
@@ -264,7 +177,7 @@ void ProceduralGenerator::subdivideCloud() {
 //}
 
 void ProceduralGenerator::savePointCloud(std::string path) const {
-	std::vector<PPCX::PointCloud*> aux;
+	std::vector<PointCloud*> aux;
 	aux.push_back(clouds[0]);
 	aux.push_back(clouds[1]);
 	std::thread thread(&PlyLoader::savePointCloud, path, aux);
@@ -272,8 +185,8 @@ void ProceduralGenerator::savePointCloud(std::string path) const {
 }
 
 void ProceduralGenerator::computeNURBS() {
-	//std::cout << "Creating nurbs..." << std::endl;
-	//this->progress = 0.6f;
+	std::cout << "Creating nurbs..." << std::endl;
+	this->progress = 0.6f;
 	//delete clouds[1];
 
 	//tinynurbs::RationalSurface<float> srf;
@@ -356,9 +269,6 @@ void ProceduralGenerator::computeNURBS() {
 	//				float valX = disX(generator);
 	//				float valY = disY(generator);
 	//				point._point = surfacePoint(srf, valX, valY, Cw);
-	//				/*point._point.x += (gsd / 2) * (degree);
-	//				point._point.y += (gsd / 2) * (degree);*/
-	//				//std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;
 	//				int posColorX = valX + 0.5f;
 	//				int posColorY = valY + 0.5f;
 	//				if (posColorX >= axisSubdivision[0])
@@ -379,7 +289,7 @@ void ProceduralGenerator::computeNURBS() {
 	//			}
 	//		}
 	//	}
-	//	clouds[1] = new PPCX::PointCloud("DefaultSP", points, newAABB);
+	//	clouds[1] = new PointCloud("DefaultSP", points, newAABB);
 	//	this->progress = 2.0f;
 	//}
 }

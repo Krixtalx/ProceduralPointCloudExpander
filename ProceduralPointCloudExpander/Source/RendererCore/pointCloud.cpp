@@ -1,81 +1,59 @@
-//
-// Created by Niskp on 08/10/2021.
-//
 #include "stdafx.h"
 #include "PointCloud.h"
+#include <utility>
 #include "ShaderManager.h"
+#include "GeometryUtils/AABB.h"
 
-
-PPCX::PointCloud::PointCloud(std::string shaderProgram, const vec3& pos) :
-	idVAO(UINT_MAX), idVBO(UINT_MAX), idIBO(UINT_MAX),
-	shaderProgram(std::move(shaderProgram)),
-	posicion(pos) {
-	//Creamos nuestro VAO
-	glGenVertexArrays(1, &idVAO);
-	glBindVertexArray(idVAO);
-}
 
 /**
  * Constructor parametrizado
- * @param shaderProgram que se usar√° para renderizar el modelo
+ * @param shaderProgram que se usar· para renderizar el modelo
  * @param pos Posicion inicial de la nube de puntos
  */
-PPCX::PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& puntos, const AABB& aabb, const
-                             vec3& pos) :
-	idVAO(UINT_MAX), idVBO(UINT_MAX), idIBO(UINT_MAX),
-	shaderProgram(std::move(shaderProgram)),
-	posicion(pos),
-	aabb(aabb), needUpdating(true)
-{
-
-	nuevosPuntos(puntos);
+PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const
+					   vec3& pos) :
+	Model(shaderProgram, pos), aabb(aabb), needUpdating(true) {
+	newPoints(points);
 }
 
 /**
  * Constructor copia. Copia el numVertices y el shaderProgram y realiza una nueva instanciacion de los vbos e ibos
  * @param orig
  */
-PPCX::PointCloud::PointCloud(PointCloud& orig) : vbo(orig.vbo), shaderProgram(orig.shaderProgram) {
+PointCloud::PointCloud(PointCloud& orig) : Model(orig), vbo(orig.vbo) {
 	//Creamos nuestro VAO
 	glGenVertexArrays(1, &idVAO);
 	glBindVertexArray(idVAO);
 
-	nuevoVBO(GL_STATIC_DRAW);
+	newVBO(GL_STATIC_DRAW);
 }
 
 /**
  * Destructor. Libera todos los recursos reservados a OpenGL.
  */
-PPCX::PointCloud::~PointCloud() {
-	if (idVBO != UINT_MAX)
-		glDeleteBuffers(1, &idVBO);
-	if (idIBO != UINT_MAX)
-		glDeleteBuffers(1, &idIBO);
+PointCloud::~PointCloud() = default;
 
-	glDeleteVertexArrays(1, &idVAO);
+void PointCloud::newPoint(const PointModel& point) {
+	vbo.push_back(point);
+	aabb.update(point._point);
 }
 
-void PPCX::PointCloud::nuevoPunto(const PointModel& punto) {
-	vbo.push_back(punto);
-	aabb.update(punto._point);
-}
-
-void PPCX::PointCloud::nuevosPuntos(const std::vector<PointModel>& puntos) {
+void PointCloud::newPoints(const std::vector<PointModel>& points) {
 	vbo.clear();
-	vbo.resize(puntos.size());
-	std::copy(puntos.begin(), puntos.end(), vbo.begin());
+	vbo.resize(points.size());
+	std::copy(points.begin(), points.end(), vbo.begin());
 }
 
-void PPCX::PointCloud::actualizarNube() {
+void PointCloud::updateCloud() {
 	if (idVAO == UINT_MAX) {
 		glGenVertexArrays(1, &idVAO);
 		glBindVertexArray(idVAO);
 	}
-	nuevoVBO(GL_STATIC_DRAW);
+	newVBO(GL_STATIC_DRAW);
 	std::vector<unsigned> ibo;
 	ibo.resize(vbo.size());
 	std::iota(ibo.begin(), ibo.end(), 0);
-	nuevoIBO(ibo, GL_STATIC_DRAW);
+	newIBO(ibo, GL_STATIC_DRAW);
 	needUpdating = false;
 }
 
@@ -84,7 +62,7 @@ void PPCX::PointCloud::actualizarNube() {
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PPCX::PointCloud::nuevoVBO(GLenum freqAct) {
+void PointCloud::newVBO(GLenum freqAct) {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idVBO != UINT_MAX) {
 		glDeleteBuffers(1, &idVBO);
@@ -106,10 +84,10 @@ void PPCX::PointCloud::nuevoVBO(GLenum freqAct) {
 
 /**
  * Instancia un IBO en el contexto OpenGL y lo guarda en ibos
- * @param datos a instanciar
+ * @param data a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PPCX::PointCloud::nuevoIBO(const std::vector<GLuint> datos, const GLenum freqAct) {
+void PointCloud::newIBO(const std::vector<GLuint> data, const GLenum freqAct) {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idIBO != UINT_MAX) {
 		glDeleteBuffers(1, &idIBO);
@@ -118,19 +96,19 @@ void PPCX::PointCloud::nuevoIBO(const std::vector<GLuint> datos, const GLenum fr
 	glBindVertexArray(idVAO);
 	glGenBuffers(1, &idIBO);
 	glBindBuffer(GL_ARRAY_BUFFER, idIBO);
-	glBufferData(GL_ARRAY_BUFFER, datos.size() * sizeof(GLuint), datos.data(), freqAct);
+	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(GLuint), data.data(), freqAct);
 }
 
 
 /**
- * Funci√≥n a la que se llama cuando se debe de dibujar el modelo
+ * FunciÛn a la que se llama cuando se debe de dibujar el modelo
  */
-void PPCX::PointCloud::dibujarModelo(const mat4 matrizMVP) const {
+void PointCloud::drawModel(const mat4 MVPMatrix) const {
 	if (visible) {
 		try {
-			//matrizMVP = matrizMVP * translate(posicion);
-			ShaderManager::getInstancia()->activarSP(shaderProgram);
-			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrizMVP);
+			//MVPMatrix = MVPMatrix * translate(pos);
+			PPCX::ShaderManager::getInstancia()->activarSP(shaderProgram);
+			PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", MVPMatrix);
 
 			glBindVertexArray(idVAO);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
@@ -142,24 +120,20 @@ void PPCX::PointCloud::dibujarModelo(const mat4 matrizMVP) const {
 	}
 }
 
-std::vector<PointModel>& PPCX::PointCloud::getPoints() {
+std::vector<PointModel>& PointCloud::getPoints() {
 	return vbo;
 }
 
-unsigned PPCX::PointCloud::getNumberOfPoints() const {
+unsigned PointCloud::getNumberOfPoints() const {
 	return vbo.size();
 }
 
-const AABB& PPCX::PointCloud::getAABB() {
+const AABB& PointCloud::getAABB() {
 	return aabb;
 }
 
-float PPCX::PointCloud::getDensity() const {
+float PointCloud::getDensity() const {
 	const int numberPoints = vbo.size();
 	const vec3 AABBSize = aabb.size();
 	return numberPoints / (AABBSize.x * AABBSize.y);
-}
-
-bool& PPCX::PointCloud::getVisible() {
-	return visible;
 }
