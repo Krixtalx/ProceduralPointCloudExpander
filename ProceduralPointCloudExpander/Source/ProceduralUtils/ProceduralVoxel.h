@@ -7,14 +7,14 @@
 class ProceduralVoxel {
 private:
 	AABB* aabb;
-	PPCX::PointCloud* nube;
+	PointCloud* nube;
 	std::vector<unsigned> pointsIndex;
 	float height = FLT_MAX;
 	vec3 color = { 0, 0, 0 };
 
 public:
 
-	ProceduralVoxel(PPCX::PointCloud* pointCloud, AABB* aabb);
+	ProceduralVoxel(PointCloud* pointCloud, AABB* aabb);
 
 	~ProceduralVoxel();
 

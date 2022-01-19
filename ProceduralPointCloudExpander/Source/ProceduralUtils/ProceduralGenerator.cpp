@@ -20,16 +20,16 @@ ProceduralGenerator::~ProceduralGenerator() {
 }
 
 void ProceduralGenerator::drawClouds(mat4 matrizMVP) {
-	for (PPCX::PointCloud*& cloud : clouds) {
+	for (PointCloud*& cloud : clouds) {
 		if (cloud) {
 			if (cloud->needUpdating)
-				cloud->actualizarNube();
-			cloud->dibujarModelo(matrizMVP);
+				cloud->updateCloud();
+			cloud->drawModel(matrizMVP);
 		}
 	}
 }
 
-void ProceduralGenerator::newPointCloud(PPCX::PointCloud * pCloud, bool newScene) {
+void ProceduralGenerator::newPointCloud(PointCloud * pCloud, bool newScene) {
 	for (size_t x = 0; x < axisSubdivision[0]; x++) {
 		for (size_t y = 0; y < axisSubdivision[1]; y++) {
 			delete subdivisions[x][y];
@@ -46,7 +46,7 @@ void ProceduralGenerator::newPointCloud(PPCX::PointCloud * pCloud, bool newScene
 	} else {
 		const auto vec = pCloud->getPoints();
 		for (auto i : vec) {
-			clouds[0]->nuevoPunto(i);
+			clouds[0]->newPoint(i);
 		}
 		clouds[0]->needUpdating = true;
 	}
@@ -290,7 +290,7 @@ void ProceduralGenerator::saveTextureMap(const std::string& path) const {
 }
 
 void ProceduralGenerator::savePointCloud(const std::string& path) const {
-	std::vector<PPCX::PointCloud*> aux;
+	std::vector<PointCloud*> aux;
 	aux.push_back(clouds[0]);
 	aux.push_back(clouds[1]);
 	std::thread thread(&PlyLoader::savePointCloud, path, aux);
@@ -405,7 +405,7 @@ void ProceduralGenerator::computeNURBS() {
 				}
 			}
 		}
-		clouds[1] = new PPCX::PointCloud("DefaultSP", points, newAABB);
+		clouds[1] = new PointCloud("DefaultSP", points, newAABB);
 		this->progress = 2.0f;
 	}
 }

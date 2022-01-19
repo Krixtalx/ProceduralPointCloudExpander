@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ProceduralVoxel.h"
 
-ProceduralVoxel::ProceduralVoxel(PPCX::PointCloud* pointCloud, AABB* aabb) :aabb(aabb), nube(pointCloud) {}
+ProceduralVoxel::ProceduralVoxel(PointCloud* pointCloud, AABB* aabb) :aabb(aabb), nube(pointCloud) {}
 
 ProceduralVoxel::~ProceduralVoxel() {
 	delete aabb;
