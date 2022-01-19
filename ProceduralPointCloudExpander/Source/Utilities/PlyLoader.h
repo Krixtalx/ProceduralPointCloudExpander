@@ -9,5 +9,5 @@ class PlyLoader
 public:
 	static bool saving;
 	static PPCX::PointCloud* loadPointCloud(const std::string& filename);
-	static void savePointCloud(const std::string& filename, std::vector<PPCX::PointCloud*> clouds);
+	static void savePointCloud(const std::string& filename, const std::vector<PPCX::PointCloud*>& clouds);
 };

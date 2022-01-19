@@ -166,7 +166,7 @@ PPCX::PointCloud* PlyLoader::loadPointCloud(const std::string& filename) {
 	return pointCloud;
 }
 
-void PlyLoader::savePointCloud(const std::string& filename, std::vector<PPCX::PointCloud*> clouds) {
+void PlyLoader::savePointCloud(const std::string& filename, const std::vector<PPCX::PointCloud*>& clouds) {
 	std::cout << filename << std::endl;
 	std::filebuf fb_ascii;
 	fb_ascii.open(filename, std::ios::out);

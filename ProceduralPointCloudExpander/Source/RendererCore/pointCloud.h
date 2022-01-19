@@ -25,7 +25,7 @@ namespace PPCX {
 		
 		void nuevoVBO(GLenum freqAct);
 
-		void nuevoIBO(std::vector<GLuint> datos, GLenum freqAct);
+		void nuevoIBO(const std::vector<GLuint>& datos, GLenum freqAct);
 
 	public:
 		bool needUpdating=false;

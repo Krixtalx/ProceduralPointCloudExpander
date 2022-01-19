@@ -109,7 +109,7 @@ void PPCX::PointCloud::nuevoVBO(GLenum freqAct) {
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PPCX::PointCloud::nuevoIBO(const std::vector<GLuint> datos, const GLenum freqAct) {
+void PPCX::PointCloud::nuevoIBO(const std::vector<GLuint>& datos, const GLenum freqAct) {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idIBO != UINT_MAX) {
 		glDeleteBuffers(1, &idIBO);
@@ -157,6 +157,8 @@ const AABB& PPCX::PointCloud::getAABB() {
 float PPCX::PointCloud::getDensity() const {
 	const int numberPoints = vbo.size();
 	const vec3 AABBSize = aabb.size();
+	std::cout<<AABBSize.x<<std::endl;
+	std::cout<<AABBSize.y<<std::endl;
 	return numberPoints / (AABBSize.x * AABBSize.y);
 }
 

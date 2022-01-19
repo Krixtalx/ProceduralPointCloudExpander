@@ -46,7 +46,7 @@ namespace tinyply
     {
         PropertyInfo() {};
         PropertyInfo(int stride, std::string str)
-            : stride(stride), str(str) {}
+            : stride(stride), str(std::move(str)) {}
         int stride {0};
         std::string str;
     };
@@ -154,10 +154,10 @@ namespace tinyply
          * memory allocation and a single-pass import, a 2x performance optimization.
          */
         std::shared_ptr<PlyData> request_properties_from_element(const std::string & elementKey,
-            const std::vector<std::string> propertyKeys, const uint32_t list_size_hint = 0);
+            const std::vector<std::string>& propertyKeys, const uint32_t list_size_hint = 0);
 
         void add_properties_to_element(const std::string & elementKey,
-            const std::vector<std::string> propertyKeys,
+            const std::vector<std::string>& propertyKeys,
             const Type type,
             const size_t count,
             const uint8_t * data,
@@ -180,6 +180,7 @@ namespace tinyply
 #include <type_traits>
 #include <iostream>
 #include <cstring>
+#include <utility>
 
 namespace tinyply
 {
@@ -264,7 +265,7 @@ struct PlyFile::PlyFileImpl
     void write(std::ostream & os, bool isBinary);
 
     std::shared_ptr<PlyData> request_properties_from_element(const std::string & elementKey,
-        const std::vector<std::string> propertyKeys,
+        const std::vector<std::string>& propertyKeys,
         const uint32_t list_size_hint);
 
     void add_properties_to_element(const std::string & elementKey,
@@ -685,7 +686,7 @@ void PlyFile::PlyFileImpl::write_header(std::ostream & os) noexcept
 }
 
 std::shared_ptr<PlyData> PlyFile::PlyFileImpl::request_properties_from_element(const std::string & elementKey,
-    const std::vector<std::string> propertyKeys,
+    const std::vector<std::string>& propertyKeys,
     const uint32_t list_size_hint)
 {
     if (elements.empty()) throw std::runtime_error("header had no elements defined. malformed file?");
@@ -950,13 +951,13 @@ std::vector<std::string> & PlyFile::get_comments() { return impl->comments; }
 std::vector<std::string> PlyFile::get_info() const { return impl->objInfo; }
 bool PlyFile::is_binary_file() const { return impl->isBinary; }
 std::shared_ptr<PlyData> PlyFile::request_properties_from_element(const std::string & elementKey,
-    const std::vector<std::string> propertyKeys,
+    const std::vector<std::string>& propertyKeys,
     const uint32_t list_size_hint)
 {
     return impl->request_properties_from_element(elementKey, propertyKeys, list_size_hint);
 }
 void PlyFile::add_properties_to_element(const std::string & elementKey,
-    const std::vector<std::string> propertyKeys,
+    const std::vector<std::string>& propertyKeys,
     const Type type, const size_t count, const uint8_t * data, const Type listType, const size_t listCount)
 {
     return impl->add_properties_to_element(elementKey, propertyKeys, type, count, data, listType, listCount);

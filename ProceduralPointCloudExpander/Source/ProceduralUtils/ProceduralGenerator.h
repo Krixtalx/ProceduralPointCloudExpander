@@ -23,11 +23,11 @@ private:
 	void subdivideCloud();
 
 protected:
-	void saveHeightMap(std::string path) const;
-	void saveTextureMap(std::string path) const;
-	void savePointCloud(std::string path);
+	void saveHeightMap(const std::string& path) const;
+	void saveTextureMap(const std::string& path) const;
+	void savePointCloud(const std::string& path) const;
 	void computeNURBS();
-
+	void automaticGSD();
 public:
 	ProceduralGenerator();
 	~ProceduralGenerator();
