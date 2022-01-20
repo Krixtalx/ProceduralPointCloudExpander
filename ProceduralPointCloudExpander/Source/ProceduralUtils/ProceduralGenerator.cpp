@@ -54,7 +54,7 @@ void ProceduralGenerator::newPointCloud(PointCloud * pCloud, bool newScene) {
 	automaticGSD();
 	createVoxelGrid();
 	subdivideCloud();
-	computeNURBS();
+	computeNURBS(2, 5, 5);
 }
 
 bool& ProceduralGenerator::getPointCloudVisibility(unsigned cloud) const {
@@ -119,7 +119,7 @@ void ProceduralGenerator::meanHeight(unsigned x, unsigned y) const {
 			}
 		}
 	}
-	if (counter > 0) {
+	if (counter > 1) {
 		mean /= counter;
 		subdivisions[x][y]->setHeight(mean);
 	}
@@ -149,7 +149,7 @@ void ProceduralGenerator::meanColor(unsigned x, unsigned y) const {
 			}
 		}
 	}
-	if (counter > 0) {
+	if (counter > 1) {
 		mean /= counter;
 		subdivisions[x][y]->setColor(mean);
 	}
@@ -237,7 +237,7 @@ void ProceduralGenerator::subdivideCloud() {
 /**
  * @brief Saves the current voxel grid as a png file in gray scale that represents a height map
 */
-void ProceduralGenerator::saveHeightMap(const std::string& path) const {
+void ProceduralGenerator::saveHeightMap(const std::string & path) const {
 	const float minPointZ = aabb.min()[2];
 	const float relativeMaxPointZ = aabb.max()[2] - minPointZ;
 	float relativeHeightValue;
@@ -270,7 +270,7 @@ void ProceduralGenerator::saveHeightMap(const std::string& path) const {
 /**
  * @brief Saves the current voxel grid as a png file in RGB scale that could be used as a texture of the terrain
 */
-void ProceduralGenerator::saveTextureMap(const std::string& path) const {
+void ProceduralGenerator::saveTextureMap(const std::string & path) const {
 	const float minPointZ = aabb.min()[2];
 	float relativeMaxPointZ = aabb.max()[2] - minPointZ;
 	float relativeHeightValue;
@@ -289,7 +289,7 @@ void ProceduralGenerator::saveTextureMap(const std::string& path) const {
 	image->saveImage(path);
 }
 
-void ProceduralGenerator::savePointCloud(const std::string& path) const {
+void ProceduralGenerator::savePointCloud(const std::string & path) const {
 	std::vector<PointCloud*> aux;
 	aux.push_back(clouds[0]);
 	aux.push_back(clouds[1]);
@@ -297,13 +297,12 @@ void ProceduralGenerator::savePointCloud(const std::string& path) const {
 	thread.detach();
 }
 
-void ProceduralGenerator::computeNURBS() {
+void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned divY) {
 	std::cout << "Creating nurbs..." << std::endl;
 	this->progress = 0.6f;
 	delete clouds[1];
 
 	tinynurbs::RationalSurface<float> srf;
-	int degree = 2;
 	srf.degree_u = degree;
 	srf.degree_v = degree;
 	srf.knots_u.resize(axisSubdivision[0] + degree + 1);
@@ -351,12 +350,12 @@ void ProceduralGenerator::computeNURBS() {
 	if (surfaceIsValid(srf)) {
 		std::cout << "Generating nurbs cloud..." << std::endl;
 		this->progress = .70f;
+
 		tinynurbs::array2<vec<4, float>> Cw;
 		Cw.resize(srf.control_points.rows(), srf.control_points.cols());
 		for (int i = 0; i < srf.control_points.rows(); i++) {
 			for (int j = 0; j < srf.control_points.cols(); j++) {
-				Cw(i, j) =
-					vec(tinynurbs::util::cartesianToHomogenous(srf.control_points(i, j), srf.weights(i, j)));
+				Cw(i, j) = vec(tinynurbs::util::cartesianToHomogenous(srf.control_points(i, j), srf.weights(i, j)));
 			}
 		}
 
@@ -366,25 +365,38 @@ void ProceduralGenerator::computeNURBS() {
 		std::vector<PointModel> points;
 		AABB newAABB;
 
-		/*point._point = tinynurbs::surfacePoint(srf, .0f, .0f, Cw);
-		std::cout << point._point.x << " - " << point._point.y << " - " << point._point.z << std::endl;
-		std::cout << minPoint.x << " - " << minPoint.y << " - " << minPoint.z << std::endl;*/
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 		std::default_random_engine generator(seed);
 		std::uniform_real_distribution<float> genColor(0, 0.05f);
-		#pragma omp parallel for private(point, generator)
+		#pragma omp parallel for private(point, generator) collapse(2)
 		for (int x = 0; x < axisSubdivision[0]; x++) {
 			for (int y = 0; y < axisSubdivision[1]; y++) {
 				unsigned limit = subdivisions[x][y]->numberPointsToDensity(cloudDensity * 1.2f);
+				std::vector<float> intervals;
+				std::vector<float> weights;
+				if (subdivisions[x][y]->getNumberOfPoints() > 100) {
+					weights = subdivisions[x][y]->internalDistribution(divX, divY);
+					unsigned last = divX * divY;
+					for (unsigned i = 0; i <= last; i++) {
+						intervals.push_back(i);
+					}
+				}
 				std::uniform_real_distribution<float> disX(x, x + 1);
 				std::uniform_real_distribution<float> disY(y, y + 1);
+				std::piecewise_constant_distribution<float> dis(intervals.begin(), intervals.end(), weights.begin());
 				for (int i = 0; i < limit; i++) {
-					float valX = disX(generator);
-					float valY = disY(generator);
+					float valX;
+					float valY;
+					if (subdivisions[x][y]->getNumberOfPoints() > 100) {
+						float value = dis(generator);
+						valX = (value / (divY * divX)) + x;
+						valY = (value / (divY * divX)) + y;
+						//std::cout << "x: " << x << " y: " << y << " valX: " << valX << " valY: " << valY << " Value: " << value << std::endl;
+					} else {
+						valX = disX(generator);
+						valY = disY(generator);
+					}
 					point._point = surfacePoint(srf, valX, valY, Cw);
-					/*point._point.x += (gsd / 2) * (degree);
-					point._point.y += (gsd / 2) * (degree);*/
-					//std::cout << valX << "-" << valY << ": " << point._point.x << "-" << point._point.y << "-" << point._point.z << std::endl;
 					int posColorX = valX + 0.5f;
 					int posColorY = valY + 0.5f;
 					if (posColorX >= axisSubdivision[0])
@@ -411,7 +423,7 @@ void ProceduralGenerator::computeNURBS() {
 }
 
 void ProceduralGenerator::automaticGSD() {
-	const unsigned voxelsNumber = clouds[0]->getNumberOfPoints() / 60;
+	const unsigned voxelsNumber = clouds[0]->getNumberOfPoints() / 100;
 	const vec3 cloudSize = clouds[0]->getAABB().size();
 	const float sizeProportion = cloudSize.x / cloudSize.y;
 	axisSubdivision[1] = sqrt(voxelsNumber / sizeProportion);

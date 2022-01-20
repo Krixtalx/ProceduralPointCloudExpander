@@ -26,7 +26,7 @@ protected:
 	void saveHeightMap(const std::string& path) const;
 	void saveTextureMap(const std::string& path) const;
 	void savePointCloud(const std::string& path) const;
-	void computeNURBS();
+	void computeNURBS(unsigned degree, unsigned divX, unsigned divY);
 	void automaticGSD();
 public:
 	ProceduralGenerator();

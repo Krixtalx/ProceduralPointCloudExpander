@@ -87,3 +87,39 @@ unsigned ProceduralVoxel::numberPointsToDensity(float density) const {
 		return number - pointsIndex.size();
 	return 0;
 }
+
+std::vector<float> ProceduralVoxel::internalDistribution(unsigned divX, unsigned divY) {
+	std::vector<float> distribution;
+	distribution.resize(divX * divY);
+	auto& points = nube->getPoints();
+	float xSize = aabb->size().x / divX;
+	float ySize = aabb->size().y / divY;
+	glm::vec3 minPoint = aabb->min();
+	unsigned currentMax = 0;
+	for (unsigned i : pointsIndex) {
+		unsigned posX = (points[i]._point.x - minPoint.x) / xSize;
+		unsigned posY = (points[i]._point.y - minPoint.y) / ySize;
+		distribution[posX * divY + posY] += 1;
+		if (distribution[posX * divY + posY] > currentMax)
+			currentMax = distribution[posX * divY + posY];
+	}
+	unsigned i = 0;
+	float aux = 0;
+	for (float& val : distribution) {
+		/*if (i++ % divY == 0)
+			std::cout << std::endl;
+		std::cout << val << " ";*/
+		val = (currentMax - val + 1) / (pointsIndex.size());
+		aux += val;
+	}
+	//std::cout << std::endl;
+	i = 0;
+	for (float& val : distribution) {
+		val /= aux;
+		/*if (i++ % divY == 0)
+			std::cout << std::endl;
+		std::cout << val << " ";*/
+	}
+	//std::cout << std::endl << std::endl;
+	return distribution;
+}

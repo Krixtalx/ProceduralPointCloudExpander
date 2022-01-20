@@ -15,32 +15,26 @@ private:
 public:
 
 	ProceduralVoxel(PointCloud* pointCloud, AABB* aabb);
-
 	~ProceduralVoxel();
-
 	void addPoint(unsigned pointIndex);
-
 	void setAABB(AABB* aabb);
 
 	void computeHeight();
-
 	void computeColor();
 
 	void checkPoints() const;
-
 	bool isInside(PointModel point) const;
 
 	void setHeight(float h);
 	void setColor(vec3 color);
 
 	float getHeight() const;
-
 	vec3 getRepresentativePoint() const;
-
 	vec3 getColor() const;
-
 	unsigned getNumberOfPoints() const;
 
 	unsigned numberPointsToDensity(float density) const;
+
+	std::vector<float> internalDistribution(unsigned divX, unsigned divY);
 };
 
