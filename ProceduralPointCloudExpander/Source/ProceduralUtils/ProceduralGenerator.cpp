@@ -366,32 +366,50 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 		AABB newAABB;
 
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::cout << "[DEBUG]: Seed-" << seed << std::endl;
 		std::default_random_engine generator(seed);
-		std::uniform_real_distribution<float> genColor(0, 0.05f);
-		#pragma omp parallel for private(point, generator) collapse(2)
+		std::uniform_int_distribution<unsigned> genColor(0, 20);
+		std::atomic<int> count = 0;
+		#pragma omp parallel for private(point, generator)
 		for (int x = 0; x < axisSubdivision[0]; x++) {
 			for (int y = 0; y < axisSubdivision[1]; y++) {
-				unsigned limit = subdivisions[x][y]->numberPointsToDensity(cloudDensity * 1.2f);
-				std::vector<float> intervals;
-				std::vector<float> weights;
-				if (subdivisions[x][y]->getNumberOfPoints() > 100) {
-					weights = subdivisions[x][y]->internalDistribution(divX, divY);
-					unsigned last = divX * divY;
-					for (unsigned i = 0; i <= last; i++) {
-						intervals.push_back(i);
+				unsigned limit = subdivisions[x][y]->numberPointsToDensity(cloudDensity * 2.0f);
+				std::vector<float> intervals[2];
+				std::vector<float> weights[2];
+				if (subdivisions[x][y]->getNumberOfPoints() > cloudDensity * 0.3f && useStatiticsMethod) {
+					std::vector<float> allWeights = subdivisions[x][y]->internalDistribution(divX, divY);
+					count++;
+					for (unsigned i = 0; i < divX; i++) {
+						intervals[0].push_back(x + (float)i / divX);
+						float sum = 0;
+						for (unsigned j = 0; j < divY; j++) {
+							sum += allWeights[i * divX + j];
+						}
+						weights[0].push_back(sum);
 					}
+					intervals[0].push_back(x + 1);
+					for (unsigned i = 0; i < divY; i++) {
+						intervals[1].push_back(y + (float)i / divY);
+						float sum = 0;
+						for (unsigned j = 0; j < divX; j++) {
+							sum += allWeights[i * divY + j];
+						}
+						weights[1].push_back(sum);
+					}
+					intervals[1].push_back(y + 1);
 				}
 				std::uniform_real_distribution<float> disX(x, x + 1);
 				std::uniform_real_distribution<float> disY(y, y + 1);
-				std::piecewise_constant_distribution<float> dis(intervals.begin(), intervals.end(), weights.begin());
+				std::piecewise_constant_distribution<float> customDisX(intervals[0].begin(), intervals[0].end(), weights[0].begin());
+				std::piecewise_constant_distribution<float> customDisY(intervals[1].begin(), intervals[1].end(), weights[1].begin());
 				for (int i = 0; i < limit; i++) {
 					float valX;
 					float valY;
-					if (subdivisions[x][y]->getNumberOfPoints() > 100) {
-						float value = dis(generator);
-						valX = (value / (divY * divX)) + x;
-						valY = (value / (divY * divX)) + y;
-						//std::cout << "x: " << x << " y: " << y << " valX: " << valX << " valY: " << valY << " Value: " << value << std::endl;
+					if (subdivisions[x][y]->getNumberOfPoints() > cloudDensity * 0.3f && useStatiticsMethod) {
+						
+						valX = customDisX(generator);
+						valY = customDisY(generator);
+						//std::cout << "x: " << x << " y: " << y << " valX: " << valX << " valY: " << valY << std::endl;
 					} else {
 						valX = disX(generator);
 						valY = disY(generator);
@@ -408,7 +426,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 					color.g += genColor(generator);
 					color.b += genColor(generator);
 					point.saveRGB(color);
-					if (point._point.z < maxPoint.z + 100 && point._point.z > minPoint.z - 50) {
+					if (point._point.z < maxPoint.z + 20 && point._point.z > minPoint.z - 20) {
 						#pragma omp critical
 						points.push_back(point);
 						#pragma omp critical
@@ -417,13 +435,14 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 				}
 			}
 		}
+		std::cout << count << std::endl;
 		clouds[1] = new PointCloud("DefaultSP", points, newAABB);
 		this->progress = 2.0f;
 	}
 }
 
 void ProceduralGenerator::automaticGSD() {
-	const unsigned voxelsNumber = clouds[0]->getNumberOfPoints() / 100;
+	const unsigned voxelsNumber = clouds[0]->getNumberOfPoints() / 50;
 	const vec3 cloudSize = clouds[0]->getAABB().size();
 	const float sizeProportion = cloudSize.x / cloudSize.y;
 	axisSubdivision[1] = sqrt(voxelsNumber / sizeProportion);

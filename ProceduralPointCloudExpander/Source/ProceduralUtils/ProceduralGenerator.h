@@ -14,6 +14,7 @@ private:
 	PointCloud* clouds[2]{};
 	float cloudDensity{};
 	float progress = 2.0f;
+	bool useStatiticsMethod = true;
 
 	void readParameters(const std::string& path);
 	void meanHeight(unsigned x, unsigned y) const;
