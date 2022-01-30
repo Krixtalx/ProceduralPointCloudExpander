@@ -9,6 +9,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Debug-NoOpenMP|x64 = Debug-NoOpenMP|x64
+		Debug-NoOpenMP|x86 = Debug-NoOpenMP|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -17,6 +19,10 @@ Global
 		{50CF6220-BC85-4D15-AFFC-01BE0BF813B8}.Debug|x64.Build.0 = Debug|x64
 		{50CF6220-BC85-4D15-AFFC-01BE0BF813B8}.Debug|x86.ActiveCfg = Debug|Win32
 		{50CF6220-BC85-4D15-AFFC-01BE0BF813B8}.Debug|x86.Build.0 = Debug|Win32
+		{50CF6220-BC85-4D15-AFFC-01BE0BF813B8}.Debug-NoOpenMP|x64.ActiveCfg = Debug-NoOpenMP|x64
+		{50CF6220-BC85-4D15-AFFC-01BE0BF813B8}.Debug-NoOpenMP|x64.Build.0 = Debug-NoOpenMP|x64
+		{50CF6220-BC85-4D15-AFFC-01BE0BF813B8}.Debug-NoOpenMP|x86.ActiveCfg = Debug-NoOpenMP|Win32
+		{50CF6220-BC85-4D15-AFFC-01BE0BF813B8}.Debug-NoOpenMP|x86.Build.0 = Debug-NoOpenMP|Win32
 		{50CF6220-BC85-4D15-AFFC-01BE0BF813B8}.Release|x64.ActiveCfg = Release|x64
 		{50CF6220-BC85-4D15-AFFC-01BE0BF813B8}.Release|x64.Build.0 = Release|x64
 		{50CF6220-BC85-4D15-AFFC-01BE0BF813B8}.Release|x86.ActiveCfg = Release|Win32

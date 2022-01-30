@@ -98,7 +98,9 @@ std::vector<float> ProceduralVoxel::internalDistribution(unsigned divX, unsigned
 	unsigned currentMax = 0;
 	for (unsigned i : pointsIndex) {
 		unsigned posX = (points[i]._point.x - minPoint.x) / xSize;
+		posX = std::min(posX, divX - 1);
 		unsigned posY = (points[i]._point.y - minPoint.y) / ySize;
+		posY = std::min(posY, divY - 1);
 		distribution[posX * divY + posY] += 1;
 		if (distribution[posX * divY + posY] > currentMax)
 			currentMax = distribution[posX * divY + posY];

@@ -51,57 +51,17 @@ void ProceduralGenerator::newPointCloud(PointCloud * pCloud, bool newScene) {
 		clouds[0]->needUpdating = true;
 	}
 	this->aabb = clouds[0]->getAABB();
-	automaticGSD();
+	automaticGSD(80);
 	createVoxelGrid();
 	subdivideCloud();
-	computeNURBS(2, 5, 5);
-}
-
-bool& ProceduralGenerator::getPointCloudVisibility(unsigned cloud) const {
-	if (clouds[cloud])
-		return clouds[cloud]->getVisible();
-	return clouds[0]->getVisible();
+	//computeNURBS(2, 10, 10);
+	this->progress = 2.0f;
 }
 
 
-/**
- * @brief Read the parameters from the parameters file
- * @param path where the parameters file is
-*/
-void ProceduralGenerator::readParameters(const std::string & path) {
-	std::ifstream parametersFile;
-	parametersFile.open(path, std::ifstream::in);
-
-	if (!parametersFile) {
-		std::cerr << "[ProceduralGenerator]->Error while trying to open the parameters file. Path: " + path << std::endl;
-	} else {
-		std::string line;
-		while (!parametersFile.eof()) {
-			getline(parametersFile, line);
-			if (!line.empty()) {
-				int pos = line.find("=");
-				std::string parameter = line.substr(0, pos);
-				std::string value = line.substr(++pos, line.length());
-				if (parameter == "gsd")	gsd = stof(value);
-			}
-		}
-		parametersFile.close();
-
-		vec3 size = aabb.size();
-		for (size_t i = 0; i < 2; i++) {
-			axisSubdivision[i] = size[i] / gsd;
-		}
-
-	}
-}
-
-/**
- * @brief compute the height of a proceduralVoxel as the mean of the inmediate neightbour
- * @param x index of the subdivision
- * @param y index of the subdivision
-*/
-void ProceduralGenerator::meanHeight(unsigned x, unsigned y) const {
-	float mean = 0;
+bool ProceduralGenerator::meanNeightbourHeightColor(unsigned x, unsigned y, char minCount) const {
+	float heightMean = 0;
+	vec3 colorMean = { 0,0,0 };
 	char counter = 0;
 	for (int i = -1; i < 2; i++) {
 		for (int j = -1; j < 2; j++) {
@@ -110,49 +70,24 @@ void ProceduralGenerator::meanHeight(unsigned x, unsigned y) const {
 			int auxY = y + j;
 			auxY = std::min(static_cast<int>(axisSubdivision[1]) - 1, std::max(0, auxY));
 			if (auxX != x || auxY != y) {
-				counter++;
-				const float height = subdivisions[auxX][auxY]->getHeight();
-				if (height != FLT_MAX)
-					mean += height;
-				else
-					counter--;
-			}
-		}
-	}
-	if (counter > 1) {
-		mean /= counter;
-		subdivisions[x][y]->setHeight(mean);
-	}
-}
-
-/**
- * @brief compute the height of a proceduralVoxel as the mean of the inmediate neightbour
- * @param x index of the subdivision
- * @param y index of the subdivision
-*/
-void ProceduralGenerator::meanColor(unsigned x, unsigned y) const {
-	vec3 mean = { 0,0,0 };
-	char counter = 0;
-	for (int i = -1; i < 2; i++) {
-		for (int j = -1; j < 2; j++) {
-			int auxX = x + i;
-			auxX = std::min(static_cast<int>(axisSubdivision[0]) - 1, std::max(0, auxX));
-			int auxY = y + j;
-			auxY = std::min(static_cast<int>(axisSubdivision[1]) - 1, std::max(0, auxY));
-			if (auxX != x || auxY != y) {
-				counter++;
 				const vec3 color = subdivisions[auxX][auxY]->getColor();
-				if (subdivisions[auxX][auxY]->getHeight() != FLT_MAX)
-					mean += color;
-				else
-					counter--;
+				const float height = subdivisions[auxX][auxY]->getHeight();
+				if (height != FLT_MAX) {
+					heightMean += height;
+					colorMean += color;
+					counter++;
+				}
 			}
 		}
 	}
-	if (counter > 1) {
-		mean /= counter;
-		subdivisions[x][y]->setColor(mean);
+	if (counter >= minCount) {
+		heightMean /= counter;
+		colorMean /= counter;
+		subdivisions[x][y]->setHeight(heightMean);
+		subdivisions[x][y]->setColor(colorMean);
+		return true;
 	}
+	return false;
 }
 
 
@@ -229,72 +164,34 @@ void ProceduralGenerator::subdivideCloud() {
 			subdivisions[x][y]->computeColor();
 		}
 	}
-
-	//saveHeightMap();
-	//saveTextureMap();
-}
-
-/**
- * @brief Saves the current voxel grid as a png file in gray scale that represents a height map
-*/
-void ProceduralGenerator::saveHeightMap(const std::string & path) const {
-	const float minPointZ = aabb.min()[2];
-	const float relativeMaxPointZ = aabb.max()[2] - minPointZ;
-	float relativeHeightValue;
-	const auto pixels = new std::vector<unsigned char>();
-	int i = 0;
-	int o = 0;
-	for (int y = 0; y < axisSubdivision[1]; y++) {
-		for (int x = 0; x < axisSubdivision[0]; x++) {
-			unsigned char color;
-			const float height = subdivisions[x][y]->getHeight();
-			if (height != FLT_MAX) {
-				relativeHeightValue = (height - minPointZ) / relativeMaxPointZ;
-			} else {
-				relativeHeightValue = 0;
+	std::list<std::pair<unsigned, unsigned>> unfinishedVoxels;
+	for (int x = 0; x < axisSubdivision[0]; x++) {
+		for (int y = 0; y < axisSubdivision[1]; y++) {
+			if (!meanNeightbourHeightColor(x, y, 8)) {
+				auto pair = std::make_pair(x, y);
+				unfinishedVoxels.push_back(pair);
 			}
-			color = std::min(255, static_cast<int>(relativeHeightValue * 256.0f));
-			vec3 aux = subdivisions[x][y]->getColor();
-			pixels->push_back(color);
-			pixels->push_back(color);
-			pixels->push_back(color);
-			pixels->push_back(255);
-
 		}
 	}
 
-	auto image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
-	image->saveImage(path);
-}
-
-/**
- * @brief Saves the current voxel grid as a png file in RGB scale that could be used as a texture of the terrain
-*/
-void ProceduralGenerator::saveTextureMap(const std::string & path) const {
-	const float minPointZ = aabb.min()[2];
-	float relativeMaxPointZ = aabb.max()[2] - minPointZ;
-	float relativeHeightValue;
-	const auto pixels = new std::vector<unsigned char>();
-	for (int y = 0; y < axisSubdivision[1]; y++) {
-		for (int x = 0; x < axisSubdivision[0]; x++) {
-			vec3 color = subdivisions[x][y]->getColor();
-			pixels->push_back(color[0]);
-			pixels->push_back(color[1]);
-			pixels->push_back(color[2]);
-			pixels->push_back(255);
-
+	for (int i = 7; i >= 1; i--) {
+		std::cout << "Size:" << unfinishedVoxels.size() << std::endl;
+		for (auto it = unfinishedVoxels.begin(); it != unfinishedVoxels.end(); it++) {
+			if (meanNeightbourHeightColor(it->first, it->second, i)) {
+				it = unfinishedVoxels.erase(it);
+			}
 		}
 	}
-	const auto image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
-	image->saveImage(path);
-}
+	while (!unfinishedVoxels.empty()) {
+		for (auto it = unfinishedVoxels.begin(); it != unfinishedVoxels.end(); it++) {
+			if (meanNeightbourHeightColor(it->first, it->second, 1)) {
+				it = unfinishedVoxels.erase(it);
+				if (it == unfinishedVoxels.end())
+					break;
+			}
+		}
+	}
 
-void ProceduralGenerator::savePointCloud(const std::string & path) const {
-	std::vector<PointCloud*> aux;
-	aux.push_back(clouds[0]);
-	aux.push_back(clouds[1]);
-	std::thread thread(&PlyLoader::savePointCloud, path, aux);
-	thread.detach();
 }
 
 void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned divY) {
@@ -332,12 +229,6 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
 			vec3 aux = subdivisions[x][y]->getRepresentativePoint();
-			if (aux[2] == FLT_MAX) {
-				meanHeight(x, y);
-				meanColor(x, y);
-				aux = subdivisions[x][y]->getRepresentativePoint();
-			}
-
 			controlPoints.push_back(aux);
 			density = static_cast<float>(subdivisions[x][y]->getNumberOfPoints() + 1);
 			weights.push_back(pow(density, 2));
@@ -406,7 +297,6 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 					float valX;
 					float valY;
 					if (subdivisions[x][y]->getNumberOfPoints() > cloudDensity * 0.3f && useStatiticsMethod) {
-						
 						valX = customDisX(generator);
 						valY = customDisY(generator);
 						//std::cout << "x: " << x << " y: " << y << " valX: " << valX << " valY: " << valY << std::endl;
@@ -441,11 +331,89 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 	}
 }
 
-void ProceduralGenerator::automaticGSD() {
-	const unsigned voxelsNumber = clouds[0]->getNumberOfPoints() / 50;
+/**
+* @brief Compute the voxel grid appropiate size automatically.
+* @param pointsPerVoxel number of points that should be in each voxel. Less points = more and smallers voxels
+*/
+void ProceduralGenerator::automaticGSD(unsigned pointsPerVoxel) {
+	const unsigned voxelsNumber = clouds[0]->getNumberOfPoints() / pointsPerVoxel;
 	const vec3 cloudSize = clouds[0]->getAABB().size();
 	const float sizeProportion = cloudSize.x / cloudSize.y;
 	axisSubdivision[1] = sqrt(voxelsNumber / sizeProportion);
 	axisSubdivision[0] = sizeProportion * axisSubdivision[1];
 
+}
+
+
+
+/**
+ * @brief Saves the current voxel grid as a png file in gray scale that represents a height map
+*/
+void ProceduralGenerator::saveHeightMap(const std::string & path) const {
+	const float minPointZ = aabb.min()[2];
+	const float relativeMaxPointZ = aabb.max()[2] - minPointZ;
+	float relativeHeightValue;
+	const auto pixels = new std::vector<unsigned char>();
+	int i = 0;
+	int o = 0;
+	for (int y = 0; y < axisSubdivision[1]; y++) {
+		for (int x = 0; x < axisSubdivision[0]; x++) {
+			unsigned char color;
+			const float height = subdivisions[x][y]->getHeight();
+			if (height != FLT_MAX) {
+				relativeHeightValue = (height - minPointZ) / relativeMaxPointZ;
+			} else {
+				relativeHeightValue = 0;
+			}
+			color = std::min(255, static_cast<int>(relativeHeightValue * 256.0f));
+			vec3 aux = subdivisions[x][y]->getColor();
+			pixels->push_back(color);
+			pixels->push_back(color);
+			pixels->push_back(color);
+			pixels->push_back(255);
+		}
+	}
+
+	auto image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
+	image->saveImage(path);
+}
+
+/**
+ * @brief Saves the current voxel grid as a png file in RGB scale that could be used as a texture of the terrain
+*/
+void ProceduralGenerator::saveTextureMap(const std::string & path) const {
+	const float minPointZ = aabb.min()[2];
+	float relativeMaxPointZ = aabb.max()[2] - minPointZ;
+	float relativeHeightValue;
+	const auto pixels = new std::vector<unsigned char>();
+	for (int y = 0; y < axisSubdivision[1]; y++) {
+		for (int x = 0; x < axisSubdivision[0]; x++) {
+			vec3 color = subdivisions[x][y]->getColor();
+			pixels->push_back(color[0]);
+			pixels->push_back(color[1]);
+			pixels->push_back(color[2]);
+			pixels->push_back(255);
+
+		}
+	}
+	const auto image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
+	image->saveImage(path);
+}
+
+/*
+* @brief Saves the current point cloud as a PLY file.
+*/
+void ProceduralGenerator::savePointCloud(const std::string & path) const {
+	std::vector<PointCloud*> aux;
+	aux.push_back(clouds[0]);
+	aux.push_back(clouds[1]);
+	std::thread thread(&PlyLoader::savePointCloud, path, aux);
+	thread.detach();
+}
+
+
+bool& ProceduralGenerator::getPointCloudVisibility(unsigned cloud) const {
+	if (clouds[cloud])
+		return clouds[cloud]->getVisible();
+	return clouds[0]->getVisible();
 }

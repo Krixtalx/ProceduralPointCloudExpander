@@ -16,10 +16,7 @@ private:
 	float progress = 2.0f;
 	bool useStatiticsMethod = true;
 
-	void readParameters(const std::string& path);
-	void meanHeight(unsigned x, unsigned y) const;
-	void meanColor(unsigned x, unsigned y) const;
-	vec3 getColor(float pointX, float pointY);
+	bool meanNeightbourHeightColor(unsigned x, unsigned y, char minCount) const;
 	void createVoxelGrid();
 	void subdivideCloud();
 
@@ -27,8 +24,9 @@ protected:
 	void saveHeightMap(const std::string& path) const;
 	void saveTextureMap(const std::string& path) const;
 	void savePointCloud(const std::string& path) const;
+	void automaticGSD(unsigned pointsPerVoxel);
 	void computeNURBS(unsigned degree, unsigned divX, unsigned divY);
-	void automaticGSD();
+
 public:
 	ProceduralGenerator();
 	~ProceduralGenerator();
