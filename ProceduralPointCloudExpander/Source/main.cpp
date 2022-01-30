@@ -66,10 +66,12 @@ void callbackTecla(GLFWwindow* window, int key, int scancode, int action, int mo
 		PPCX::Renderer::getInstancia()->getCamara().crane(1.0f * deltaTime);
 	} else if (key == GLFW_KEY_R && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().reset();
+	} else if (key == GLFW_KEY_P && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+		PPCX::Renderer::getInstancia()->getCamara().changeCamaraType();
 	} else if (key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(deltaTime*10);
+		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(deltaTime * 10);
 	} else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(-deltaTime*5);
+		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(-deltaTime * 5);
 	}
 }
 
@@ -114,7 +116,7 @@ void callbackMovimientoRaton(GLFWwindow* window, const double xpos, const double
 }
 
 void callbackScroll(GLFWwindow* window, double xoffset, double yoffset) {
-	PPCX::Renderer::getInstancia()->getCamara().zoom(-yoffset * deltaTime*5);
+	PPCX::Renderer::getInstancia()->getCamara().zoom(-yoffset * deltaTime * 5);
 }
 
 int main() {

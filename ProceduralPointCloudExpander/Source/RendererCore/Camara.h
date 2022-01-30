@@ -34,11 +34,16 @@ namespace PPCX {
 
 		float speedMultiplier = 1.0f;
 
+		//Orthogonal camara parameters
+		glm::vec2 minPoint;
+		glm::vec2 maxPoint;
+		bool perspective = false;
+
+		Camara* backup;
+
 		void calcularEjes();
 
 		void calcularFovY();
-
-		Camara* backup;
 
 	public:
 		Camara();
@@ -83,6 +88,10 @@ namespace PPCX {
 		void setPuntoMira(glm::vec3 punto);
 
 		void setSpeedMultiplier(float speed);
+		
+		void setOrthoPoints(glm::vec2 minPoint, glm::vec2 maxPoint);
+
+		void changeCamaraType();
 	};
 }
 

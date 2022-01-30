@@ -13,7 +13,8 @@
 PPCX::Camara::Camara() : posicion(0, 3.0f, 10.0f), puntoMira(0, 0, 0),
 up(0, 0, 1), zNear(0.5f), zFar(200), alto(altoVentanaPorDefecto),
 ancho(anchoVentanaPorDefecto) {
-
+	minPoint = glm::vec2(-3, -3);
+	maxPoint = glm::vec2(3, 3);
 	fovX = glm::radians(60.0);
 	calcularFovY();
 	calcularEjes();
@@ -34,6 +35,10 @@ PPCX::Camara::Camara(const glm::vec3& posicion, const glm::vec3& puntoMira, cons
 					 GLfloat zFar, GLfloat fovX, GLuint alto, GLuint ancho) : posicion(posicion), puntoMira(puntoMira),
 	up(up), zNear(zNear), zFar(zFar),
 	alto(alto), ancho(ancho) {
+	minPoint.x = aspecto() * 5;
+	minPoint.y = 5;
+	maxPoint.x = aspecto() * 5;
+	maxPoint.y = 5;
 	this->fovX = glm::radians(fovX);
 	calcularFovY();
 	calcularEjes();
@@ -46,7 +51,11 @@ PPCX::Camara::Camara(const glm::vec3& posicion, const glm::vec3& puntoMira, cons
 glm::mat4 PPCX::Camara::matrizMVP() const {
 	//std::cout << puntoMira.x << " - " << puntoMira.y << " - " << puntoMira.z << std::endl;
 	const glm::mat4 vision = lookAt(posicion, puntoMira, up);
-	const glm::mat4 proyeccion = glm::perspective(fovY, aspecto(), zNear, zFar);
+	glm::mat4 proyeccion;
+	if (perspective)
+		proyeccion = glm::perspective(fovY, aspecto(), zNear, zFar);
+	else
+		proyeccion = glm::ortho(minPoint.x, maxPoint.x, minPoint.y, maxPoint.y, zNear, zFar);
 	//Multiplicamos de manera inversa: Modelado-Vision-Proyeccion -> Proyeccion-Vision-Modelado
 	return proyeccion * vision; //Devuelve solo proyección*vision. El modelado lo aplicará el modelo
 }
@@ -194,25 +203,35 @@ void PPCX::Camara::increaseZFar(float mov) {
  * @param angulo variación del ángulo
  */
 void PPCX::Camara::zoom(float angulo) {
-	fovX += glm::radians(angulo);
-	if (fovX < 0)
-		fovX = 0;
-	if (fovX > glm::pi<float>())
-		fovX = glm::pi<float>();
-
-	calcularFovY();
+	if (perspective) {
+		fovX += glm::radians(angulo);
+		if (fovX < 0)
+			fovX = 0;
+		if (fovX > glm::pi<float>())
+			fovX = glm::pi<float>();
+		calcularFovY();
+	} else {
+		minPoint.x -= aspecto() * 20 * angulo;
+		minPoint.y -= 20 * angulo;
+		maxPoint.x += aspecto() * 20 * angulo;
+		maxPoint.y += 20 * angulo;
+	}
 }
 
 /**
  * Situa la cámara en la posición por defecto.
  */
 void PPCX::Camara::reset() {
-	this->posicion = backup->posicion;
-	this->puntoMira = backup->puntoMira;
-	this->alto = backup->alto;
-	this->ancho = backup->ancho;
-	this->up = glm::vec3(.0f, .0f, 1.0f);
-	calcularEjes();
+	if (backup) {
+		this->posicion = backup->posicion;
+		this->puntoMira = backup->puntoMira;
+		this->alto = backup->alto;
+		this->ancho = backup->ancho;
+		this->minPoint = backup->minPoint;
+		this->maxPoint = backup->maxPoint;
+		this->up = glm::vec3(.0f, .0f, 1.0f);
+		calcularEjes();
+	}
 }
 
 
@@ -256,4 +275,15 @@ void PPCX::Camara::setPuntoMira(glm::vec3 punto) {
 
 void PPCX::Camara::setSpeedMultiplier(float speed) {
 	speedMultiplier = speed;
+}
+
+void PPCX::Camara::changeCamaraType() {
+	perspective = !perspective;
+}
+
+void PPCX::Camara::setOrthoPoints(glm::vec2 minPoint, glm::vec2 maxPoint) {
+	this->minPoint = minPoint;
+	this->maxPoint = maxPoint;
+	backup->maxPoint = maxPoint;
+	backup->minPoint = minPoint;
 }
