@@ -19,12 +19,12 @@ void GUI::createMenu() {
 	const ImGuiIO& io = ImGui::GetIO();
 
 	if (_showRenderingSettings && procGenerator->progress >= 1.0f)		showRenderingSettings();
+	if (_showProceduralSettings && procGenerator->progress >= 1.0f)	showProceduralSettings();
 	if (_showAboutUs)				showAboutUsWindow();
 	if (_showControls)				showControls();
 	if (_showFileDialog)			showFileDialog();
 	if (_showSaveDialog)			showSaveWindow();
 	if (_showPointCloudDialog)		showPointCloudDialog();
-	if (_showProceduralSettings)	showProceduralSettings();
 
 	if (ImGui::BeginMainMenuBar()) {
 		if (PlyLoader::saving)
@@ -41,9 +41,10 @@ void GUI::createMenu() {
 			}
 			ImGui::EndMenu();
 		}
-		if (sceneLoaded && procGenerator->progress >= 1.0f)
+		if (sceneLoaded && procGenerator->progress >= 1.0f) {
 			ImGui::MenuItem(ICON_FA_CUBE "Rendering", nullptr, &_showRenderingSettings);
-		ImGui::MenuItem(ICON_FA_SITEMAP "Procedural settings", nullptr, &_showProceduralSettings);
+			ImGui::MenuItem(ICON_FA_SITEMAP "Procedural settings", nullptr, &_showProceduralSettings);
+		}
 
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(io.DisplaySize.x - 130);
@@ -64,7 +65,9 @@ void GUI::leaveSpace(const unsigned numSlots) {
 }
 
 void GUI::renderHelpMarker(const char* message) {
+	ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImVec4(0.85f, 0.85f, 0.93f, 1.00f));
 	ImGui::TextDisabled(ICON_FA_QUESTION);
+	ImGui::PopStyleColor();
 	if (ImGui::IsItemHovered()) {
 		ImGui::BeginTooltip();
 		ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
@@ -85,7 +88,7 @@ void GUI::showAboutUsWindow() {
 void GUI::showControls() {
 	ImGui::SetNextWindowBgAlpha(0.6f);
 	if (ImGui::Begin("Scene controls", &_showControls, ImGuiWindowFlags_NoCollapse)) {
-		if (ImGui::BeginTable("ControlsTable", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_PreciseWidths)) {
+		if (ImGui::BeginTable("ControlsTable", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders)) {
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 			ImGui::Text("     Movement"); ImGui::TableNextColumn();
@@ -156,12 +159,14 @@ void GUI::showPointCloudDialog() {
 		this->leaveSpace(1);
 
 		ImGui::Checkbox("New Scene", &newScene);
+		ImGui::Text("Desired points per voxel: ");
+		ImGui::SliderInt("##pointPerVoxel", &pointsPerVoxel, 20, 400);
 
 		this->leaveSpace(2);
 
 		if (ImGui::Button("Open Point Cloud")) {
 			procGenerator->progress = .0f;
-			std::thread thread(&PPCX::Renderer::cargaModelo, PPCX::Renderer::getInstancia(), _pointCloudPath, newScene);
+			std::thread thread(&PPCX::Renderer::cargaModelo, PPCX::Renderer::getInstancia(), _pointCloudPath, newScene, pointsPerVoxel);
 			thread.detach();
 			_showPointCloudDialog = false;
 			sceneLoaded = true;
@@ -199,16 +204,21 @@ void GUI::showRenderingSettings() {
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
 					ImGui::Text("Number of points loaded"); ImGui::TableNextColumn();
-					ImGui::Text("%i", procGenerator->clouds[0]->getNumberOfPoints() + procGenerator->clouds[1]->getNumberOfPoints());
+					if (procGenerator->clouds[1])
+						ImGui::Text("%i", procGenerator->clouds[0]->getNumberOfPoints() + procGenerator->clouds[1]->getNumberOfPoints());
+					else
+						ImGui::Text("%i", procGenerator->clouds[0]->getNumberOfPoints());
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
 
 					ImGui::Text("Number of points in original point cloud"); ImGui::TableNextColumn();
 					ImGui::Text("%i", procGenerator->clouds[0]->getNumberOfPoints());
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
 
-					ImGui::Text("Number of points in nurbs point cloud"); ImGui::TableNextColumn();
-					ImGui::Text("%i", procGenerator->clouds[1]->getNumberOfPoints());
-					ImGui::TableNextRow(); ImGui::TableNextColumn();
+					if (procGenerator->clouds[1]) {
+						ImGui::Text("Number of points in nurbs point cloud"); ImGui::TableNextColumn();
+						ImGui::Text("%i", procGenerator->clouds[1]->getNumberOfPoints());
+						ImGui::TableNextRow(); ImGui::TableNextColumn();
+					}
 
 					ImGui::Text("Number of subdivisions in x"); ImGui::TableNextColumn();
 					ImGui::Text("%i", procGenerator->axisSubdivision[0]);
@@ -233,34 +243,59 @@ void GUI::showRenderingSettings() {
 }
 
 void GUI::showProceduralSettings() {
-	constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-		ImGuiWindowFlags_NoResize;
-	ImGui::SetNextWindowBgAlpha(0.6f);
+	constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
+
+	ImGui::SetNextWindowBgAlpha(0.8f);
 	if (ImGui::Begin("Procedural Settings", &_showProceduralSettings, window_flags)) {
 		if (ImGui::BeginTabBar("")) {
 			if (ImGui::BeginTabItem("NURBS")) {
+				ImGui::Text("Nurbs degree: ");
+				ImGui::SliderInt("##degree", &degree, 2, 8);
+				ImGui::Checkbox("Generate points based on internal point distribution", &procGenerator->useStatiticsMethod);
+				ImGui::SameLine(); renderHelpMarker("[Experimental]: The points generated from the NURBS will be generated based on the current internal distribution of the voxel. This means that there will be more probability generating points in empty spaces of each voxel");
+				if (procGenerator->useStatiticsMethod) {
+					ImGui::Text("Internal subdivisions: ");
+					ImGui::InputInt("##internalSubDiv", &internalSubdivision, 1, 1);
+				}
+				ImGui::Text("Density multiplier: ");
+				ImGui::SliderFloat("##densityMultiplier", &densityMultiplier, 1.0f, 3.0f, "%.1f");
+				ImGui::SameLine(); renderHelpMarker("Multiplier used to get the desired cloud density. Using a value of 1, you will generate points only in voxels that don't have enought points (Empty voxels or voxels with big holes for example)");
 				this->leaveSpace(1);
+				if (ImGui::Button("Generate nurbs cloud")) {
+					std::thread thread(&ProceduralGenerator::computeNURBS, procGenerator, degree, internalSubdivision, internalSubdivision, densityMultiplier);
+					thread.detach();
+				}
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Voxel grid")) {
+				ImGui::Text("Desired points per voxel: ");
+				ImGui::SliderInt("##pointPerVoxel", &pointsPerVoxel, 20, 400);
+				this->leaveSpace(1);
+				if (ImGui::Button("Generate voxel grid")) {
+					std::thread thread(&ProceduralGenerator::generateVoxelGrid, procGenerator, pointsPerVoxel);
+					thread.detach();
+				}
 				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();
 		}
 		ImGui::End();
 	}
-	
+
 }
 
 void GUI::showProgressBar() const {
 	if (procGenerator->progress < 1.0f) {
 		if (ImGui::Begin("Progress", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse)) {
-			if (procGenerator->progress < .2f)
+			if (procGenerator->progress < .25f)
 				ImGui::Text("Loading point cloud...");
-			else if (procGenerator->progress < .4f)
+			else if (procGenerator->progress < .45f)
 				ImGui::Text("Creating voxel grid...");
-			else if (procGenerator->progress < .5f)
+			else if (procGenerator->progress < .55f)
 				ImGui::Text("Computing height and colors...");
-			else if (procGenerator->progress < .6f)
+			else if (procGenerator->progress < .65f)
 				ImGui::Text("Creating nurbs...");
-			else if (procGenerator->progress < .75f)
+			else if (procGenerator->progress < .8f)
 				ImGui::Text("Generating nurbs cloud...");
 			else
 				ImGui::Text("Finishing...");

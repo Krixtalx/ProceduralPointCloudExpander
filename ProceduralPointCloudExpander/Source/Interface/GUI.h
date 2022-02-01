@@ -28,6 +28,11 @@ protected:
 	bool							sceneLoaded = false;
 	ProceduralGenerator*			procGenerator = nullptr;
 	int								saveOption = -1; // 0 - Point cloud, 1 - heightmap, 2 - texturemap
+	int								degree = 2;
+	int								internalSubdivision = 5;
+	float							densityMultiplier = 1.0f;
+	int								pointsPerVoxel = 40;
+
 protected:
 	/**
 	*	@brief Constructor of GUI context provided by a graphics library (Dear ImGui).
@@ -116,5 +121,5 @@ public:
 
 	void loadFonts() const;
 
-	bool isMouseActive() { return ImGui::GetIO().WantCaptureMouse; }
+	static bool isMouseActive() { return ImGui::GetIO().WantCaptureMouse; }
 };

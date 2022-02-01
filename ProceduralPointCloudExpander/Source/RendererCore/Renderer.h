@@ -41,7 +41,7 @@ namespace PPCX {
 
 		void actualizarColorFondo() const;
 
-		void cargaModelo(const std::string& path, const bool& newScene);
+		void cargaModelo(const std::string& path, const bool& newScene, const unsigned& pointsPerVoxel);
 
 		void setColorFondo(vec3 color);
 

@@ -29,14 +29,7 @@ void ProceduralGenerator::drawClouds(mat4 matrizMVP) {
 	}
 }
 
-void ProceduralGenerator::newPointCloud(PointCloud * pCloud, bool newScene) {
-	for (size_t x = 0; x < axisSubdivision[0]; x++) {
-		for (size_t y = 0; y < axisSubdivision[1]; y++) {
-			delete subdivisions[x][y];
-		}
-	}
-	delete clouds[1];
-	clouds[1] = nullptr;
+void ProceduralGenerator::newPointCloud(PointCloud * pCloud, bool newScene, unsigned pointsPerVoxel) {
 	if (newScene || !clouds[0]) {
 		for (const auto& cloud : clouds) {
 			delete cloud;
@@ -44,18 +37,14 @@ void ProceduralGenerator::newPointCloud(PointCloud * pCloud, bool newScene) {
 		clouds[0] = pCloud;
 		cloudDensity = clouds[0]->getDensity();
 	} else {
-		const auto vec = pCloud->getPoints();
-		for (auto i : vec) {
+		const auto& vec = pCloud->getPoints();
+		for (auto& i : vec) {
 			clouds[0]->newPoint(i);
 		}
 		clouds[0]->needUpdating = true;
 	}
 	this->aabb = clouds[0]->getAABB();
-	automaticGSD(80);
-	createVoxelGrid();
-	subdivideCloud();
-	//computeNURBS(2, 10, 10);
-	this->progress = 2.0f;
+	generateVoxelGrid(pointsPerVoxel);
 }
 
 
@@ -169,21 +158,22 @@ void ProceduralGenerator::subdivideCloud() {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
 			if (!meanNeightbourHeightColor(x, y, 8)) {
 				auto pair = std::make_pair(x, y);
-				unfinishedVoxels.push_back(pair);
+				unfinishedVoxels.emplace_back(pair);
 			}
 		}
 	}
 
 	for (int i = 7; i >= 1; i--) {
-		std::cout << "Size:" << unfinishedVoxels.size() << std::endl;
-		for (auto it = unfinishedVoxels.begin(); it != unfinishedVoxels.end(); it++) {
+		for (auto it = unfinishedVoxels.begin(); it != unfinishedVoxels.end(); ++it) {
 			if (meanNeightbourHeightColor(it->first, it->second, i)) {
 				it = unfinishedVoxels.erase(it);
+				if (it == unfinishedVoxels.end())
+					break;
 			}
 		}
 	}
 	while (!unfinishedVoxels.empty()) {
-		for (auto it = unfinishedVoxels.begin(); it != unfinishedVoxels.end(); it++) {
+		for (auto it = unfinishedVoxels.begin(); it != unfinishedVoxels.end(); ++it) {
 			if (meanNeightbourHeightColor(it->first, it->second, 1)) {
 				it = unfinishedVoxels.erase(it);
 				if (it == unfinishedVoxels.end())
@@ -194,7 +184,7 @@ void ProceduralGenerator::subdivideCloud() {
 
 }
 
-void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned divY) {
+void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier) {
 	std::cout << "Creating nurbs..." << std::endl;
 	this->progress = 0.6f;
 	delete clouds[1];
@@ -264,12 +254,12 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 		#pragma omp parallel for private(point, generator)
 		for (int x = 0; x < axisSubdivision[0]; x++) {
 			for (int y = 0; y < axisSubdivision[1]; y++) {
-				unsigned limit = subdivisions[x][y]->numberPointsToDensity(cloudDensity * 2.0f);
+				unsigned limit = subdivisions[x][y]->numberPointsToDensity(cloudDensity * desiredDensityMultiplier);
 				std::vector<float> intervals[2];
 				std::vector<float> weights[2];
 				if (subdivisions[x][y]->getNumberOfPoints() > cloudDensity * 0.3f && useStatiticsMethod) {
 					std::vector<float> allWeights = subdivisions[x][y]->internalDistribution(divX, divY);
-					count++;
+					++count;
 					for (unsigned i = 0; i < divX; i++) {
 						intervals[0].push_back(x + (float)i / divX);
 						float sum = 0;
@@ -331,6 +321,20 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 	}
 }
 
+void ProceduralGenerator::generateVoxelGrid(const unsigned pointsPerVoxel) {
+	for (size_t x = 0; x < axisSubdivision[0]; x++) {
+		for (size_t y = 0; y < axisSubdivision[1]; y++) {
+			delete subdivisions[x][y];
+		}
+	}
+	delete clouds[1];
+	clouds[1] = nullptr;
+	automaticGSD(pointsPerVoxel);
+	createVoxelGrid();
+	subdivideCloud();
+	this->progress = 2.0f;
+}
+
 /**
 * @brief Compute the voxel grid appropiate size automatically.
 * @param pointsPerVoxel number of points that should be in each voxel. Less points = more and smallers voxels
@@ -384,7 +388,7 @@ void ProceduralGenerator::saveHeightMap(const std::string & path) const {
 void ProceduralGenerator::saveTextureMap(const std::string & path) const {
 	const float minPointZ = aabb.min()[2];
 	float relativeMaxPointZ = aabb.max()[2] - minPointZ;
-	float relativeHeightValue;
+	float relativeHeightValue = 0;
 	const auto pixels = new std::vector<unsigned char>();
 	for (int y = 0; y < axisSubdivision[1]; y++) {
 		for (int x = 0; x < axisSubdivision[0]; x++) {

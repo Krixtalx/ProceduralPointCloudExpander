@@ -25,12 +25,13 @@ protected:
 	void saveTextureMap(const std::string& path) const;
 	void savePointCloud(const std::string& path) const;
 	void automaticGSD(unsigned pointsPerVoxel);
-	void computeNURBS(unsigned degree, unsigned divX, unsigned divY);
+	void computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier);
+	void generateVoxelGrid(unsigned pointsPerVoxel);
 
 public:
 	ProceduralGenerator();
 	~ProceduralGenerator();
 	void drawClouds(mat4 matrizMVP);
-	void newPointCloud(PointCloud* pCloud, bool newScene);
+	void newPointCloud(PointCloud* pCloud, bool newScene, unsigned pointsPerVoxel);
 	bool& getPointCloudVisibility(unsigned cloud) const;
 };

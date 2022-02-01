@@ -87,19 +87,18 @@ const GLubyte* PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
 	return glGetString(propiedad);
 }
 
-void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene) {
-	PointCloud* pCloud = PlyLoader::loadPointCloud(path);
-	if (pCloud) {
-		procGenerator.newPointCloud(pCloud, newScene);
+void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, const unsigned& pointsPerVoxel) {
+	if (PointCloud* pCloud = PlyLoader::loadPointCloud(path)) {
+		procGenerator.newPointCloud(pCloud, newScene, pointsPerVoxel);
 		vec3 pos = pCloud->getAABB().max();
-		float dist = distance(pos, pCloud->getAABB().center());
+		const float dist = distance(pos, pCloud->getAABB().center());
 		camara.increaseZFar(dist);
 		pos = rotate(glm::pi<float>() / 6.0f, vec3(1.0f, .0f, 1.0f)) * vec4(pos, 0.0f);
 		camara.setPosicion(pos);
 		camara.setPuntoMira(pCloud->getAABB().center());
 		camara.setSpeedMultiplier((pCloud->getAABB().size().x + pCloud->getAABB().size().y) * 0.02f);
-		float y = sqrt((pow(dist, 2) - pow(camara.aspecto(), 2) / 2));
-		float x = camara.aspecto() * y;
+		const float y = sqrt((pow(dist, 2) - pow(camara.aspecto(), 2) / 2));
+		const float x = camara.aspecto() * y;
 		camara.setOrthoPoints(glm::vec2(-x, -y), glm::vec2(x, y));
 
 	} else {
