@@ -27,7 +27,6 @@ namespace PPCX {
 		float pointSize = 1.0f;
 
 		ProceduralGenerator procGenerator;
-
 		Camara camara;
 
 	public:

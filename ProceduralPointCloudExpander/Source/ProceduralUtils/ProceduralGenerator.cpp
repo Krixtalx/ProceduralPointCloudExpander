@@ -19,11 +19,9 @@ ProceduralGenerator::~ProceduralGenerator() {
 	}
 }
 
-void ProceduralGenerator::drawClouds(mat4 matrizMVP) {
+void ProceduralGenerator::drawClouds(const mat4 matrizMVP) {
 	for (PointCloud*& cloud : clouds) {
 		if (cloud) {
-			if (cloud->needUpdating)
-				cloud->updateCloud();
 			cloud->drawModel(matrizMVP);
 		}
 	}
@@ -188,6 +186,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 	std::cout << "Creating nurbs..." << std::endl;
 	this->progress = 0.6f;
 	delete clouds[1];
+	clouds[1] = nullptr;
 
 	tinynurbs::RationalSurface<float> srf;
 	srf.degree_u = degree;

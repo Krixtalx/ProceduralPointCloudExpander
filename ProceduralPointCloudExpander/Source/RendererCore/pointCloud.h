@@ -11,7 +11,7 @@ class PointCloud : public PPCX::Model
 		
 		void newVBO(GLenum freqAct);
 
-		void newIBO(std::vector<GLuint> data, GLenum freqAct);
+		void newIBO(const std::vector<GLuint>& data, GLenum freqAct);
 
 	public:
 		bool needUpdating=false;
@@ -28,7 +28,7 @@ class PointCloud : public PPCX::Model
 
 		void updateCloud();
 
-		void drawModel(mat4 MVPMatrix) const override;
+		void drawModel(mat4 MVPMatrix) override;
 
 		std::vector<PointModel>& getPoints();
 

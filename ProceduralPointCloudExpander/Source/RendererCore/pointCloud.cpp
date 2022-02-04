@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "PointCloud.h"
+
+#include <utility>
 #include "ShaderManager.h"
 #include "GeometryUtils/AABB.h"
 
@@ -7,11 +9,12 @@
 /**
  * Constructor parametrizado
  * @param shaderProgram que se usará para renderizar el modelo
+ * @param points
  * @param pos Posicion inicial de la nube de puntos
  */
 PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const
 					   vec3& pos) :
-	Model(shaderProgram, pos), aabb(aabb), needUpdating(true) {
+	Model(std::move(shaderProgram), pos), aabb(aabb), needUpdating(true) {
 	newPoints(points);
 }
 
@@ -86,7 +89,7 @@ void PointCloud::newVBO(GLenum freqAct) {
  * @param data a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PointCloud::newIBO(const std::vector<GLuint> data, const GLenum freqAct) {
+void PointCloud::newIBO(const std::vector<GLuint>& data, const GLenum freqAct) {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idIBO != UINT_MAX) {
 		glDeleteBuffers(1, &idIBO);
@@ -102,8 +105,10 @@ void PointCloud::newIBO(const std::vector<GLuint> data, const GLenum freqAct) {
 /**
  * Función a la que se llama cuando se debe de dibujar el modelo
  */
-void PointCloud::drawModel(const mat4 MVPMatrix) const {
+void PointCloud::drawModel(const mat4 MVPMatrix){
 	if (visible) {
+		if(needUpdating)
+			updateCloud();
 		try {
 			//MVPMatrix = MVPMatrix * translate(pos);
 			PPCX::ShaderManager::getInstancia()->activarSP(shaderProgram);

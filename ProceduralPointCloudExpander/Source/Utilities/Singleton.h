@@ -12,8 +12,7 @@
 *	@brief Singleton pattern as a template for any class.
 */
 template<typename T>
-class Singleton
-{
+class Singleton {
 protected:
 	static std::unique_ptr<T> _instance;							//!< Singleton instance
 
@@ -54,10 +53,8 @@ std::unique_ptr<T> Singleton<T>::_instance;
 /// [Public methods]
 
 template<typename T>
-T* Singleton<T>::getInstance()
-{
-	if (!_instance.get())
-	{
+T* Singleton<T>::getInstance() {
+	if (!_instance.get()) {
 		_instance = std::unique_ptr<T>(new T());
 	}
 

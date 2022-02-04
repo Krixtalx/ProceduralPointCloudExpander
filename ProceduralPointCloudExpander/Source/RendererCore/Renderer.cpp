@@ -100,7 +100,6 @@ void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, 
 		const float y = sqrt((pow(dist, 2) - pow(camara.aspecto(), 2) / 2));
 		const float x = camara.aspecto() * y;
 		camara.setOrthoPoints(glm::vec2(-x, -y), glm::vec2(x, y));
-
 	} else {
 		std::cerr << "Point cloud load has failed" << std::endl;
 	}

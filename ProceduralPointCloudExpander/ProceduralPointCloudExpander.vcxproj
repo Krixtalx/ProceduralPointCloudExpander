@@ -276,6 +276,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-NoOpenMP|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\RendererCore\ModelManager.cpp" />
     <ClCompile Include="Source\GeometryUtils\AABB.cpp" />
     <ClCompile Include="Source\Interface\Fonts\lato.cpp" />
     <ClCompile Include="Source\Interface\GUI.cpp" />
@@ -317,6 +318,7 @@
     <ClInclude Include="Libraries\imgui\imstb_truetype.h" />
     <ClInclude Include="Libraries\lodepng\lodepng.h" />
     <ClInclude Include="Libraries\tinyply\tinyply.h" />
+    <ClInclude Include="RendererCore\ModelManager.h" />
     <ClInclude Include="Source\GeometryUtils\AABB.h" />
     <ClInclude Include="Source\Interface\Fonts\IconsFontAwesome5.h" />
     <ClInclude Include="Source\Interface\Fonts\lato.hpp" />

@@ -6,6 +6,21 @@
 
 constexpr auto PLY_EXTENSION = ".ply";
 constexpr auto APPBIN_EXTENSION = ".ppcxbin";
+std::unordered_map<std::string, char> PlyLoader::LASClassification{
+	{"Never Classified", 0},
+	{"Unclassified", 1},
+	{"Ground", 2},
+	{"Low vegetation", 3},
+	{"Medium vegetation", 4},
+	{"High vegetation", 5},
+	{"Building", 6},
+	{"Low point noise", 7},
+	{"Reserved", 8},
+	{"Water", 9},
+	{"Rail", 10},
+	{"Road surface", 11},
+	{"Reserved", 12}
+};
 bool PlyLoader::saving = false;
 
 bool PlyLoader::writeToBinary(const std::string& filename, PointCloud* pointCloud) {
@@ -41,7 +56,7 @@ PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
 
 	fin.close();
 
-	PointCloud* pointCloud = new PointCloud("DefaultSP", points, _aabb);
+	const auto pointCloud = new PointCloud("DefaultSP", points, _aabb);
 
 	return pointCloud;
 }
@@ -50,12 +65,15 @@ PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 	std::vector<uint8_t> byteBuffer;
 
 	try {
-		std::vector<PointModel> _points;
+		std::vector<PointModel> _points[13];
 		std::shared_ptr<tinyply::PlyData> plyColors;
 		std::shared_ptr<tinyply::PlyData> plyPoints;
+		std::shared_ptr<tinyply::PlyData> plyClassification;
+
 		std::unique_ptr<std::istream> fileStream;
 		const std::string& filename = _filename;
 		bool haveColors = true;
+		bool haveClassification = true;
 
 		fileStream.reset(new std::ifstream(filename, std::ios::binary));
 
@@ -80,15 +98,24 @@ PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 			haveColors = false;
 		}
 
+		try {
+			plyClassification = file.request_properties_from_element("vertex", { "scalar_Classification" });
+		} catch (const std::invalid_argument& e) {
+			std::cerr << "tinyply exception: " << e.what() << std::endl;
+			haveClassification = false;
+		}
+
 		file.read(*fileStream);
 
 		double* pointsRawDouble = nullptr;
 		float* pointsRawFloat = nullptr;
+
 		unsigned baseIndex;
 		const bool isDouble = plyPoints->t == tinyply::Type::FLOAT64;
 		const size_t numPoints = plyPoints->count;
 		const size_t numPointsBytes = numPoints * (!isDouble ? sizeof(float) : sizeof(double)) * 3;
 		size_t numColors;
+
 		if (haveColors)
 			numColors = plyColors->count;
 		else
@@ -100,7 +127,10 @@ PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 		std::cout << "Number of points: " << numPoints << std::endl;
 
 		// Allocate space
-		_points.resize(numPoints);
+		for (auto& _point : _points)
+		{
+			_point.resize(numPoints);
+		}
 		if (!isDouble) {
 			pointsRawFloat = new float[numPoints * 3];
 			std::memcpy(pointsRawFloat, plyPoints->buffer.get(), numPointsBytes);
@@ -118,35 +148,45 @@ PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 			}
 		}
 
+		const auto classificationRaw = new float[numPoints];
+		if (haveClassification)
+			std::memcpy(classificationRaw, plyClassification->buffer.get(), numPointsBytes / 3);
+		else {
+			for (int i = 0; i < numPoints; ++i) {
+				classificationRaw[i] = 2;
+			}
+		}
 
+		unsigned classification = 0;
 		if (!isDouble) {
 			for (unsigned index = 0; index < numPoints; ++index) {
 				baseIndex = index * 3;
-
-				_points[index] = PointModel{
+				classification = classificationRaw[index] + 0.5f;
+				_points[classification][index] = PointModel{
 					vec3(pointsRawFloat[baseIndex], pointsRawFloat[baseIndex + 1],
 						 pointsRawFloat[baseIndex + 2]),
 					PointModel::getRGBColor(vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
 												 colorsRaw[baseIndex + 2]))
 				};
-				_aabb.update(_points[index]._point);
+				_aabb.update(_points[classification][index]._point);
 			}
 		} else {
 			for (unsigned index = 0; index < numPoints; ++index) {
 				baseIndex = index * 3;
-
-				_points[index] = PointModel{
+				classification = classificationRaw[index] + 0.5f;
+				_points[classification][index] = PointModel{
 					vec3(pointsRawDouble[baseIndex], pointsRawDouble[baseIndex + 1],
 						 pointsRawDouble[baseIndex + 2]),
 					PointModel::getRGBColor(vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
 												 colorsRaw[baseIndex + 2]))
 				};
-				_aabb.update(_points[index]._point);
+				_aabb.update(_points[classification][index]._point);
 			}
 		}
 
-		const auto nube = new PointCloud("DefaultSP", _points, _aabb);
-		return nube;
+		//const auto nube = new PointCloud("DefaultSP", _points, _aabb);
+		//return nube;
+		return nullptr;
 	} catch (const std::exception& e) {
 		std::cerr << "Caught tinyply exception: " << e.what() << std::endl;
 

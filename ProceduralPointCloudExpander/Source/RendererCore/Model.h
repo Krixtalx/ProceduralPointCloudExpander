@@ -26,7 +26,7 @@ namespace PPCX {
 
 		virtual ~Model();
 
-		virtual void drawModel(glm::mat4 MVPMatrix) const = 0;
+		virtual void drawModel(glm::mat4 MVPMatrix) = 0;
 
 		bool& getVisible();
 	};
