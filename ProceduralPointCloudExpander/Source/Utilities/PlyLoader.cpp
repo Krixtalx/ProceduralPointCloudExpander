@@ -15,11 +15,11 @@ std::unordered_map<std::string, char> PlyLoader::LASClassification{
 	{"High vegetation", 5},
 	{"Building", 6},
 	{"Low point noise", 7},
-	{"Reserved", 8},
+	{"Model Key-Point", 8},
 	{"Water", 9},
 	{"Rail", 10},
 	{"Road surface", 11},
-	{"Reserved", 12}
+	{"Overlaped points", 12}
 };
 bool PlyLoader::saving = false;
 
@@ -122,15 +122,11 @@ PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 			numColors = plyPoints->count;
 		const size_t numColorsBytes = numColors * 1 * 3;
 
-		AABB _aabb;
+		AABB _aabb[13];
 
 		std::cout << "Number of points: " << numPoints << std::endl;
 
-		// Allocate space
-		for (auto& _point : _points)
-		{
-			_point.resize(numPoints);
-		}
+
 		if (!isDouble) {
 			pointsRawFloat = new float[numPoints * 3];
 			std::memcpy(pointsRawFloat, plyPoints->buffer.get(), numPointsBytes);
@@ -162,30 +158,34 @@ PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 			for (unsigned index = 0; index < numPoints; ++index) {
 				baseIndex = index * 3;
 				classification = classificationRaw[index] + 0.5f;
-				_points[classification][index] = PointModel{
+				_points[classification].push_back(PointModel{
 					vec3(pointsRawFloat[baseIndex], pointsRawFloat[baseIndex + 1],
 						 pointsRawFloat[baseIndex + 2]),
 					PointModel::getRGBColor(vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
 												 colorsRaw[baseIndex + 2]))
-				};
-				_aabb.update(_points[classification][index]._point);
+												  });
+				_aabb[classification].update(_points[classification].back()._point);
 			}
 		} else {
 			for (unsigned index = 0; index < numPoints; ++index) {
 				baseIndex = index * 3;
 				classification = classificationRaw[index] + 0.5f;
-				_points[classification][index] = PointModel{
+				_points[classification].push_back(PointModel{
 					vec3(pointsRawDouble[baseIndex], pointsRawDouble[baseIndex + 1],
 						 pointsRawDouble[baseIndex + 2]),
 					PointModel::getRGBColor(vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
 												 colorsRaw[baseIndex + 2]))
-				};
-				_aabb.update(_points[classification][index]._point);
+												  });
+				_aabb[classification].update(_points[classification].back()._point);
 			}
 		}
 
-		//const auto nube = new PointCloud("DefaultSP", _points, _aabb);
-		//return nube;
+		for (size_t i = 0; i < 13; i++) {
+			if (_points[i].size() > 100) {
+				auto cloud = new PointCloud("DefaultSP", _points[i], _aabb[i]);
+				
+			}
+		}
 		return nullptr;
 	} catch (const std::exception& e) {
 		std::cerr << "Caught tinyply exception: " << e.what() << std::endl;
