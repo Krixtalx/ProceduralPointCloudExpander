@@ -11,7 +11,7 @@ private:
 
 	std::vector<std::vector<ProceduralVoxel*>> subdivisions;
 	AABB aabb;
-	PointCloud* clouds[2]{};
+	PointCloud* terrainCloud{};
 	float cloudDensity{};
 	float progress = 2.0f;
 	bool useStatiticsMethod = true;
@@ -31,7 +31,5 @@ protected:
 public:
 	ProceduralGenerator();
 	~ProceduralGenerator();
-	void drawClouds(mat4 matrizMVP);
 	void newPointCloud(PointCloud* pCloud, bool newScene, unsigned pointsPerVoxel);
-	bool& getPointCloudVisibility(unsigned cloud) const;
 };

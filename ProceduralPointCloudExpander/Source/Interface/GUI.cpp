@@ -6,6 +6,7 @@
 #include "imfiledialog/ImGuiFileDialog.h"
 #include "RendererCore/Renderer.h"
 #include "Utilities/PlyLoader.h"
+#include <RendererCore/ModelManager.h>
 
 
 /// [Protected methods]
@@ -19,7 +20,7 @@ void GUI::createMenu() {
 	const ImGuiIO& io = ImGui::GetIO();
 
 	if (_showRenderingSettings && procGenerator->progress >= 1.0f)		showRenderingSettings();
-	if (_showProceduralSettings && procGenerator->progress >= 1.0f)	showProceduralSettings();
+	if (_showProceduralSettings && procGenerator->progress >= 1.0f)		showProceduralSettings();
 	if (_showAboutUs)				showAboutUsWindow();
 	if (_showControls)				showControls();
 	if (_showFileDialog)			showFileDialog();
@@ -194,8 +195,11 @@ void GUI::showRenderingSettings() {
 				ImGui::SliderFloat("Point size", &value, 0.1f, 10.0f);
 				PPCX::Renderer::getInstancia()->setPointSize(value);
 
-				ImGui::Checkbox("Original cloud", &procGenerator->getPointCloudVisibility(0));
-				ImGui::Checkbox("NURBS cloud", &procGenerator->getPointCloudVisibility(1));
+				const auto& models = ModelManager::getInstance()->getAllModels();
+				for (auto& model : models) {
+					ImGui::Checkbox(model.first.c_str(), &model.second->getVisible());
+				}
+
 				ImGui::Separator();
 				ImGui::EndTabItem();
 			}
@@ -204,21 +208,19 @@ void GUI::showRenderingSettings() {
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
 					ImGui::Text("Number of points loaded"); ImGui::TableNextColumn();
-					if (procGenerator->clouds[1])
-						ImGui::Text("%i", procGenerator->clouds[0]->getNumberOfPoints() + procGenerator->clouds[1]->getNumberOfPoints());
-					else
-						ImGui::Text("%i", procGenerator->clouds[0]->getNumberOfPoints());
+					if (procGenerator->terrainCloud)
+						ImGui::Text("%i", procGenerator->terrainCloud->getNumberOfPoints());
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
 
-					ImGui::Text("Number of points in original point cloud"); ImGui::TableNextColumn();
-					ImGui::Text("%i", procGenerator->clouds[0]->getNumberOfPoints());
+					/*ImGui::Text("Number of points in original point cloud"); ImGui::TableNextColumn();
+					ImGui::Text("%i", procGenerator->terrainCloud[0]->getNumberOfPoints());
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
 
-					if (procGenerator->clouds[1]) {
+					if (procGenerator->terrainCloud[1]) {
 						ImGui::Text("Number of points in nurbs point cloud"); ImGui::TableNextColumn();
-						ImGui::Text("%i", procGenerator->clouds[1]->getNumberOfPoints());
+						ImGui::Text("%i", procGenerator->terrainCloud[1]->getNumberOfPoints());
 						ImGui::TableNextRow(); ImGui::TableNextColumn();
-					}
+					}*/
 
 					ImGui::Text("Number of subdivisions in x"); ImGui::TableNextColumn();
 					ImGui::Text("%i", procGenerator->axisSubdivision[0]);
@@ -262,6 +264,7 @@ void GUI::showProceduralSettings() {
 				ImGui::SameLine(); renderHelpMarker("Multiplier used to get the desired cloud density. Using a value of 1, you will generate points only in voxels that don't have enought points (Empty voxels or voxels with big holes for example)");
 				this->leaveSpace(1);
 				if (ImGui::Button("Generate nurbs cloud")) {
+					ModelManager::getInstance()->deleteModel("Nurbs generated cloud");
 					std::thread thread(&ProceduralGenerator::computeNURBS, procGenerator, degree, internalSubdivision, internalSubdivision, densityMultiplier);
 					thread.detach();
 				}

@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "ShaderManager.h"
 #include "Utilities/PlyLoader.h"
+#include "RendererCore/ModelManager.h"
 
 
 PPCX::Renderer* PPCX::Renderer::instancia = nullptr;
@@ -68,7 +69,7 @@ void PPCX::Renderer::refrescar() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	const mat4 matrizMVP = camara.matrizMVP();
-	procGenerator.drawClouds(matrizMVP);
+	ModelManager::getInstance()->drawModels(matrizMVP);
 }
 
 /**
@@ -88,7 +89,9 @@ const GLubyte* PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
 }
 
 void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, const unsigned& pointsPerVoxel) {
-	if (PointCloud* pCloud = PlyLoader::loadPointCloud(path)) {
+	PlyLoader::loadPointCloud(path);
+	try {
+		PointCloud* pCloud = static_cast<PointCloud*>(ModelManager::getInstance()->getModel("Ground"));
 		procGenerator.newPointCloud(pCloud, newScene, pointsPerVoxel);
 		vec3 pos = pCloud->getAABB().max();
 		const float dist = distance(pos, pCloud->getAABB().center());
@@ -100,8 +103,9 @@ void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, 
 		const float y = sqrt((pow(dist, 2) - pow(camara.aspecto(), 2) / 2));
 		const float x = camara.aspecto() * y;
 		camara.setOrthoPoints(glm::vec2(-x, -y), glm::vec2(x, y));
-	} else {
-		std::cerr << "Point cloud load has failed" << std::endl;
+		
+	} catch (std::runtime_error& e) {
+		std::cerr << "[Renderer:cargaModelo]: " << e.what() << std::endl;
 	}
 }
 

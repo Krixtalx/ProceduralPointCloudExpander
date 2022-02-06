@@ -3,9 +3,12 @@
 #include <tinyply/tinyply.h>
 #include "Point.h"
 #include <filesystem>
+#include "RendererCore/ModelManager.h"
 
 constexpr auto PLY_EXTENSION = ".ply";
 constexpr auto APPBIN_EXTENSION = ".ppcxbin";
+bool PlyLoader::saving = false;
+
 std::unordered_map<std::string, char> PlyLoader::LASClassification{
 	{"Never Classified", 0},
 	{"Unclassified", 1},
@@ -21,7 +24,22 @@ std::unordered_map<std::string, char> PlyLoader::LASClassification{
 	{"Road surface", 11},
 	{"Overlaped points", 12}
 };
-bool PlyLoader::saving = false;
+
+std::array<std::string, 13> PlyLoader::LASClassificationStrings = {
+	"Never Classified",
+	"Unclassified",
+	"Ground",
+	"Low vegetation",
+	"Medium vegetation",
+	"High vegetation",
+	"Building",
+	"Low point noise",
+	"Model Key-Point",
+	"Water",
+	"Rail",
+	"Road surface",
+	"Overlaped points"
+};
 
 bool PlyLoader::writeToBinary(const std::string& filename, PointCloud* pointCloud) {
 	std::ofstream fout(filename, std::ios::out | std::ios::binary);
@@ -61,7 +79,7 @@ PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
 	return pointCloud;
 }
 
-PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
+void PlyLoader::readFromPly(const std::string& _filename) {
 	std::vector<uint8_t> byteBuffer;
 
 	try {
@@ -77,7 +95,7 @@ PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 
 		fileStream.reset(new std::ifstream(filename, std::ios::binary));
 
-		if (!fileStream || fileStream->fail()) return nullptr;
+		if (!fileStream || fileStream->fail()) throw std::runtime_error("Unexpected error while trying to load the file");
 
 		fileStream->seekg(0, std::ios::end);
 		fileStream->seekg(0, std::ios::beg);
@@ -183,27 +201,18 @@ PointCloud* PlyLoader::readFromPly(const std::string& _filename) {
 		for (size_t i = 0; i < 13; i++) {
 			if (_points[i].size() > 100) {
 				auto cloud = new PointCloud("DefaultSP", _points[i], _aabb[i]);
-				
+				ModelManager::getInstance()->newModel(PlyLoader::LASClassificationStrings[i], cloud);
 			}
 		}
-		return nullptr;
+	} catch (const std::runtime_error& e) {
+		std::cerr << "[PlyLoader::readFromPly]: " << e.what() << std::endl;
 	} catch (const std::exception& e) {
 		std::cerr << "Caught tinyply exception: " << e.what() << std::endl;
-
-		return nullptr;
 	}
 }
 
-PointCloud* PlyLoader::loadPointCloud(const std::string& filename) {
-	const std::string file = filename + APPBIN_EXTENSION;
-	if (std::filesystem::exists(file)) {
-		return readFromBinary(file);
-	}
-
-	PointCloud* pointCloud = readFromPly(filename + PLY_EXTENSION);
-	if (pointCloud)
-		writeToBinary(file, pointCloud);
-	return pointCloud;
+void PlyLoader::loadPointCloud(const std::string& filename) {
+	readFromPly(filename + PLY_EXTENSION);
 }
 
 void PlyLoader::savePointCloud(const std::string& filename, const std::vector<PointCloud*>& clouds) {

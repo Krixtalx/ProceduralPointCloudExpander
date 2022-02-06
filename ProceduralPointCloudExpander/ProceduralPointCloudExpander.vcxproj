@@ -318,7 +318,7 @@
     <ClInclude Include="Libraries\imgui\imstb_truetype.h" />
     <ClInclude Include="Libraries\lodepng\lodepng.h" />
     <ClInclude Include="Libraries\tinyply\tinyply.h" />
-    <ClInclude Include="RendererCore\ModelManager.h" />
+    <ClInclude Include="Source\RendererCore\ModelManager.h" />
     <ClInclude Include="Source\GeometryUtils\AABB.h" />
     <ClInclude Include="Source\Interface\Fonts\IconsFontAwesome5.h" />
     <ClInclude Include="Source\Interface\Fonts\lato.hpp" />

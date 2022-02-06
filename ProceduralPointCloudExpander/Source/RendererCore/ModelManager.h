@@ -11,6 +11,8 @@ private:
 public:
 	~ModelManager();
 	static ModelManager* getInstance();
+	void drawModels(const glm::mat4& matrizMVP);
+
 	void newModel(const std::string& key, PPCX::Model* model);
 	void deleteModel(const std::string& key);
 	PPCX::Model* getModel(const std::string& key);

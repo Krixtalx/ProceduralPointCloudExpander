@@ -251,7 +251,7 @@
     <ClInclude Include="Source\RendererCore\Model.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
-    <ClInclude Include="RendererCore\ModelManager.h">
+    <ClInclude Include="Source\RendererCore\ModelManager.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
   </ItemGroup>

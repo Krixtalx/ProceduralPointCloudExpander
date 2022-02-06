@@ -21,8 +21,10 @@ void ModelManager::newModel(const std::string& key, PPCX::Model* model) {
 
 void ModelManager::deleteModel(const std::string& key) {
 	const auto model = models.find(key);
-	if (model != models.end())
+	if (model != models.end()) {
 		delete model->second;
+		models.erase(key);
+	}
 }
 
 PPCX::Model* ModelManager::getModel(const std::string& key) {
@@ -35,4 +37,10 @@ PPCX::Model* ModelManager::getModel(const std::string& key) {
 std::vector<std::pair<std::string, PPCX::Model*>> ModelManager::getAllModels() {
 	std::vector<std::pair<std::string, PPCX::Model*>> vec(models.begin(), models.end());
 	return vec;
+}
+
+void ModelManager::drawModels(const glm::mat4& matrizMVP) {
+	for (auto& model : models) {
+		model.second->drawModel(matrizMVP);
+	}
 }

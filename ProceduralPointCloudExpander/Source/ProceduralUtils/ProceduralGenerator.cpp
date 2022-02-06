@@ -5,6 +5,7 @@
 #include <random>
 
 #include "Utilities/PlyLoader.h"
+#include <RendererCore/ModelManager.h>
 
 ProceduralGenerator::ProceduralGenerator() = default;
 
@@ -14,34 +15,20 @@ ProceduralGenerator::~ProceduralGenerator() {
 			delete subdivisions[x][y];
 		}
 	}
-	for (const auto& cloud : clouds) {
-		delete cloud;
-	}
-}
-
-void ProceduralGenerator::drawClouds(const mat4 matrizMVP) {
-	for (PointCloud*& cloud : clouds) {
-		if (cloud) {
-			cloud->drawModel(matrizMVP);
-		}
-	}
 }
 
 void ProceduralGenerator::newPointCloud(PointCloud * pCloud, bool newScene, unsigned pointsPerVoxel) {
-	if (newScene || !clouds[0]) {
-		for (const auto& cloud : clouds) {
-			delete cloud;
-		}
-		clouds[0] = pCloud;
-		cloudDensity = clouds[0]->getDensity();
+	if (newScene || !terrainCloud) {
+		terrainCloud = pCloud;
+		cloudDensity = terrainCloud->getDensity();
 	} else {
 		const auto& vec = pCloud->getPoints();
 		for (auto& i : vec) {
-			clouds[0]->newPoint(i);
+			terrainCloud->newPoint(i);
 		}
-		clouds[0]->needUpdating = true;
+		terrainCloud->needUpdating = true;
 	}
-	this->aabb = clouds[0]->getAABB();
+	this->aabb = terrainCloud->getAABB();
 	generateVoxelGrid(pointsPerVoxel);
 }
 
@@ -106,7 +93,7 @@ void ProceduralGenerator::createVoxelGrid() {
 			point[1] += stride[1];
 			point[2] += stride[2];
 			newAABB->update(point);
-			auto* procVoxel = new ProceduralVoxel(clouds[0], newAABB);
+			auto* procVoxel = new ProceduralVoxel(terrainCloud, newAABB);
 			subdivisions[x][y] = procVoxel;
 		}
 	}
@@ -118,8 +105,8 @@ void ProceduralGenerator::createVoxelGrid() {
 void ProceduralGenerator::subdivideCloud() {
 	std::cout << "Subdividing cloud..." << std::endl;
 	this->progress = 0.4f;
-	unsigned pointCloudSize = clouds[0]->getNumberOfPoints();
-	const std::vector<PointModel> points = clouds[0]->getPoints();
+	unsigned pointCloudSize = terrainCloud->getNumberOfPoints();
+	const std::vector<PointModel> points = terrainCloud->getPoints();
 
 	vec3 size = aabb.size();
 	const vec3 minPoint = aabb.min();
@@ -185,8 +172,6 @@ void ProceduralGenerator::subdivideCloud() {
 void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier) {
 	std::cout << "Creating nurbs..." << std::endl;
 	this->progress = 0.6f;
-	delete clouds[1];
-	clouds[1] = nullptr;
 
 	tinynurbs::RationalSurface<float> srf;
 	srf.degree_u = degree;
@@ -213,7 +198,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 
 	std::vector<vec3> controlPoints;
 	std::vector<float> weights;
-	unsigned numPoints = clouds[0]->getNumberOfPoints();
+	unsigned numPoints = terrainCloud->getNumberOfPoints();
 	float density;
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
@@ -256,7 +241,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 				unsigned limit = subdivisions[x][y]->numberPointsToDensity(cloudDensity * desiredDensityMultiplier);
 				std::vector<float> intervals[2];
 				std::vector<float> weights[2];
-				if (subdivisions[x][y]->getNumberOfPoints() > cloudDensity * 0.3f && useStatiticsMethod) {
+				if (subdivisions[x][y]->getNumberOfPoints() > cloudDensity * 0.2f && useStatiticsMethod) {
 					std::vector<float> allWeights = subdivisions[x][y]->internalDistribution(divX, divY);
 					++count;
 					for (unsigned i = 0; i < divX; i++) {
@@ -285,7 +270,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 				for (int i = 0; i < limit; i++) {
 					float valX;
 					float valY;
-					if (subdivisions[x][y]->getNumberOfPoints() > cloudDensity * 0.3f && useStatiticsMethod) {
+					if (subdivisions[x][y]->getNumberOfPoints() > cloudDensity * 0.2f && useStatiticsMethod) {
 						valX = customDisX(generator);
 						valY = customDisY(generator);
 						//std::cout << "x: " << x << " y: " << y << " valX: " << valX << " valY: " << valY << std::endl;
@@ -314,8 +299,8 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 				}
 			}
 		}
-		std::cout << count << std::endl;
-		clouds[1] = new PointCloud("DefaultSP", points, newAABB);
+
+		ModelManager::getInstance()->newModel("Nurbs generated cloud", new PointCloud("DefaultSP", points, newAABB));
 		this->progress = 2.0f;
 	}
 }
@@ -326,8 +311,7 @@ void ProceduralGenerator::generateVoxelGrid(const unsigned pointsPerVoxel) {
 			delete subdivisions[x][y];
 		}
 	}
-	delete clouds[1];
-	clouds[1] = nullptr;
+
 	automaticGSD(pointsPerVoxel);
 	createVoxelGrid();
 	subdivideCloud();
@@ -339,8 +323,8 @@ void ProceduralGenerator::generateVoxelGrid(const unsigned pointsPerVoxel) {
 * @param pointsPerVoxel number of points that should be in each voxel. Less points = more and smallers voxels
 */
 void ProceduralGenerator::automaticGSD(unsigned pointsPerVoxel) {
-	const unsigned voxelsNumber = clouds[0]->getNumberOfPoints() / pointsPerVoxel;
-	const vec3 cloudSize = clouds[0]->getAABB().size();
+	const unsigned voxelsNumber = terrainCloud->getNumberOfPoints() / pointsPerVoxel;
+	const vec3 cloudSize = terrainCloud->getAABB().size();
 	const float sizeProportion = cloudSize.x / cloudSize.y;
 	axisSubdivision[1] = sqrt(voxelsNumber / sizeProportion);
 	axisSubdivision[0] = sizeProportion * axisSubdivision[1];
@@ -408,15 +392,8 @@ void ProceduralGenerator::saveTextureMap(const std::string & path) const {
 */
 void ProceduralGenerator::savePointCloud(const std::string & path) const {
 	std::vector<PointCloud*> aux;
-	aux.push_back(clouds[0]);
-	aux.push_back(clouds[1]);
+	//aux.push_back(terrainCloud[0]);
+	//aux.push_back(terrainCloud[1]);
 	std::thread thread(&PlyLoader::savePointCloud, path, aux);
 	thread.detach();
-}
-
-
-bool& ProceduralGenerator::getPointCloudVisibility(unsigned cloud) const {
-	if (clouds[cloud])
-		return clouds[cloud]->getVisible();
-	return clouds[0]->getVisible();
 }

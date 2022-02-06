@@ -35,12 +35,12 @@ PointCloud::PointCloud(PointCloud& orig) : Model(orig), vbo(orig.vbo) {
  */
 PointCloud::~PointCloud() = default;
 
-void PointCloud::newPoint(const PointModel& point) {
+void PointCloud::newPoint(const PointModel & point) {
 	vbo.push_back(point);
 	aabb.update(point._point);
 }
 
-void PointCloud::newPoints(const std::vector<PointModel>& points) {
+void PointCloud::newPoints(const std::vector<PointModel>&points) {
 	vbo.clear();
 	vbo.resize(points.size());
 	std::copy(points.begin(), points.end(), vbo.begin());
@@ -89,7 +89,7 @@ void PointCloud::newVBO(GLenum freqAct) {
  * @param data a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PointCloud::newIBO(const std::vector<GLuint>& data, const GLenum freqAct) {
+void PointCloud::newIBO(const std::vector<GLuint>&data, const GLenum freqAct) {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idIBO != UINT_MAX) {
 		glDeleteBuffers(1, &idIBO);
@@ -105,9 +105,9 @@ void PointCloud::newIBO(const std::vector<GLuint>& data, const GLenum freqAct) {
 /**
  * Función a la que se llama cuando se debe de dibujar el modelo
  */
-void PointCloud::drawModel(const mat4 MVPMatrix){
+void PointCloud::drawModel(const glm::mat4& MVPMatrix) {
 	if (visible) {
-		if(needUpdating)
+		if (needUpdating)
 			updateCloud();
 		try {
 			//MVPMatrix = MVPMatrix * translate(pos);

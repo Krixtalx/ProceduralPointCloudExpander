@@ -28,7 +28,7 @@ class PointCloud : public PPCX::Model
 
 		void updateCloud();
 
-		void drawModel(mat4 MVPMatrix) override;
+		void drawModel(const glm::mat4& MVPMatrix) override;
 
 		std::vector<PointModel>& getPoints();
 
