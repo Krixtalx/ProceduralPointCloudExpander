@@ -32,7 +32,14 @@ void ProceduralGenerator::newPointCloud(PointCloud * pCloud, bool newScene, unsi
 	generateVoxelGrid(pointsPerVoxel);
 }
 
-
+/**
+ * Method that calculates the height and the color of a voxel based on the height and color of the neightbours
+ * 
+ * @param x x subdivision of the voxel
+ * @param y y subdivision of the voxel
+ * @param minCount number of valid neighbours needed to set the calculated height and color.
+ * @return true if the values are setted. False otherwise.
+ */
 bool ProceduralGenerator::meanNeightbourHeightColor(unsigned x, unsigned y, char minCount) const {
 	float heightMean = 0;
 	vec3 colorMean = { 0,0,0 };
@@ -169,6 +176,15 @@ void ProceduralGenerator::subdivideCloud() {
 
 }
 
+/**
+ * Method to generate the NURBS based point cloud for the terrain. 
+ * The purpose of this method is to increase the ground cloud definition while maintaining this cloud characteristics (Curvatures, points colors...)
+ *
+ * @param degree NURBS degree
+ * @param divX number of X subdivisions used by statitics method
+ * @param divY number of Y subdivisions used by statitics method
+ * @param desiredDensityMultiplier Density multiplier used to generate the NURBS point cloud. Using a value of 1, you will generate points only in voxels that don't have enought points (Empty voxels or voxels with big holes for example)
+ */
 void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier) {
 	std::cout << "Creating nurbs..." << std::endl;
 	this->progress = 0.6f;
@@ -305,6 +321,11 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 	}
 }
 
+/**
+ * Delete the current voxel grid and generate a new one using the pointsPerVoxel parameter
+ *
+ * @param pointsPerVoxel see automaticGSD method.
+ */
 void ProceduralGenerator::generateVoxelGrid(const unsigned pointsPerVoxel) {
 	for (size_t x = 0; x < axisSubdivision[0]; x++) {
 		for (size_t y = 0; y < axisSubdivision[1]; y++) {
@@ -330,7 +351,6 @@ void ProceduralGenerator::automaticGSD(unsigned pointsPerVoxel) {
 	axisSubdivision[0] = sizeProportion * axisSubdivision[1];
 
 }
-
 
 
 /**

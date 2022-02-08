@@ -197,7 +197,7 @@ void GUI::showRenderingSettings() {
 
 				const auto& models = ModelManager::getInstance()->getAllModels();
 				for (auto& model : models) {
-					ImGui::Checkbox(model.first.c_str(), &model.second->getVisible());
+					ImGui::Checkbox(model.first.c_str(), &model.second->getVisibility());
 				}
 
 				ImGui::Separator();

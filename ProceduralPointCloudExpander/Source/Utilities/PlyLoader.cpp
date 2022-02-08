@@ -79,6 +79,12 @@ PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
 	return pointCloud;
 }
 
+/**
+ * Private method for loading a PLY file. It reads ascii and binary ply versions.
+ * It will only load points position, color and LAZ classification.
+ * 
+ * @param _filename PLY filename. Must contain .ply extension in the filename
+ */
 void PlyLoader::readFromPly(const std::string& _filename) {
 	std::vector<uint8_t> byteBuffer;
 
@@ -211,10 +217,22 @@ void PlyLoader::readFromPly(const std::string& _filename) {
 	}
 }
 
+/**
+ * Public method for loading a point cloud.
+ * 
+ * @param filename
+ */
 void PlyLoader::loadPointCloud(const std::string& filename) {
 	readFromPly(filename + PLY_EXTENSION);
 }
 
+
+/**
+ * Method for saving the generated point cloud
+ * 
+ * @param filename filename of the generated point cloud
+ * @param clouds clouds that will be agregated to form the final point cloud.
+ */
 void PlyLoader::savePointCloud(const std::string& filename, const std::vector<PointCloud*>& clouds) {
 	std::cout << filename << std::endl;
 	std::filebuf fb_ascii;

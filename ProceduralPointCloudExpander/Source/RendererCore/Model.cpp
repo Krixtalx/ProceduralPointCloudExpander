@@ -36,6 +36,6 @@ PPCX::Model::~Model() {
 	glDeleteVertexArrays(1, &idVAO);
 }
 
-bool& PPCX::Model::getVisible() {
+bool& PPCX::Model::getVisibility() {
 	return visible;
 }
