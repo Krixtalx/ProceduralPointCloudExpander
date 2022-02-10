@@ -3,39 +3,40 @@
 #include "GeometryUtils/AABB.h"
 
 
-class PointCloud : public PPCX::Model
-{
-	private:
-		std::vector<PointModel> vbo;
-		AABB aabb;
-		
-		void newVBO(GLenum freqAct);
+class PointCloud : public PPCX::Model {
+private:
+	std::vector<PointModel> vbo;
+	AABB aabb;
 
-		void newIBO(const std::vector<GLuint>& data, GLenum freqAct);
+	void newVBO(GLenum freqAct);
 
-	public:
-		bool needUpdating=false;
+	void newIBO(const std::vector<GLuint>& data, GLenum freqAct);
 
-		PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos = {0, 0, 0});
+public:
+	bool needUpdating = false;
 
-		PointCloud(PointCloud &orig);
+	PointCloud(std::string shaderProgram, const vec3& pos = { 0, 0, 0 });
 
-		~PointCloud();
+	PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos = { 0, 0, 0 });
 
-		void newPoint(const PointModel& point);
+	PointCloud(PointCloud& orig);
 
-		void newPoints(const std::vector<PointModel>& points);
+	~PointCloud();
 
-		void updateCloud();
+	void newPoint(const PointModel& point);
 
-		void drawModel(const glm::mat4& MVPMatrix) override;
+	void newPoints(const std::vector<PointModel>& points);
 
-		std::vector<PointModel>& getPoints();
+	void updateCloud();
 
-		unsigned getNumberOfPoints() const;
+	void drawModel(const glm::mat4& MVPMatrix) override;
 
-		const AABB& getAABB();
+	std::vector<PointModel>& getPoints();
 
-		float getDensity() const;
+	unsigned getNumberOfPoints() const;
+
+	const AABB& getAABB();
+
+	float getDensity() const;
 };
 

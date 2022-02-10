@@ -6,6 +6,8 @@
 #include "GeometryUtils/AABB.h"
 
 
+PointCloud::PointCloud(std::string shaderProgram, const vec3& pos) : Model(std::move(shaderProgram), pos) {}
+
 /**
  * Constructor parametrizado
  * @param shaderProgram que se usará para renderizar el modelo
@@ -38,12 +40,14 @@ PointCloud::~PointCloud() = default;
 void PointCloud::newPoint(const PointModel & point) {
 	vbo.push_back(point);
 	aabb.update(point._point);
+	needUpdating = true;
 }
 
 void PointCloud::newPoints(const std::vector<PointModel>&points) {
 	vbo.clear();
 	vbo.resize(points.size());
 	std::copy(points.begin(), points.end(), vbo.begin());
+	needUpdating = true;
 }
 
 void PointCloud::updateCloud() {
@@ -105,7 +109,7 @@ void PointCloud::newIBO(const std::vector<GLuint>&data, const GLenum freqAct) {
 /**
  * Función a la que se llama cuando se debe de dibujar el modelo
  */
-void PointCloud::drawModel(const glm::mat4& MVPMatrix) {
+void PointCloud::drawModel(const glm::mat4 & MVPMatrix) {
 	if (visible) {
 		if (needUpdating)
 			updateCloud();

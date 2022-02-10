@@ -7,7 +7,13 @@
 #include "Utilities/PlyLoader.h"
 #include <RendererCore/ModelManager.h>
 
-std::vector<std::string> ProceduralGenerator::generatedCloudsName ={"Nurbs terrain cloud"};
+#include <pcl/point_types.h>
+#include <pcl/search/search.h>
+#include <pcl/search/kdtree.h>
+#include <pcl/filters/passthrough.h>
+#include <pcl/segmentation/region_growing_rgb.h>
+
+std::vector<std::string> ProceduralGenerator::generatedCloudsName = { "Nurbs terrain cloud", "Test" };
 
 ProceduralGenerator::ProceduralGenerator() = default;
 
@@ -19,7 +25,7 @@ ProceduralGenerator::~ProceduralGenerator() {
 	}
 }
 
-void ProceduralGenerator::newPointCloud(PointCloud * pCloud, bool newScene, unsigned pointsPerVoxel) {
+void ProceduralGenerator::newPointCloud(PointCloud * pCloud, const bool newScene, const unsigned pointsPerVoxel) {
 	if (newScene || !terrainCloud) {
 		terrainCloud = pCloud;
 		cloudDensity = terrainCloud->getDensity();
@@ -36,13 +42,13 @@ void ProceduralGenerator::newPointCloud(PointCloud * pCloud, bool newScene, unsi
 
 /**
  * Method that calculates the height and the color of a voxel based on the height and color of the neightbours
- * 
+ *
  * @param x x subdivision of the voxel
  * @param y y subdivision of the voxel
  * @param minCount number of valid neighbours needed to set the calculated height and color.
  * @return true if the values are setted. False otherwise.
  */
-bool ProceduralGenerator::meanNeightbourHeightColor(unsigned x, unsigned y, char minCount) const {
+bool ProceduralGenerator::meanNeightbourHeightColor(const unsigned x, const unsigned y, const char minCount) const {
 	float heightMean = 0;
 	vec3 colorMean = { 0,0,0 };
 	char counter = 0;
@@ -179,7 +185,7 @@ void ProceduralGenerator::subdivideCloud() {
 }
 
 /**
- * Method to generate the NURBS based point cloud for the terrain. 
+ * Method to generate the NURBS based point cloud for the terrain.
  * The purpose of this method is to increase the ground cloud definition while maintaining this cloud characteristics (Curvatures, points colors...)
  *
  * @param degree NURBS degree
@@ -338,7 +344,43 @@ void ProceduralGenerator::generateVoxelGrid(const unsigned pointsPerVoxel) {
 	automaticGSD(pointsPerVoxel);
 	createVoxelGrid();
 	subdivideCloud();
+	test();
 	this->progress = 2.0f;
+}
+
+void ProceduralGenerator::test() {
+	pcl::search::Search <pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
+	pcl::PointCloud <pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud <pcl::PointXYZRGB>);
+
+	const auto& points = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel("High vegetation"))->getPoints();
+	for (auto point : points) {
+		const glm::vec3 color = point.getRGBVec3();
+		cloud->emplace_back(pcl::PointXYZRGB(point._point.x, point._point.y, point._point.z, color.r, color.g, color.b));
+	}
+
+	pcl::RegionGrowingRGB<pcl::PointXYZRGB> reg;
+	reg.setInputCloud(cloud);
+	reg.setSearchMethod(tree);
+	reg.setDistanceThreshold(50);
+	reg.setPointColorThreshold(10);
+	reg.setRegionColorThreshold(10);
+	reg.setMinClusterSize(600);
+
+	std::vector <pcl::PointIndices> clusters;
+	reg.extract(clusters);
+
+	const pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud();
+	const auto newCloud = new PointCloud("DefaultSP");
+	PointModel point;
+	for (std::size_t i = 0; i < colored_cloud->size(); ++i) {
+		point._point.x = (*colored_cloud)[i].x;
+		point._point.y = (*colored_cloud)[i].y;
+		point._point.z = (*colored_cloud)[i].z;
+
+		point.saveRGB(glm::vec3((*colored_cloud)[i].r, (*colored_cloud)[i].g, (*colored_cloud)[i].b));
+		newCloud->newPoint(point);
+	}
+	ModelManager::getInstance()->newModel("Test", newCloud);
 }
 
 /**

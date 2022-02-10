@@ -27,6 +27,7 @@ protected:
 	void automaticGSD(unsigned pointsPerVoxel);
 	void computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier);
 	void generateVoxelGrid(unsigned pointsPerVoxel);
+	void test();
 
 public:
 	ProceduralGenerator();
