@@ -7,7 +7,9 @@
 
 constexpr auto PLY_EXTENSION = ".ply";
 constexpr auto APPBIN_EXTENSION = ".ppcxbin";
+
 bool PlyLoader::saving = false;
+unsigned PlyLoader::LASClassificationSize = 13;
 
 std::unordered_map<std::string, char> PlyLoader::LASClassification{
 	{"Never Classified", 0},
@@ -25,7 +27,7 @@ std::unordered_map<std::string, char> PlyLoader::LASClassification{
 	{"Overlaped points", 12}
 };
 
-std::array<std::string, 13> PlyLoader::LASClassificationStrings = {
+std::string PlyLoader::LASClassificationStrings[] = {
 	"Never Classified",
 	"Unclassified",
 	"Ground",

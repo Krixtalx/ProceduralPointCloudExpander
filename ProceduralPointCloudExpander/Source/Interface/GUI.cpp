@@ -195,9 +195,22 @@ void GUI::showRenderingSettings() {
 				ImGui::SliderFloat("Point size", &value, 0.1f, 10.0f);
 				PPCX::Renderer::getInstancia()->setPointSize(value);
 
-				const auto& models = ModelManager::getInstance()->getAllModels();
-				for (auto& model : models) {
-					ImGui::Checkbox(model.first.c_str(), &model.second->getVisibility());
+				ImGui::Text("Loaded clouds");
+				for (unsigned i = 0; i < PlyLoader::LASClassificationSize; ++i) {
+					try {
+						PPCX::Model* model = ModelManager::getInstance()->getModel(PlyLoader::LASClassificationStrings[i]);
+						ImGui::Checkbox(PlyLoader::LASClassificationStrings[i].c_str(), &model->getVisibility());
+					} catch (std::runtime_error& e) {
+					}
+				}
+
+				ImGui::Text("Generated clouds");
+				for (auto& cloudName : ProceduralGenerator::generatedCloudsName) {
+					try {
+						PPCX::Model* model = ModelManager::getInstance()->getModel(cloudName);
+						ImGui::Checkbox(cloudName.c_str(), &model->getVisibility());
+					} catch (std::runtime_error& e) {
+					}
 				}
 
 				ImGui::Separator();

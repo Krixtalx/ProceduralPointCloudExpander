@@ -32,4 +32,5 @@ public:
 	ProceduralGenerator();
 	~ProceduralGenerator();
 	void newPointCloud(PointCloud* pCloud, bool newScene, unsigned pointsPerVoxel);
+	static std::vector<std::string> generatedCloudsName;
 };

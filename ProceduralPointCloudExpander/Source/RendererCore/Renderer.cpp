@@ -91,10 +91,10 @@ const GLubyte* PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
 void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, const unsigned& pointsPerVoxel) {
 	PlyLoader::loadPointCloud(path);
 	try {
-		PointCloud* pCloud = static_cast<PointCloud*>(ModelManager::getInstance()->getModel("Ground"));
+		const auto pCloud = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel("Ground"));
 		procGenerator.newPointCloud(pCloud, newScene, pointsPerVoxel);
 		vec3 pos = pCloud->getAABB().max();
-		const float dist = distance(pos, pCloud->getAABB().center());
+		const float dist = distance(pos, pCloud->getAABB().min());
 		camara.increaseZFar(dist);
 		pos = rotate(glm::pi<float>() / 6.0f, vec3(1.0f, .0f, 1.0f)) * vec4(pos, 0.0f);
 		camara.setPosicion(pos);
@@ -103,7 +103,7 @@ void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, 
 		const float y = sqrt((pow(dist, 2) - pow(camara.aspecto(), 2) / 2));
 		const float x = camara.aspecto() * y;
 		camara.setOrthoPoints(glm::vec2(-x, -y), glm::vec2(x, y));
-		
+
 	} catch (std::runtime_error& e) {
 		std::cerr << "[Renderer:cargaModelo]: " << e.what() << std::endl;
 	}

@@ -8,8 +8,9 @@ class PlyLoader {
 	static void readFromPly(const std::string& _filename);
 public:
 	static bool saving;
+	static unsigned LASClassificationSize;
 	static std::unordered_map<std::string, char> LASClassification;
-	static std::array<std::string, 13> LASClassificationStrings;
+	static std::string LASClassificationStrings[13];
 
 	static void loadPointCloud(const std::string& filename);
 	static void savePointCloud(const std::string& filename, const std::vector<PointCloud*>& clouds);

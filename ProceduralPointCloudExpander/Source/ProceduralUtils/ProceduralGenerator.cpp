@@ -7,6 +7,8 @@
 #include "Utilities/PlyLoader.h"
 #include <RendererCore/ModelManager.h>
 
+std::vector<std::string> ProceduralGenerator::generatedCloudsName ={"Nurbs terrain cloud"};
+
 ProceduralGenerator::ProceduralGenerator() = default;
 
 ProceduralGenerator::~ProceduralGenerator() {
@@ -316,7 +318,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 			}
 		}
 
-		ModelManager::getInstance()->newModel("Nurbs generated cloud", new PointCloud("DefaultSP", points, newAABB));
+		ModelManager::getInstance()->newModel("Nurbs terrain cloud", new PointCloud("DefaultSP", points, newAABB));
 		this->progress = 2.0f;
 	}
 }

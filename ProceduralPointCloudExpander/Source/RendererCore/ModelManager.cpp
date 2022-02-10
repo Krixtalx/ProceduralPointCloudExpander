@@ -45,7 +45,7 @@ void ModelManager::deleteModel(const std::string& key) {
  * @return Pointer to the model indicated by the key
  */
 PPCX::Model* ModelManager::getModel(const std::string& key) {
-	const auto model = models.find(key);
+	auto model = models.find(key);
 	if (model == models.end())
 		throw std::runtime_error("[ModelManager::getModel]: Cannot find any model with that key.");
 	return model->second;
@@ -63,11 +63,11 @@ std::vector<std::pair<std::string, PPCX::Model*>> ModelManager::getAllModels() {
 
 /**
  * Method used by the renderer to draw all the models in the ModelManager
- * 
+ *
  * @param matrizMVP Model view perspective view matrix.
  */
-void ModelManager::drawModels(const glm::mat4& matrizMVP) {
-	for (auto& model : models) {
+void ModelManager::drawModels(const glm::mat4& matrizMVP) const {
+	for (const auto& model : models) {
 		model.second->drawModel(matrizMVP);
 	}
 }
