@@ -26,13 +26,23 @@ void ModelManager::newModel(const std::string& key, PPCX::Model* model) {
 }
 
 /**
+ * Replace a model in the ModelManager.
+ *
+ * @param key Key that will identify the model in the ModelManager
+ * @param model The new model that will replace the existing model (If anyone)
+ */
+void ModelManager::modifyModel(const std::string& key, PPCX::Model* model) {
+	deleteModel(key);
+	newModel(key, model);
+}
+
+/**
  * Delete a model in the ModelManager
  *
  * @param key Key of the model in the ModelManager
  */
 void ModelManager::deleteModel(const std::string& key) {
-	const auto model = models.find(key);
-	if (model != models.end()) {
+	if (const auto model = models.find(key); model != models.end()) {
 		delete model->second;
 		models.erase(key);
 	}

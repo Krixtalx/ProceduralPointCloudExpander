@@ -19,8 +19,8 @@ GUI::GUI() :
 void GUI::createMenu() {
 	const ImGuiIO& io = ImGui::GetIO();
 
-	if (_showRenderingSettings && procGenerator->progress >= 1.0f)		showRenderingSettings();
-	if (_showProceduralSettings && procGenerator->progress >= 1.0f)		showProceduralSettings();
+	if (_showRenderingSettings && procGenerator->progress >= 10000.0f)		showRenderingSettings();
+	if (_showProceduralSettings && procGenerator->progress >= 10000.0f)		showProceduralSettings();
 	if (_showAboutUs)				showAboutUsWindow();
 	if (_showControls)				showControls();
 	if (_showFileDialog)			showFileDialog();
@@ -161,7 +161,7 @@ void GUI::showPointCloudDialog() {
 
 		ImGui::Checkbox("New Scene", &newScene);
 		ImGui::Text("Desired points per voxel: ");
-		ImGui::SliderInt("##pointPerVoxel", &pointsPerVoxel, 20, 400);
+		ImGui::SliderInt("##pointPerVoxel", &pointsPerVoxel, 1, 400);
 
 		this->leaveSpace(2);
 
@@ -273,7 +273,7 @@ void GUI::showProceduralSettings() {
 					ImGui::InputInt("##internalSubDiv", &internalSubdivision, 1, 1);
 				}
 				ImGui::Text("Density multiplier: ");
-				ImGui::SliderFloat("##densityMultiplier", &densityMultiplier, 1.0f, 3.0f, "%.1f");
+				ImGui::SliderFloat("##densityMultiplier", &densityMultiplier, 1.0f, 10.0f, "%.1f");
 				ImGui::SameLine(); renderHelpMarker("Multiplier used to get the desired cloud density. Using a value of 1, you will generate points only in voxels that don't have enought points (Empty voxels or voxels with big holes for example)");
 				this->leaveSpace(1);
 				if (ImGui::Button("Generate nurbs cloud")) {
@@ -285,10 +285,25 @@ void GUI::showProceduralSettings() {
 			}
 			if (ImGui::BeginTabItem("Voxel grid")) {
 				ImGui::Text("Desired points per voxel: ");
-				ImGui::SliderInt("##pointPerVoxel", &pointsPerVoxel, 20, 400);
+				ImGui::SliderInt("##pointPerVoxel", &pointsPerVoxel, 5, 400);
 				this->leaveSpace(1);
 				if (ImGui::Button("Generate voxel grid")) {
 					std::thread thread(&ProceduralGenerator::generateVoxelGrid, procGenerator, pointsPerVoxel);
+					thread.detach();
+				}
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("RGB Region segmentation")) {
+				static float distanceThreshold = 10.0f, colorThreshold = 10.0f, regionColorThreshold = 5.0f;
+				static int minClusterSize = 100;
+				ImGui::InputFloat("Distance threshold", &distanceThreshold, 0.1f, 1.0f, "%.1f");
+				ImGui::InputFloat("Point color threshold", &colorThreshold, 0.1f, 1.0f, "%.1f");
+				ImGui::InputFloat("Region color threshold", &regionColorThreshold, 0.1f, 1.0f, "%.1f");
+				ImGui::InputInt("Min cluster size", &minClusterSize);
+				if (minClusterSize < 1)
+					minClusterSize = 1;
+				if (ImGui::Button("Generate RGB region segmentation")) {
+					std::thread thread(&ProceduralGenerator::RegionRGBSegmentation, procGenerator, distanceThreshold, colorThreshold, regionColorThreshold, minClusterSize);
 					thread.detach();
 				}
 				ImGui::EndTabItem();
@@ -301,7 +316,7 @@ void GUI::showProceduralSettings() {
 }
 
 void GUI::showProgressBar() const {
-	if (procGenerator->progress < 1.0f) {
+	if (procGenerator->progress < 100.0f) {
 		if (ImGui::Begin("Progress", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse)) {
 			if (procGenerator->progress < .25f)
 				ImGui::Text("Loading point cloud...");
@@ -313,10 +328,19 @@ void GUI::showProgressBar() const {
 				ImGui::Text("Creating nurbs...");
 			else if (procGenerator->progress < .8f)
 				ImGui::Text("Generating nurbs cloud...");
-			else
+			else if (procGenerator->progress < 1.0f)
 				ImGui::Text("Finishing...");
+			else if (procGenerator->progress < 1.3f)
+				ImGui::Text("Starting clustering process...");
+			else if (procGenerator->progress < 1.6f)
+				ImGui::Text("Computing the clusters...");
+			else if (procGenerator->progress < 1.8f)
+				ImGui::Text("Generating colored clusters clouds...");
+			else if (procGenerator->progress < 2.0f)
+				ImGui::Text("Adding clusters clouds to the renderer...");
+
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.32f, 0.39f, 0.87f, 1.00f));
-			ImGui::ProgressBar(procGenerator->progress);
+			ImGui::ProgressBar(procGenerator->progress - (int)procGenerator->progress);
 			ImGui::PopStyleColor();
 			ImGui::End();
 		}

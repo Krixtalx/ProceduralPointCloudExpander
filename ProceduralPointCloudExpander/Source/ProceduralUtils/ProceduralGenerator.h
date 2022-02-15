@@ -13,7 +13,7 @@ private:
 	AABB aabb;
 	PointCloud* terrainCloud{};
 	float cloudDensity{};
-	float progress = 2.0f;
+	float progress = FLT_MAX;
 	bool useStatiticsMethod = true;
 
 	bool meanNeightbourHeightColor(unsigned x, unsigned y, char minCount) const;
@@ -27,7 +27,7 @@ protected:
 	void automaticGSD(unsigned pointsPerVoxel);
 	void computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier);
 	void generateVoxelGrid(unsigned pointsPerVoxel);
-	void test();
+	void RegionRGBSegmentation(float distanceThreshold, float pointColorThreshold, float regionColorThreshold, unsigned minClusterSize);
 
 public:
 	ProceduralGenerator();

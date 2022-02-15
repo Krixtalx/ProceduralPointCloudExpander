@@ -208,7 +208,7 @@ void PlyLoader::readFromPly(const std::string& _filename) {
 
 		for (size_t i = 0; i < 13; i++) {
 			if (_points[i].size() > 100) {
-				auto cloud = new PointCloud("DefaultSP", _points[i], _aabb[i]);
+				const auto cloud = new PointCloud("DefaultSP", _points[i], _aabb[i]);
 				ModelManager::getInstance()->newModel(PlyLoader::LASClassificationStrings[i], cloud);
 			}
 		}

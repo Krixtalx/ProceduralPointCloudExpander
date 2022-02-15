@@ -14,6 +14,7 @@ public:
 	void drawModels(const glm::mat4& matrizMVP) const;
 
 	void newModel(const std::string& key, PPCX::Model* model);
+	void modifyModel(const std::string& key, PPCX::Model* model);
 	void deleteModel(const std::string& key);
 	PPCX::Model* getModel(const std::string& key);
 	std::vector<std::pair<std::string, PPCX::Model*>> getAllModels();
