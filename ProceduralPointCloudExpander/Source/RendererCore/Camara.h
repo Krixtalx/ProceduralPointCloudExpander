@@ -91,6 +91,10 @@ namespace PPCX {
 		
 		void setOrthoPoints(glm::vec2 minPoint, glm::vec2 maxPoint);
 
+		GLuint getAncho();
+
+		GLuint getAlto();
+
 		void changeCamaraType();
 	};
 }

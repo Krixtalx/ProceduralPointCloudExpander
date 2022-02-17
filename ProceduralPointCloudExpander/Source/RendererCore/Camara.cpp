@@ -287,3 +287,11 @@ void PPCX::Camara::setOrthoPoints(glm::vec2 minPoint, glm::vec2 maxPoint) {
 	backup->maxPoint = maxPoint;
 	backup->minPoint = minPoint;
 }
+
+GLuint PPCX::Camara::getAncho() {
+	return ancho;
+}
+
+GLuint PPCX::Camara::getAlto() {
+	return alto;
+}

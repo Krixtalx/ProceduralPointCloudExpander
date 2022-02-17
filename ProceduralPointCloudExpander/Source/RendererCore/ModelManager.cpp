@@ -81,3 +81,12 @@ void ModelManager::drawModels(const glm::mat4& matrizMVP) const {
 		model.second->drawModel(matrizMVP);
 	}
 }
+
+void ModelManager::drawAndDeleteSingleModel(const std::string& modelKey, const glm::mat4& matrizMVP) {
+	try {
+		const auto model = getModel(modelKey);
+		model->drawModel(matrizMVP);
+		deleteModel(modelKey);
+	} catch (std::runtime_error& e) {
+	}
+}

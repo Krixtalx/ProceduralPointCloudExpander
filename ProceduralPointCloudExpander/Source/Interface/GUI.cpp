@@ -159,7 +159,7 @@ void GUI::showPointCloudDialog() {
 		static bool newScene = false;
 		this->leaveSpace(1);
 
-		ImGui::Checkbox("New Scene", &newScene);
+		//ImGui::Checkbox("New Scene", &newScene);
 		ImGui::Text("Desired points per voxel: ");
 		ImGui::SliderInt("##pointPerVoxel", &pointsPerVoxel, 1, 400);
 
@@ -247,6 +247,14 @@ void GUI::showRenderingSettings() {
 					ImGui::Text("%f", procGenerator->cloudDensity);
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
 
+					ImGui::Text("Cloud X size"); ImGui::TableNextColumn();
+					ImGui::Text("%f", procGenerator->aabb.size().x);
+					ImGui::TableNextRow(); ImGui::TableNextColumn();
+
+					ImGui::Text("Cloud Y size"); ImGui::TableNextColumn();
+					ImGui::Text("%f", procGenerator->aabb.size().y);
+					//ImGui::TableNextRow(); ImGui::TableNextColumn();
+
 					ImGui::EndTable();
 				}
 				ImGui::EndTabItem();
@@ -304,6 +312,10 @@ void GUI::showProceduralSettings() {
 					minClusterSize = 1;
 				if (ImGui::Button("Generate RGB region segmentation")) {
 					std::thread thread(&ProceduralGenerator::RegionRGBSegmentation, procGenerator, distanceThreshold, colorThreshold, regionColorThreshold, minClusterSize);
+					thread.detach();
+				}
+				if (ImGui::Button("Test RGB region segmentation")) {
+					std::thread thread(&ProceduralGenerator::testRGBSegmentation, procGenerator);
 					thread.detach();
 				}
 				ImGui::EndTabItem();

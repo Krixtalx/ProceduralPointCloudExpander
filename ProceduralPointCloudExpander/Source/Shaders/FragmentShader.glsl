@@ -1,7 +1,7 @@
 #version 410
 
 in vec4 ourColor;
-out vec4 fColor;
+layout(location = 0) out vec4 fColor;
 
 void main() {
 	vec2 centerPointv = gl_PointCoord - 0.5f;

@@ -13,6 +13,8 @@
 #include <pcl/segmentation/region_growing_rgb.h>
 #include <pcl/segmentation/conditional_euclidean_clustering.h>
 
+#include "RendererCore/Renderer.h"
+
 std::vector<std::string> ProceduralGenerator::generatedCloudsName = { "Nurbs terrain cloud", "RGB Region Segmentation" };
 
 ProceduralGenerator::ProceduralGenerator() = default;
@@ -128,6 +130,26 @@ void ProceduralGenerator::subdivideCloud() {
 		}
 	}
 
+}
+
+void ProceduralGenerator::testRGBSegmentation() {
+
+	const pcl::PointCloud <pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud <pcl::PointXYZRGB>);
+	const auto& points = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel("High vegetation"))->getPoints();
+	for (auto point : points) {
+		const glm::vec3 color = point.getRGBVec3();
+		cloud->emplace_back(pcl::PointXYZRGB(point._point.x, point._point.y, point._point.z, color.r, color.g, color.b));
+	}
+	#pragma omp parallel for
+	for (int distance = 15; distance > 0; --distance) {
+		for (int clusterSize = 5; clusterSize > 0; --clusterSize) {
+			for (int regionColor = 0; regionColor < 6; ++regionColor) {
+				for (int color = 8; color > 0; --color) {
+					RegionRGBSegmentationUsingCloud(cloud, distance * 10, color, regionColor, clusterSize * 500);
+				}
+			}
+		}
+	}
 }
 
 
@@ -324,6 +346,53 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 	this->progress = FLT_MAX;
 }
 
+void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr & cloud, const float distanceThreshold, const float pointColorThreshold, const float regionColorThreshold, const unsigned minClusterSize) {
+	static unsigned currentRegion = 0;
+
+	std::string filename = "dist-" + std::to_string(distanceThreshold);
+	filename.append("   color-" + std::to_string(pointColorThreshold));
+	filename.append("   regionColor-" + std::to_string(regionColorThreshold));
+	filename.append("   minClusterSize-" + std::to_string(minClusterSize));
+	if (FILE* file = fopen(("Captures/" + filename + ".png").c_str(), "r")) {
+		fclose(file);
+		std::cout << filename << " ya existe" << std::endl;
+		return;
+	}
+	std::cout << filename << std::endl;
+
+	const pcl::search::Search <pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
+
+	pcl::RegionGrowingRGB<pcl::PointXYZRGB> reg;
+	reg.setInputCloud(cloud);
+	reg.setSearchMethod(tree);
+	reg.setDistanceThreshold(distanceThreshold);
+	reg.setPointColorThreshold(pointColorThreshold);
+	reg.setRegionColorThreshold(regionColorThreshold);
+	reg.setMinClusterSize(minClusterSize);
+
+	std::vector <pcl::PointIndices> clusters;
+	reg.extract(clusters);
+
+
+	const pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud();
+
+	const auto newCloud = new PointCloud("DefaultSP");
+	PointModel point;
+	for (std::size_t i = 0; i < colored_cloud->size(); ++i) {
+		point._point.x = (*colored_cloud)[i].x;
+		point._point.y = (*colored_cloud)[i].y;
+		point._point.z = (*colored_cloud)[i].z;
+
+		point.saveRGB(glm::vec3((*colored_cloud)[i].r, (*colored_cloud)[i].g, (*colored_cloud)[i].b));
+		newCloud->newPoint(point);
+	}
+	ModelManager::getInstance()->newModel("RGB Region Segmentation" + currentRegion, newCloud);
+
+	#pragma omp critical
+	PPCX::Renderer::getInstancia()->addPendingScreenshot(filename, "RGB Region Segmentation" + currentRegion++);
+
+	this->progress = FLT_MAX;
+}
 
 
 //======================== Auxiliar methods ======================================

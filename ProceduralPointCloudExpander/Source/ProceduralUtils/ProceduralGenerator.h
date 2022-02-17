@@ -1,4 +1,7 @@
 #pragma once
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+
 #include "Utilities/Singleton.h"
 #include <ProceduralUtils/ProceduralVoxel.h>
 #include <RendererCore/pointCloud.h>
@@ -20,6 +23,7 @@ private:
 	void createVoxelGrid();
 	void subdivideCloud();
 
+
 protected:
 	void saveHeightMap(const std::string& path) const;
 	void saveTextureMap(const std::string& path) const;
@@ -28,10 +32,12 @@ protected:
 	void computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier);
 	void generateVoxelGrid(unsigned pointsPerVoxel);
 	void RegionRGBSegmentation(float distanceThreshold, float pointColorThreshold, float regionColorThreshold, unsigned minClusterSize);
+	void RegionRGBSegmentationUsingCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, float distanceThreshold, float pointColorThreshold, float regionColorThreshold, unsigned minClusterSize);
 
 public:
 	ProceduralGenerator();
 	~ProceduralGenerator();
 	void newPointCloud(PointCloud* pCloud, bool newScene, unsigned pointsPerVoxel);
+	void testRGBSegmentation();
 	static std::vector<std::string> generatedCloudsName;
 };

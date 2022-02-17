@@ -10,4 +10,5 @@ out vec4 ourColor;
 void main() {
 	gl_Position = matrizMVP * vec4(vPosition, 1.0);
 	ourColor = unpackUnorm4x8(vColor);
+	ourColor[3]=1;
 }

@@ -25,6 +25,8 @@ namespace PPCX {
 
 		vec3 colorFondo = { 0.1, 0.1, 0.15 };
 		float pointSize = 1.0f;
+		unsigned currentScreenshot = 0;
+		std::vector<std::pair<std::string, std::string>> pendingScreenshots;
 
 		ProceduralGenerator procGenerator;
 		Camara camara;
@@ -41,6 +43,12 @@ namespace PPCX {
 		void actualizarColorFondo() const;
 
 		void cargaModelo(const std::string& path, const bool& newScene, const unsigned& pointsPerVoxel);
+
+		void screenshot(const std::string& filename);
+
+		void pendingScreenshot(const std::string& filename, const std::string& modelKey);
+
+		void addPendingScreenshot(const std::string& filename, const std::string& modelKey);
 
 		void setColorFondo(vec3 color);
 

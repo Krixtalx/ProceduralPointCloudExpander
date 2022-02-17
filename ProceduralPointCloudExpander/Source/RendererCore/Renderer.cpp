@@ -58,6 +58,7 @@ void PPCX::Renderer::inicializaOpenGL() const {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_CULL_FACE);
 	glPointSize(pointSize);
 	actualizarColorFondo();
 }
@@ -68,6 +69,11 @@ void PPCX::Renderer::inicializaOpenGL() const {
 void PPCX::Renderer::refrescar() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	while (currentScreenshot < pendingScreenshots.size()) {
+		pendingScreenshot(pendingScreenshots[currentScreenshot].first, pendingScreenshots[currentScreenshot].second);
+		currentScreenshot++;
+	}
+	
 	const mat4 matrizMVP = camara.matrizMVP();
 	ModelManager::getInstance()->drawModels(matrizMVP);
 }
@@ -107,6 +113,150 @@ void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, 
 	} catch (std::runtime_error& e) {
 		std::cerr << "[Renderer:cargaModelo]: " << e.what() << std::endl;
 	}
+}
+
+void PPCX::Renderer::screenshot(const std::string& filename) {
+	GLuint ancho = camara.getAncho();
+	GLuint alto = camara.getAlto();
+
+	// Creación de un FBO
+	GLuint idFBO;
+	glGenFramebuffers(1, &idFBO);
+
+	// Activación del FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, idFBO);
+
+	// Creación de una textura para utilizarla de buffer de color
+	GLuint idTextura;
+	glGenTextures(1, &idTextura);
+	// Activación de la textura
+	glBindTexture(GL_TEXTURE_2D, idTextura);
+	// Configuración de la textura. Las dimensiones son (ancho, alto)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ancho, alto, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+	// Creación de un renderbuffer object para utilizarlo como buffer de profundidad
+	GLuint idRBO;
+	glGenRenderbuffers(1, &idRBO);
+	// Activación del RBO
+	glBindRenderbuffer(GL_RENDERBUFFER, idRBO);
+	// Configuración del RBO. Las dimensiones son (ancho, alto)
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, ancho, alto);
+
+	// Se vincula la textura y el RBO al FBO
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, idTextura, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, idRBO);
+
+	// Se comprueba que el FBO está listo para su uso
+	GLenum estado = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (estado != GL_FRAMEBUFFER_COMPLETE) {
+		// Hay un error. Se genera una excepción
+	}
+
+	// Ahora se puede utilizar el FBO. Es MUY IMPORTANTE ajustar el tamaño del viewport para que
+	// coincida con el del FBO
+	glViewport(0, 0, ancho, alto);
+	// Lanzar el proceso de rendering
+	refrescar();
+	// Finalizado el proceso de rendering, se recupera el contenido del FBO
+	GLubyte* pixeles = nullptr;
+	pixeles = new GLubyte[ancho * alto * 4];
+	glReadPixels(0, 0, ancho, alto, GL_RGBA, GL_UNSIGNED_BYTE, pixeles);
+	// Se guarda la imagen en formato PNG (habría que darle la vuelta antes)
+	unsigned error = lodepng_encode32_file(("Captures/" + filename + ".png").c_str(), (unsigned char*)pixeles, ancho, alto);
+	delete[] pixeles;
+
+	// VUELTA A LA NORMALIDAD
+	glDeleteTextures(1, &idTextura);
+	glDeleteRenderbuffers(1, &idRBO);
+	glDeleteFramebuffers(1, &idFBO);
+	// Se vuelve a activar el renderbuffer por defecto
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	// Se vuelve a activar la textura por defecto
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Se vuelve a activar el framebuffer del gestor de ventanas
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	std::cout << "Screenshot taken" << std::endl;
+}
+
+void PPCX::Renderer::pendingScreenshot(const std::string& filename, const std::string& modelKey) {
+	GLuint ancho = camara.getAncho();
+	GLuint alto = camara.getAlto();
+
+	// Creación de un FBO
+	GLuint idFBO;
+	glGenFramebuffers(1, &idFBO);
+
+	// Activación del FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, idFBO);
+
+	// Creación de una textura para utilizarla de buffer de color
+	GLuint idTextura;
+	glGenTextures(1, &idTextura);
+	// Activación de la textura
+	glBindTexture(GL_TEXTURE_2D, idTextura);
+	// Configuración de la textura. Las dimensiones son (ancho, alto)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ancho, alto, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+	// Creación de un renderbuffer object para utilizarlo como buffer de profundidad
+	GLuint idRBO;
+	glGenRenderbuffers(1, &idRBO);
+	// Activación del RBO
+	glBindRenderbuffer(GL_RENDERBUFFER, idRBO);
+	// Configuración del RBO. Las dimensiones son (ancho, alto)
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, ancho, alto);
+
+	// Se vincula la textura y el RBO al FBO
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, idTextura, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, idRBO);
+
+	// Se comprueba que el FBO está listo para su uso
+	GLenum estado = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (estado != GL_FRAMEBUFFER_COMPLETE) {
+		// Hay un error. Se genera una excepción
+	}
+
+	// Ahora se puede utilizar el FBO. Es MUY IMPORTANTE ajustar el tamaño del viewport para que
+	// coincida con el del FBO
+	glViewport(0, 0, ancho, alto);
+	// Lanzar el proceso de rendering
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	auto matrix = camara.matrizMVP();
+	ModelManager::getInstance()->drawAndDeleteSingleModel(modelKey, matrix);
+	// Finalizado el proceso de rendering, se recupera el contenido del FBO
+	GLubyte* pixeles = nullptr;
+	pixeles = new GLubyte[ancho * alto * 4];
+	glReadPixels(0, 0, ancho, alto, GL_RGBA, GL_UNSIGNED_BYTE, pixeles);
+	// Se guarda la imagen en formato PNG (habría que darle la vuelta antes)
+	unsigned error = lodepng_encode32_file(("Captures/" + filename + ".png").c_str(), (unsigned char*)pixeles, ancho, alto);
+	delete[] pixeles;
+
+	// VUELTA A LA NORMALIDAD
+	glDeleteTextures(1, &idTextura);
+	glDeleteRenderbuffers(1, &idRBO);
+	glDeleteFramebuffers(1, &idFBO);
+	// Se vuelve a activar el renderbuffer por defecto
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	// Se vuelve a activar la textura por defecto
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Se vuelve a activar el framebuffer del gestor de ventanas
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	std::cout << "Screenshot taken" << std::endl;
+}
+
+void PPCX::Renderer::addPendingScreenshot(const std::string& filename, const std::string& modelKey) {
+	pendingScreenshots.emplace_back(filename, modelKey);
 }
 
 /**
