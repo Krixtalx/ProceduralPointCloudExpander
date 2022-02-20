@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ProceduralVoxel.h"
 
-ProceduralVoxel::ProceduralVoxel(PointCloud* pointCloud, AABB* aabb) :aabb(aabb), nube(pointCloud) {}
+ProceduralVoxel::ProceduralVoxel(PointCloud* pointCloud, AABB* aabb) :aabb(aabb), cloud(pointCloud) {}
 
 ProceduralVoxel::~ProceduralVoxel() {
 	delete aabb;
@@ -20,7 +20,7 @@ void ProceduralVoxel::computeHeight() {
 	const unsigned size = pointsIndex.size();
 	if (size != 0) {
 		height = 0;
-		auto& points = nube->getPoints();
+		auto& points = cloud->getPoints();
 		for (size_t i = 0; i < size; i++) {
 			height += points[pointsIndex[i]]._point[2];
 		}
@@ -31,7 +31,7 @@ void ProceduralVoxel::computeHeight() {
 void ProceduralVoxel::computeColor() {
 	const unsigned size = pointsIndex.size();
 	if (size != 0) {
-		auto& points = nube->getPoints();
+		auto& points = cloud->getPoints();
 		for (size_t i = 0; i < size; i++) {
 			color += vec3(points[pointsIndex[i]].getRGBVec3());
 		}
@@ -40,7 +40,7 @@ void ProceduralVoxel::computeColor() {
 }
 
 void ProceduralVoxel::checkPoints() const {
-	const std::vector<PointModel> points = nube->getPoints();
+	const std::vector<PointModel> points = cloud->getPoints();
 	if (const unsigned size = pointsIndex.size(); size != 0) {
 		for (size_t i = 0; i < size; i++) {
 			if (!isInside(points[pointsIndex[i]])) {
@@ -91,7 +91,7 @@ unsigned ProceduralVoxel::numberPointsToDensity(float density) const {
 std::vector<float> ProceduralVoxel::internalDistribution(unsigned divX, unsigned divY) {
 	std::vector<float> distribution;
 	distribution.resize(divX * divY);
-	auto& points = nube->getPoints();
+	auto& points = cloud->getPoints();
 	float xSize = aabb->size().x / divX;
 	float ySize = aabb->size().y / divY;
 	glm::vec3 minPoint = aabb->min();

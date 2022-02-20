@@ -7,7 +7,7 @@
 class ProceduralVoxel {
 private:
 	AABB* aabb;
-	PointCloud* nube;
+	PointCloud* cloud;
 	std::vector<unsigned> pointsIndex;
 	float height = FLT_MAX;
 	vec3 color = { 0, 0, 0 };

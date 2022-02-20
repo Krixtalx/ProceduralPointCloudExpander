@@ -262,5 +262,8 @@
     <None Include="Source\Shaders\VertexShader.glsl">
       <Filter>Archivos de recursos\Shaders</Filter>
     </None>
+    <None Include="Source\Shaders\InstancingVertexShader.glsl">
+      <Filter>Archivos de recursos\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

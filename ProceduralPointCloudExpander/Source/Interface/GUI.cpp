@@ -225,16 +225,6 @@ void GUI::showRenderingSettings() {
 						ImGui::Text("%i", procGenerator->terrainCloud->getNumberOfPoints());
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
 
-					/*ImGui::Text("Number of points in original point cloud"); ImGui::TableNextColumn();
-					ImGui::Text("%i", procGenerator->terrainCloud[0]->getNumberOfPoints());
-					ImGui::TableNextRow(); ImGui::TableNextColumn();
-
-					if (procGenerator->terrainCloud[1]) {
-						ImGui::Text("Number of points in nurbs point cloud"); ImGui::TableNextColumn();
-						ImGui::Text("%i", procGenerator->terrainCloud[1]->getNumberOfPoints());
-						ImGui::TableNextRow(); ImGui::TableNextColumn();
-					}*/
-
 					ImGui::Text("Number of subdivisions in x"); ImGui::TableNextColumn();
 					ImGui::Text("%i", procGenerator->axisSubdivision[0]);
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
@@ -302,8 +292,8 @@ void GUI::showProceduralSettings() {
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("RGB Region segmentation")) {
-				static float distanceThreshold = 10.0f, colorThreshold = 10.0f, regionColorThreshold = 5.0f;
-				static int minClusterSize = 100;
+				static float distanceThreshold = 10.0f, colorThreshold = 6.0f, regionColorThreshold = 4.0f;
+				static int minClusterSize = 25000;
 				ImGui::InputFloat("Distance threshold", &distanceThreshold, 0.1f, 1.0f, "%.1f");
 				ImGui::InputFloat("Point color threshold", &colorThreshold, 0.1f, 1.0f, "%.1f");
 				ImGui::InputFloat("Region color threshold", &regionColorThreshold, 0.1f, 1.0f, "%.1f");
@@ -314,10 +304,10 @@ void GUI::showProceduralSettings() {
 					std::thread thread(&ProceduralGenerator::RegionRGBSegmentation, procGenerator, distanceThreshold, colorThreshold, regionColorThreshold, minClusterSize);
 					thread.detach();
 				}
-				if (ImGui::Button("Test RGB region segmentation")) {
+				/*if (ImGui::Button("Test RGB region segmentation")) {
 					std::thread thread(&ProceduralGenerator::testRGBSegmentation, procGenerator);
 					thread.detach();
-				}
+				}*/
 				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();

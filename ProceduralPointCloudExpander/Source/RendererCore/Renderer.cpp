@@ -21,6 +21,8 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
+		PlyLoader::loadPointCloud("OliveTree", false);
+		ModelManager::getInstance()->getModel("OliveTree.ply")->getVisibility() = false;
 	} catch (std::runtime_error& e) {
 		throw;
 	}
@@ -73,7 +75,7 @@ void PPCX::Renderer::refrescar() {
 		pendingScreenshot(pendingScreenshots[currentScreenshot].first, pendingScreenshots[currentScreenshot].second);
 		currentScreenshot++;
 	}
-	
+
 	const mat4 matrizMVP = camara.matrizMVP();
 	ModelManager::getInstance()->drawModels(matrizMVP);
 }
@@ -163,11 +165,23 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	refrescar();
 	// Finalizado el proceso de rendering, se recupera el contenido del FBO
 	GLubyte* pixeles = nullptr;
+	GLubyte* flipped;
 	pixeles = new GLubyte[ancho * alto * 4];
+	flipped = new GLubyte[ancho * alto * 4];
+
 	glReadPixels(0, 0, ancho, alto, GL_RGBA, GL_UNSIGNED_BYTE, pixeles);
-	// Se guarda la imagen en formato PNG (habría que darle la vuelta antes)
-	unsigned error = lodepng_encode32_file(("Captures/" + filename + ".png").c_str(), (unsigned char*)pixeles, ancho, alto);
+
+	for (unsigned j = 0; j < alto; j++) {
+		for (unsigned i = 0; i < ancho; i++) {
+			for (unsigned k = 0; k < 4; k++) {
+				flipped[j * ancho * 4 + i * 4 + k] = pixeles[(alto - j - 1) * ancho * 4 + (i) * 4 + k];
+			}
+		}
+	}
+	// Se guarda la imagen en formato PNG
+	unsigned error = lodepng_encode32_file(("Captures/" + filename + ".png").c_str(), (unsigned char*)flipped, ancho, alto);
 	delete[] pixeles;
+	delete[] flipped;
 
 	// VUELTA A LA NORMALIDAD
 	glDeleteTextures(1, &idTextura);

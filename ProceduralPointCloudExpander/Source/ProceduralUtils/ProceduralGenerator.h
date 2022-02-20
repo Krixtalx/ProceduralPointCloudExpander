@@ -12,7 +12,7 @@ private:
 	unsigned axisSubdivision[2]{};
 	float gsd{};
 
-	std::vector<std::vector<ProceduralVoxel*>> subdivisions;
+	std::vector<std::vector<ProceduralVoxel*>> voxelGrid;
 	AABB aabb;
 	PointCloud* terrainCloud{};
 	float cloudDensity{};

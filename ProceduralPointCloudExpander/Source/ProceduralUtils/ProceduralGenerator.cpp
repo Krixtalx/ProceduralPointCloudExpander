@@ -11,7 +11,6 @@
 #include <pcl/search/search.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/segmentation/region_growing_rgb.h>
-#include <pcl/segmentation/conditional_euclidean_clustering.h>
 
 #include "RendererCore/Renderer.h"
 
@@ -22,7 +21,7 @@ ProceduralGenerator::ProceduralGenerator() = default;
 ProceduralGenerator::~ProceduralGenerator() {
 	for (size_t x = 0; x < axisSubdivision[0]; x++) {
 		for (size_t y = 0; y < axisSubdivision[1]; y++) {
-			delete subdivisions[x][y];
+			delete voxelGrid[x][y];
 		}
 	}
 }
@@ -43,9 +42,9 @@ void ProceduralGenerator::createVoxelGrid() {
 	}
 	stride[2] = size[2];
 
-	subdivisions.resize(axisSubdivision[0]);
+	voxelGrid.resize(axisSubdivision[0]);
 	for (size_t x = 0; x < axisSubdivision[0]; x++) {
-		subdivisions[x].resize(axisSubdivision[1]);
+		voxelGrid[x].resize(axisSubdivision[1]);
 		for (size_t y = 0; y < axisSubdivision[1]; y++) {
 			const auto newAABB = new AABB;
 			vec3 point(minPoint);
@@ -57,7 +56,7 @@ void ProceduralGenerator::createVoxelGrid() {
 			point[2] += stride[2];
 			newAABB->update(point);
 			auto* procVoxel = new ProceduralVoxel(terrainCloud, newAABB);
-			subdivisions[x][y] = procVoxel;
+			voxelGrid[x][y] = procVoxel;
 		}
 	}
 }
@@ -89,7 +88,7 @@ void ProceduralGenerator::subdivideCloud() {
 		if (y == axisSubdivision[1])
 			y--;
 		#pragma omp critical
-		subdivisions[x][y]->addPoint(i);
+		voxelGrid[x][y]->addPoint(i);
 	}
 
 	std::cout << "Computing height and color..." << std::endl;
@@ -97,8 +96,8 @@ void ProceduralGenerator::subdivideCloud() {
 	#pragma omp parallel for collapse(2)
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
-			subdivisions[x][y]->computeHeight();
-			subdivisions[x][y]->computeColor();
+			voxelGrid[x][y]->computeHeight();
+			voxelGrid[x][y]->computeColor();
 		}
 	}
 	std::list<std::pair<unsigned, unsigned>> unfinishedVoxels;
@@ -198,9 +197,9 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 	float density;
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
-			vec3 aux = subdivisions[x][y]->getRepresentativePoint();
+			vec3 aux = voxelGrid[x][y]->getRepresentativePoint();
 			controlPoints.push_back(aux);
-			density = static_cast<float>(subdivisions[x][y]->getNumberOfPoints() + 1);
+			density = static_cast<float>(voxelGrid[x][y]->getNumberOfPoints() + 1);
 			weights.push_back(pow(density, 2));
 		}
 	}
@@ -234,11 +233,11 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 		#pragma omp parallel for private(point, generator)
 		for (int x = 0; x < axisSubdivision[0]; x++) {
 			for (int y = 0; y < axisSubdivision[1]; y++) {
-				unsigned limit = subdivisions[x][y]->numberPointsToDensity(cloudDensity * desiredDensityMultiplier);
+				unsigned limit = voxelGrid[x][y]->numberPointsToDensity(cloudDensity * desiredDensityMultiplier);
 				std::vector<float> intervals[2];
 				std::vector<float> weights[2];
-				if (subdivisions[x][y]->getNumberOfPoints() > cloudDensity * 0.2f && useStatiticsMethod) {
-					std::vector<float> allWeights = subdivisions[x][y]->internalDistribution(divX, divY);
+				if (voxelGrid[x][y]->getNumberOfPoints() > cloudDensity * 0.2f && useStatiticsMethod) {
+					std::vector<float> allWeights = voxelGrid[x][y]->internalDistribution(divX, divY);
 					++count;
 					for (unsigned i = 0; i < divX; i++) {
 						intervals[0].push_back(x + (float)i / divX);
@@ -266,7 +265,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 				for (int i = 0; i < limit; i++) {
 					float valX;
 					float valY;
-					if (subdivisions[x][y]->getNumberOfPoints() > cloudDensity * 0.2f && useStatiticsMethod) {
+					if (voxelGrid[x][y]->getNumberOfPoints() > cloudDensity * 0.2f && useStatiticsMethod) {
 						valX = customDisX(generator);
 						valY = customDisY(generator);
 						//std::cout << "x: " << x << " y: " << y << " valX: " << valX << " valY: " << valY << std::endl;
@@ -281,7 +280,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 						posColorX = axisSubdivision[0] - 1;
 					if (posColorY >= axisSubdivision[1])
 						posColorY = axisSubdivision[1] - 1;
-					vec3 color = subdivisions[posColorX][posColorY]->getColor();
+					vec3 color = voxelGrid[posColorX][posColorY]->getColor();
 					color.r += genColor(generator);
 					color.g += genColor(generator);
 					color.b += genColor(generator);
@@ -326,22 +325,25 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 	std::vector <pcl::PointIndices> clusters;
 	reg.extract(clusters);
 
-	this->progress = 1.6f;
-
-	const pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud();
-
 	this->progress = 1.8f;
-	const auto newCloud = new PointCloud("DefaultSP");
-	PointModel point;
-	for (std::size_t i = 0; i < colored_cloud->size(); ++i) {
-		point._point.x = (*colored_cloud)[i].x;
-		point._point.y = (*colored_cloud)[i].y;
-		point._point.z = (*colored_cloud)[i].z;
 
-		point.saveRGB(glm::vec3((*colored_cloud)[i].r, (*colored_cloud)[i].g, (*colored_cloud)[i].b));
-		newCloud->newPoint(point);
+	PointModel point;
+	for (unsigned i = 0; i < clusters.size(); i++) {
+		const auto newCloud = new PointCloud("DefaultSP");
+		glm::vec3 color(rand() % 256, rand() % 256, rand() % 256);
+		for (auto& origPoint : clusters[i].indices) {
+			point._point.x = (*cloud)[origPoint].x;
+			point._point.y = (*cloud)[origPoint].y;
+			point._point.z = (*cloud)[origPoint].z;
+
+			point.saveRGB(color);
+			newCloud->newPoint(point);
+		}
+
+		ModelManager::getInstance()->modifyModel("RGB Region Segment " + i, newCloud);
+		generatedCloudsName.push_back("RGB Region Segment " + i);
 	}
-	ModelManager::getInstance()->modifyModel("RGB Region Segmentation", newCloud);
+
 
 	this->progress = FLT_MAX;
 }
@@ -406,7 +408,7 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 void ProceduralGenerator::generateVoxelGrid(const unsigned pointsPerVoxel) {
 	for (size_t x = 0; x < axisSubdivision[0]; x++) {
 		for (size_t y = 0; y < axisSubdivision[1]; y++) {
-			delete subdivisions[x][y];
+			delete voxelGrid[x][y];
 		}
 	}
 
@@ -450,8 +452,8 @@ bool ProceduralGenerator::meanNeightbourHeightColor(const unsigned x, const unsi
 			int auxY = y + j;
 			auxY = std::min(static_cast<int>(axisSubdivision[1]) - 1, std::max(0, auxY));
 			if (auxX != x || auxY != y) {
-				const vec3 color = subdivisions[auxX][auxY]->getColor();
-				const float height = subdivisions[auxX][auxY]->getHeight();
+				const vec3 color = voxelGrid[auxX][auxY]->getColor();
+				const float height = voxelGrid[auxX][auxY]->getHeight();
 				if (height != FLT_MAX) {
 					heightMean += height;
 					colorMean += color;
@@ -463,8 +465,8 @@ bool ProceduralGenerator::meanNeightbourHeightColor(const unsigned x, const unsi
 	if (counter >= minCount) {
 		heightMean /= counter;
 		colorMean /= counter;
-		subdivisions[x][y]->setHeight(heightMean);
-		subdivisions[x][y]->setColor(colorMean);
+		voxelGrid[x][y]->setHeight(heightMean);
+		voxelGrid[x][y]->setColor(colorMean);
 		return true;
 	}
 	return false;
@@ -503,14 +505,14 @@ void ProceduralGenerator::saveHeightMap(const std::string & path) const {
 	for (int y = 0; y < axisSubdivision[1]; y++) {
 		for (int x = 0; x < axisSubdivision[0]; x++) {
 			unsigned char color;
-			const float height = subdivisions[x][y]->getHeight();
+			const float height = voxelGrid[x][y]->getHeight();
 			if (height != FLT_MAX) {
 				relativeHeightValue = (height - minPointZ) / relativeMaxPointZ;
 			} else {
 				relativeHeightValue = 0;
 			}
 			color = std::min(255, static_cast<int>(relativeHeightValue * 256.0f));
-			vec3 aux = subdivisions[x][y]->getColor();
+			vec3 aux = voxelGrid[x][y]->getColor();
 			pixels->push_back(color);
 			pixels->push_back(color);
 			pixels->push_back(color);
@@ -532,7 +534,7 @@ void ProceduralGenerator::saveTextureMap(const std::string & path) const {
 	const auto pixels = new std::vector<unsigned char>();
 	for (int y = 0; y < axisSubdivision[1]; y++) {
 		for (int x = 0; x < axisSubdivision[0]; x++) {
-			vec3 color = subdivisions[x][y]->getColor();
+			vec3 color = voxelGrid[x][y]->getColor();
 			pixels->push_back(color[0]);
 			pixels->push_back(color[1]);
 			pixels->push_back(color[2]);

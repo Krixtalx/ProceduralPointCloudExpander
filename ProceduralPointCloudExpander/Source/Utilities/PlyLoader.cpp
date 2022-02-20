@@ -84,10 +84,10 @@ PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
 /**
  * Private method for loading a PLY file. It reads ascii and binary ply versions.
  * It will only load points position, color and LAZ classification.
- * 
+ *
  * @param _filename PLY filename. Must contain .ply extension in the filename
  */
-void PlyLoader::readFromPly(const std::string& _filename) {
+void PlyLoader::readFromPlyWithClassification(const std::string& _filename) {
 	std::vector<uint8_t> byteBuffer;
 
 	try {
@@ -219,19 +219,132 @@ void PlyLoader::readFromPly(const std::string& _filename) {
 	}
 }
 
+void PlyLoader::readFromPlyWithoutClassification(const std::string& _filename)
+{
+	std::vector<uint8_t> byteBuffer;
+
+	try {
+		std::vector<PointModel> _points;
+		std::shared_ptr<tinyply::PlyData> plyColors;
+		std::shared_ptr<tinyply::PlyData> plyPoints;
+
+		std::unique_ptr<std::istream> fileStream;
+		const std::string& filename = _filename;
+		bool haveColors = true;
+		bool haveClassification = true;
+
+		fileStream.reset(new std::ifstream(filename, std::ios::binary));
+
+		if (!fileStream || fileStream->fail()) throw std::runtime_error("Unexpected error while trying to load the file");
+
+		fileStream->seekg(0, std::ios::end);
+		fileStream->seekg(0, std::ios::beg);
+
+		tinyply::PlyFile file;
+		file.parse_header(*fileStream);
+
+		try {
+			plyPoints = file.request_properties_from_element("vertex", { "x", "y", "z" });
+		} catch (const std::exception& e) {
+			std::cerr << "tinyply exception: " << e.what() << std::endl;
+		}
+
+		try {
+			plyColors = file.request_properties_from_element("vertex", { "red", "green", "blue" });
+		} catch (const std::invalid_argument& e) {
+			std::cerr << "tinyply exception: " << e.what() << std::endl;
+			haveColors = false;
+		}
+
+		file.read(*fileStream);
+
+		double* pointsRawDouble = nullptr;
+		float* pointsRawFloat = nullptr;
+
+		unsigned baseIndex;
+		const bool isDouble = plyPoints->t == tinyply::Type::FLOAT64;
+		const size_t numPoints = plyPoints->count;
+		const size_t numPointsBytes = numPoints * (!isDouble ? sizeof(float) : sizeof(double)) * 3;
+		size_t numColors;
+
+		if (haveColors)
+			numColors = plyColors->count;
+		else
+			numColors = plyPoints->count;
+		const size_t numColorsBytes = numColors * 1 * 3;
+
+		AABB _aabb;
+
+		std::cout << "Number of points: " << numPoints << std::endl;
+
+
+		if (!isDouble) {
+			pointsRawFloat = new float[numPoints * 3];
+			std::memcpy(pointsRawFloat, plyPoints->buffer.get(), numPointsBytes);
+		} else {
+			pointsRawDouble = new double[numPoints * 3];
+			std::memcpy(pointsRawDouble, plyPoints->buffer.get(), numPointsBytes);
+		}
+		const auto colorsRaw = new uint8_t[numColors * 3];
+
+		if (haveColors)
+			std::memcpy(colorsRaw, plyColors->buffer.get(), numColorsBytes);
+		else {
+			for (int i = 0; i < numColors * 3; ++i) {
+				colorsRaw[i] = UINT8_MAX;
+			}
+		}
+
+		unsigned classification = 0;
+		if (!isDouble) {
+			for (unsigned index = 0; index < numPoints; ++index) {
+				baseIndex = index * 3;
+				_points.push_back(PointModel{
+					vec3(pointsRawFloat[baseIndex], pointsRawFloat[baseIndex + 1],
+						 pointsRawFloat[baseIndex + 2]),
+					PointModel::getRGBColor(vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
+												 colorsRaw[baseIndex + 2]))
+								  });
+				_aabb.update(_points.back()._point);
+			}
+		} else {
+			for (unsigned index = 0; index < numPoints; ++index) {
+				baseIndex = index * 3;
+				_points.push_back(PointModel{
+					vec3(pointsRawDouble[baseIndex], pointsRawDouble[baseIndex + 1],
+						 pointsRawDouble[baseIndex + 2]),
+					PointModel::getRGBColor(vec3(colorsRaw[baseIndex], colorsRaw[baseIndex + 1],
+												 colorsRaw[baseIndex + 2]))
+								  });
+				_aabb.update(_points.back()._point);
+			}
+		}
+		const auto cloud = new PointCloud("DefaultSP", _points, _aabb);
+		ModelManager::getInstance()->newModel(filename, cloud);
+
+	} catch (const std::runtime_error& e) {
+		std::cerr << "[PlyLoader::readFromPly]: " << e.what() << std::endl;
+	} catch (const std::exception& e) {
+		std::cerr << "Caught tinyply exception: " << e.what() << std::endl;
+	}
+}
+
 /**
  * Public method for loading a point cloud.
- * 
+ *
  * @param filename
  */
-void PlyLoader::loadPointCloud(const std::string& filename) {
-	readFromPly(filename + PLY_EXTENSION);
+void PlyLoader::loadPointCloud(const std::string& filename, const bool useClassification) {
+	if (useClassification)
+		readFromPlyWithClassification(filename + PLY_EXTENSION);
+	else
+		readFromPlyWithoutClassification(filename + PLY_EXTENSION);
 }
 
 
 /**
  * Method for saving the generated point cloud
- * 
+ *
  * @param filename filename of the generated point cloud
  * @param clouds clouds that will be agregated to form the final point cloud.
  */
