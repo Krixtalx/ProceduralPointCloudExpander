@@ -4,7 +4,7 @@
 
 
 class PointCloud : public PPCX::Model {
-private:
+protected:
 	std::vector<PointModel> vbo;
 	AABB aabb;
 

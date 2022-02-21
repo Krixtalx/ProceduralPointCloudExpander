@@ -7,6 +7,7 @@
 #include "ShaderManager.h"
 #include "Utilities/PlyLoader.h"
 #include "RendererCore/ModelManager.h"
+#include <RendererCore/InstancedPointCloud.h>
 
 
 PPCX::Renderer* PPCX::Renderer::instancia = nullptr;
@@ -17,12 +18,18 @@ PPCX::Renderer* PPCX::Renderer::instancia = nullptr;
 PPCX::Renderer::Renderer() {
 	try {
 		ShaderManager::getInstancia()->nuevoShader("VertexShader", GL_VERTEX_SHADER, "Source/Shaders/VertexShader.glsl");
+		ShaderManager::getInstancia()->nuevoShader("InstancingVertexShader", GL_VERTEX_SHADER, "Source/Shaders/InstancingVertexShader.glsl");
 		ShaderManager::getInstancia()->nuevoShader("FragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/FragmentShader.glsl");
 		ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
+		ShaderManager::getInstancia()->nuevoShaderProgram("InstancingSP");
+		ShaderManager::getInstancia()->addShaderToSP("InstancingVertexShader", "InstancingSP");
+		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "InstancingSP");
+
 		PlyLoader::loadPointCloud("OliveTree", false);
-		ModelManager::getInstance()->getModel("OliveTree.ply")->getVisibility() = false;
+		PlyLoader::loadPointCloud("PineTree", false);
+		//ModelManager::getInstance()->getModel("OliveTree.ply")->getVisibility() = false;
 	} catch (std::runtime_error& e) {
 		throw;
 	}

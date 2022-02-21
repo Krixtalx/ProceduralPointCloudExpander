@@ -4,6 +4,7 @@
 #include "Point.h"
 #include <filesystem>
 #include "RendererCore/ModelManager.h"
+#include "RendererCore/InstancedPointCloud.h"
 
 constexpr auto PLY_EXTENSION = ".ply";
 constexpr auto APPBIN_EXTENSION = ".ppcxbin";
@@ -319,7 +320,7 @@ void PlyLoader::readFromPlyWithoutClassification(const std::string& _filename)
 				_aabb.update(_points.back()._point);
 			}
 		}
-		const auto cloud = new PointCloud("DefaultSP", _points, _aabb);
+		const auto cloud = new InstancedPointCloud("InstancingSP", _points, _aabb);
 		ModelManager::getInstance()->newModel(filename, cloud);
 
 	} catch (const std::runtime_error& e) {
