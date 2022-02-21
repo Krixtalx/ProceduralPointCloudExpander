@@ -29,7 +29,7 @@ public:
 
 	void updateCloud();
 
-	void drawModel(const glm::mat4& MVPMatrix) override;
+	virtual void drawModel(const glm::mat4& MVPMatrix) override;
 
 	std::vector<PointModel>& getPoints();
 

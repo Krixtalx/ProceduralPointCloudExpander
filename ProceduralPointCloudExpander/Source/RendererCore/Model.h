@@ -5,6 +5,7 @@
 #ifndef PAG_MODEL_H
 #define PAG_MODEL_H
 
+#include "stdafx.h"
 #include "Utilities/Point.h"
 
 namespace PPCX {

@@ -159,6 +159,9 @@
     <ClCompile Include="Source\RendererCore\ModelManager.cpp">
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
+    <ClCompile Include="Source\RendererCore\InstancedPointCloud.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RendererCore\ShaderProgram.h">
@@ -252,6 +255,9 @@
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
     <ClInclude Include="Source\RendererCore\ModelManager.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\InstancedPointCloud.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
   </ItemGroup>
