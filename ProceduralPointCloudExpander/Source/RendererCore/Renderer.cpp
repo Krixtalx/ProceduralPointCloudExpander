@@ -29,7 +29,6 @@ PPCX::Renderer::Renderer() {
 
 		PlyLoader::loadPointCloud("OliveTree", false);
 		PlyLoader::loadPointCloud("PineTree", false);
-		//ModelManager::getInstance()->getModel("OliveTree.ply")->getVisibility() = false;
 	} catch (std::runtime_error& e) {
 		throw;
 	}

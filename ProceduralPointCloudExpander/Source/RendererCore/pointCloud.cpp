@@ -145,3 +145,7 @@ float PointCloud::getDensity() const {
 	const vec3 AABBSize = aabb.size();
 	return numberPoints / (AABBSize.x * AABBSize.y);
 }
+
+glm::vec3 PointCloud::getRandomPointColor() {
+	return vbo[rand()%vbo.size()].getRGBVec3();
+}

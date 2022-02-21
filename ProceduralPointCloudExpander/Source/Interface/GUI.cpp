@@ -13,7 +13,7 @@
 
 GUI::GUI() :
 	_showAboutUs(false), _showControls(false), _showFileDialog(false),
-	_showSaveDialog(false), _showPointCloudDialog(false), _showRenderingSettings(false), _showProceduralSettings(false),
+	_showSaveDialog(false), _showPointCloudDialog(false), _showRenderingSettings(false), _showProceduralSettings(false), _showVegetationSettings(false),
 	procGenerator(PPCX::Renderer::getInstancia()->getProceduralGenerator()) {}
 
 void GUI::createMenu() {
@@ -26,6 +26,7 @@ void GUI::createMenu() {
 	if (_showFileDialog)			showFileDialog();
 	if (_showSaveDialog)			showSaveWindow();
 	if (_showPointCloudDialog)		showPointCloudDialog();
+	if (_showVegetationSettings)	showVegetationSelection();
 
 	if (ImGui::BeginMainMenuBar()) {
 		if (PlyLoader::saving)
@@ -303,6 +304,7 @@ void GUI::showProceduralSettings() {
 				if (ImGui::Button("Generate RGB region segmentation")) {
 					std::thread thread(&ProceduralGenerator::RegionRGBSegmentation, procGenerator, distanceThreshold, colorThreshold, regionColorThreshold, minClusterSize);
 					thread.detach();
+					_showVegetationSettings = true;
 				}
 				/*if (ImGui::Button("Test RGB region segmentation")) {
 					std::thread thread(&ProceduralGenerator::testRGBSegmentation, procGenerator);
@@ -315,6 +317,29 @@ void GUI::showProceduralSettings() {
 		ImGui::End();
 	}
 
+}
+
+void GUI::showVegetationSelection() {
+	if (ImGui::Begin("Vegetation settings", &_showVegetationSettings, ImGuiWindowFlags_NoCollapse)) {
+		auto models = ModelManager::getInstance()->getAllModelsLike("RGB");
+		static std::vector<int> values;
+
+		while (values.size() < models.size()) {
+			values.push_back(0);
+		}
+
+		int i = 0;
+		for (auto model : models) {
+			PointCloud* cloud = dynamic_cast<PointCloud*>(model.second);
+			auto color = cloud->getRandomPointColor();
+			ImGui::ColorButton(model.first.c_str(), ImVec4(color.r / 256, color.g / 256, color.b / 256, 1), ImGuiColorEditFlags_NoBorder, ImVec2(20, 20));
+			ImGui::SameLine();
+			ImGui::Text(model.first.c_str());
+			ImGui::SameLine();
+			ImGui::Combo("Picker Mode", &values[i++], "OliveTree.ply\0PineTree.ply\0", 2);
+		}
+		ImGui::End();
+	}
 }
 
 void GUI::showProgressBar() const {

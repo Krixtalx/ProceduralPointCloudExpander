@@ -38,5 +38,7 @@ public:
 	const AABB& getAABB();
 
 	float getDensity() const;
+
+	glm::vec3 getRandomPointColor();
 };
 

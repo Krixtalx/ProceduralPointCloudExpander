@@ -340,10 +340,14 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 			newCloud->newPoint(point);
 		}
 
-		ModelManager::getInstance()->modifyModel("RGB Region Segment " + i, newCloud);
+		ModelManager::getInstance()->modifyModel("RGB Region Segment " + std::to_string(i), newCloud);
 		generatedCloudsName.push_back("RGB Region Segment " + i);
 	}
+	auto allModels = ModelManager::getInstance()->getAllModels();
 
+	/*for (auto model : allModels) {
+		std::cout << model.first << std::endl;
+	}*/
 
 	this->progress = FLT_MAX;
 }

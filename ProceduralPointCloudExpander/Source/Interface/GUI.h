@@ -25,6 +25,7 @@ protected:
 	bool							_showPointCloudDialog;				//!< 
 	bool							_showRenderingSettings;				//!< Displays a window which allows the user to modify the rendering parameters
 	bool							_showProceduralSettings;
+	bool							_showVegetationSettings;
 	bool							sceneLoaded = false;
 	ProceduralGenerator*			procGenerator = nullptr;
 	int								saveOption = -1; // 0 - Point cloud, 1 - heightmap, 2 - texturemap
@@ -90,6 +91,8 @@ protected:
 	void showRenderingSettings();
 
 	void showProceduralSettings();
+
+	void showVegetationSelection();
 
 	void showProgressBar() const;
 

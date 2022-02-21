@@ -23,7 +23,6 @@ private:
 	void createVoxelGrid();
 	void subdivideCloud();
 
-
 protected:
 	void saveHeightMap(const std::string& path) const;
 	void saveTextureMap(const std::string& path) const;

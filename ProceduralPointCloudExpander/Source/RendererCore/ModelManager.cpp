@@ -71,6 +71,15 @@ std::vector<std::pair<std::string, PPCX::Model*>> ModelManager::getAllModels() {
 	return vec;
 }
 
+std::vector<std::pair<std::string, PPCX::Model*>> ModelManager::getAllModelsLike(const std::string& key) {
+	std::vector<std::pair<std::string, PPCX::Model*>> vec;
+	for (auto model : models) {
+		if (model.first.find(key) != std::string::npos)
+			vec.push_back(model);
+	}
+	return vec;
+}
+
 /**
  * Method used by the renderer to draw all the models in the ModelManager
  *
@@ -88,5 +97,18 @@ void ModelManager::drawAndDeleteSingleModel(const std::string& modelKey, const g
 		model->drawModel(matrizMVP);
 		deleteModel(modelKey);
 	} catch (std::runtime_error& e) {
+	}
+}
+
+void ModelManager::setAllVisibility(bool visible) {
+	for (auto model : models) {
+		model.second->getVisibility() = visible;
+	}
+}
+
+void ModelManager::setVisibility(std::string key, bool visible) {
+	for (auto model : models) {
+		if (model.first.find(key) != std::string::npos)
+			model.second->getVisibility() = visible;
 	}
 }
