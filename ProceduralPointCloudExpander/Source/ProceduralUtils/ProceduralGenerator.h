@@ -22,6 +22,8 @@ private:
 	bool meanNeightbourHeightColor(unsigned x, unsigned y, char minCount) const;
 	void createVoxelGrid();
 	void subdivideCloud();
+	float getHeight(glm::vec2 pos) const;
+	float getDensity(glm::vec2 pos) const;
 
 protected:
 	void saveHeightMap(const std::string& path) const;
@@ -32,6 +34,7 @@ protected:
 	void generateVoxelGrid(unsigned pointsPerVoxel);
 	void RegionRGBSegmentation(float distanceThreshold, float pointColorThreshold, float regionColorThreshold, unsigned minClusterSize);
 	void RegionRGBSegmentationUsingCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, float distanceThreshold, float pointColorThreshold, float regionColorThreshold, unsigned minClusterSize);
+	void generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>& data);
 
 public:
 	ProceduralGenerator();

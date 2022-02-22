@@ -15,8 +15,8 @@ namespace PPCX {
 		return color + 1;
 	};
 
-	static unsigned anchoVentanaPorDefecto = 1280;
-	static unsigned altoVentanaPorDefecto = 720;
+	static unsigned anchoVentanaPorDefecto = 1600;
+	static unsigned altoVentanaPorDefecto = 900;
 
 };
 

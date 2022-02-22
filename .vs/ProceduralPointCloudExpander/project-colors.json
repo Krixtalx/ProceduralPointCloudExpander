@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "50cf6220-bc85-4d15-affc-01be0bf813b8": {
+      "ProjectGuid": "50cf6220-bc85-4d15-affc-01be0bf813b8",
+      "DisplayName": "ProceduralPointCloudExpander",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}

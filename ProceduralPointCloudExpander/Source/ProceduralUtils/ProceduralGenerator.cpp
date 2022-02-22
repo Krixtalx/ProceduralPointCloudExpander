@@ -12,9 +12,10 @@
 #include <pcl/search/kdtree.h>
 #include <pcl/segmentation/region_growing_rgb.h>
 
+#include "RendererCore/InstancedPointCloud.h"
 #include "RendererCore/Renderer.h"
 
-std::vector<std::string> ProceduralGenerator::generatedCloudsName = { "Nurbs terrain cloud", "RGB Region Segmentation" };
+std::vector<std::string> ProceduralGenerator::generatedCloudsName = { "Nurbs terrain cloud", "OliveTree.ply", "PineTree.ply" };
 
 ProceduralGenerator::ProceduralGenerator() = default;
 
@@ -129,6 +130,46 @@ void ProceduralGenerator::subdivideCloud() {
 		}
 	}
 
+}
+
+float ProceduralGenerator::getHeight(const glm::vec2 pos) const {
+	vec3 size = aabb.size();
+	const vec3 minPoint = aabb.min();
+	float stride[2];
+
+	for (unsigned i = 0; i < 2; i++) {
+		stride[i] = size[i] / axisSubdivision[i];
+	}
+
+	const vec2 relativePoint = pos - glm::vec2(minPoint);
+	int x = floor(relativePoint.x / stride[0]);
+	int y = floor(relativePoint.y / stride[1]);
+	if (x == axisSubdivision[0])
+		x--;
+	if (y == axisSubdivision[1])
+		y--;
+
+	return voxelGrid[x][y]->getHeight();
+}
+
+float ProceduralGenerator::getDensity(const glm::vec2 pos) const {
+	vec3 size = aabb.size();
+	const vec3 minPoint = aabb.min();
+	float stride[2];
+
+	for (unsigned i = 0; i < 2; i++) {
+		stride[i] = size[i] / axisSubdivision[i];
+	}
+
+	const vec2 relativePoint = pos - glm::vec2(minPoint);
+	int x = floor(relativePoint.x / stride[0]);
+	int y = floor(relativePoint.y / stride[1]);
+	if (x == axisSubdivision[0])
+		x--;
+	if (y == axisSubdivision[1])
+		y--;
+
+	return voxelGrid[x][y]->getNumberOfPoints() / (stride[0] * stride[1]);
 }
 
 void ProceduralGenerator::testRGBSegmentation() {
@@ -398,6 +439,76 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 	PPCX::Renderer::getInstancia()->addPendingScreenshot(filename, "RGB Region Segmentation" + currentRegion++);
 
 	this->progress = FLT_MAX;
+}
+
+void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>&data) {
+	for (auto& pair : data) {
+		vec3 size = aabb.size();
+		float stride[2];
+
+		for (unsigned i = 0; i < 2; i++) {
+			stride[i] = size[i] / axisSubdivision[i];
+		}
+		std::vector<std::vector<ProceduralVoxel*>> grid;
+		const auto& cloud = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel(pair.first));
+		const auto& points = cloud->getPoints();
+
+		vec3 cloudSize = cloud->getAABB().size();
+		unsigned subdiv[2];
+		subdiv[0] = cloudSize.x / stride[0];
+		subdiv[1] = cloudSize.y / stride[1];
+		grid.resize(subdiv[0]);
+		for (auto& i : grid) {
+			i.resize(subdiv[1]);
+		}
+
+		for (size_t x = 0; x < subdiv[0]; x++) {
+			for (size_t y = 0; y < subdiv[1]; y++) {
+				const auto newAABB = new AABB;
+				vec3 point(cloud->getAABB().min());
+				point[0] += stride[0] * x;
+				point[1] += stride[1] * y;
+				newAABB->update(point);
+				point[0] += stride[0];
+				point[1] += stride[1];
+				point[2] += stride[2];
+				newAABB->update(point);
+				auto* procVoxel = new ProceduralVoxel(terrainCloud, newAABB);
+				grid[x][y] = procVoxel;
+			}
+		}
+
+		std::cout << "hola1" << std::endl;
+		#pragma omp parallel for
+		for (int i = 0; i < points.size(); i++) {
+			const vec3 minPoint = cloud->getAABB().min();
+			const vec3 relativePoint = points[i]._point - minPoint;
+			int x = floor(relativePoint.x / stride[0]);
+			int y = floor(relativePoint.y / stride[1]);
+			if (x > subdiv[0] || y > subdiv[1])
+				std::cout << x << "-" << y << std::endl;
+			if (x == subdiv[0])
+				x--;
+			if (y == subdiv[1])
+				y--;
+			#pragma omp critical
+			grid[x][y]->addPoint(i);
+		}
+		std::cout << "hola2" << std::endl;
+		const auto& instancedModel = dynamic_cast<InstancedPointCloud*>(ModelManager::getInstance()->getModel(pair.second));
+		for (auto& i : grid) {
+			for (const auto& voxel : i) {
+				vec3 center = voxel->getCenter();
+				if (voxel->getDensity() > getDensity(center) * 3.0f) {
+					vec3 pos = center;
+					pos.z = getHeight(center);
+					instancedModel->newInstance(pos);
+				}
+			}
+		}
+		std::cout << "hola3" << std::endl;
+	}
+	std::cout << "fin" << std::endl;
 }
 
 

@@ -76,13 +76,22 @@ vec3 ProceduralVoxel::getColor() const {
 	return color;
 }
 
+vec3 ProceduralVoxel::getCenter() const {
+	return aabb->center();
+}
+
 unsigned ProceduralVoxel::getNumberOfPoints() const {
 	return pointsIndex.size();
 }
 
-unsigned ProceduralVoxel::numberPointsToDensity(float density) const {
-	vec3 size = aabb->size();
-	unsigned number = size.x * size.y * density;
+float ProceduralVoxel::getDensity() const {
+	const vec3 size = aabb->size();
+	return pointsIndex.size() / (size.x * size.y);
+}
+
+unsigned ProceduralVoxel::numberPointsToDensity(const float density) const {
+	const vec3 size = aabb->size();
+	const unsigned number = size.x * size.y * density;
 	if (number > pointsIndex.size())
 		return number - pointsIndex.size();
 	return 0;

@@ -31,7 +31,9 @@ public:
 	float getHeight() const;
 	vec3 getRepresentativePoint() const;
 	vec3 getColor() const;
+	vec3 getCenter() const;
 	unsigned getNumberOfPoints() const;
+	float getDensity() const;
 
 	unsigned numberPointsToDensity(float density) const;
 

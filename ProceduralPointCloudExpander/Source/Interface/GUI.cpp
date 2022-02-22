@@ -26,7 +26,7 @@ void GUI::createMenu() {
 	if (_showFileDialog)			showFileDialog();
 	if (_showSaveDialog)			showSaveWindow();
 	if (_showPointCloudDialog)		showPointCloudDialog();
-	if (_showVegetationSettings)	showVegetationSelection();
+	if (_showVegetationSettings && procGenerator->progress >= 10000.0f)		showVegetationSelection();
 
 	if (ImGui::BeginMainMenuBar()) {
 		if (PlyLoader::saving)
@@ -321,7 +321,9 @@ void GUI::showProceduralSettings() {
 
 void GUI::showVegetationSelection() {
 	if (ImGui::Begin("Vegetation settings", &_showVegetationSettings, ImGuiWindowFlags_NoCollapse)) {
-		auto models = ModelManager::getInstance()->getAllModelsLike("RGB");
+		ModelManager::getInstance()->setAllVisibility(false);
+		const auto models = ModelManager::getInstance()->getAllModelsLike("RGB");
+		const char* items[] = { "OliveTree.ply", "PineTree.ply" };
 		static std::vector<int> values;
 
 		while (values.size() < models.size()) {
@@ -329,14 +331,41 @@ void GUI::showVegetationSelection() {
 		}
 
 		int i = 0;
-		for (auto model : models) {
-			PointCloud* cloud = dynamic_cast<PointCloud*>(model.second);
-			auto color = cloud->getRandomPointColor();
+		for (const auto& model : models) {
+			const auto cloud = dynamic_cast<PointCloud*>(model.second);
+			cloud->getVisibility() = true;
+			const auto color = cloud->getRandomPointColor();
 			ImGui::ColorButton(model.first.c_str(), ImVec4(color.r / 256, color.g / 256, color.b / 256, 1), ImGuiColorEditFlags_NoBorder, ImVec2(20, 20));
 			ImGui::SameLine();
 			ImGui::Text(model.first.c_str());
 			ImGui::SameLine();
-			ImGui::Combo("Picker Mode", &values[i++], "OliveTree.ply\0PineTree.ply\0", 2);
+			ImGui::Combo(("##Picker Mode" + std::to_string(i)).c_str(), &values[i++], "OliveTree.ply\0PineTree.ply\0", 2);
+
+			//const char* combo_preview_value = items[values[i]];
+			//if (ImGui::BeginCombo("combo 1", combo_preview_value, 0)) {
+			//	for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
+			//		const bool is_selected = (values[i] == n);
+			//		if (ImGui::Selectable(items[n], is_selected))
+			//			values[i] = n;
+
+			//		// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+			//		if (is_selected)
+			//			ImGui::SetItemDefaultFocus();
+			//	}
+			//	ImGui::EndCombo();
+			//}
+		}
+		if (ImGui::Button("Generate procedural vegetation")) {
+			std::vector<std::pair<std::string, std::string>> vec;
+			vec.reserve(models.size());
+			for (int j = 0; j < models.size(); ++j) {
+				vec.emplace_back(models[j].first, items[values[j]]);
+			}
+			procGenerator->generateProceduralVegetation(vec);
+			ModelManager::getInstance()->setAllVisibility(true);
+			ModelManager::getInstance()->setVisibility("RGB", false);
+			ModelManager::getInstance()->setVisibility("High", false);
+			_showVegetationSettings = false;
 		}
 		ImGui::End();
 	}
