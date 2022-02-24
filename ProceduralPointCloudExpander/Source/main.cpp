@@ -73,7 +73,7 @@ void callbackTecla(GLFWwindow* window, int key, int scancode, int action, int mo
 	} else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
 		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(-deltaTime * 5);
 	} else if (key == GLFW_KEY_PRINT_SCREEN && (action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->screenshot("test");
+		PPCX::Renderer::getInstancia()->screenshot("Cap");
 	}
 }
 

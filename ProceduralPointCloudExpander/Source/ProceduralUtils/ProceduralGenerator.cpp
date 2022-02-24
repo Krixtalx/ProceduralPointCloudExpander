@@ -477,8 +477,6 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 				grid[x][y] = procVoxel;
 			}
 		}
-
-		std::cout << "hola1" << std::endl;
 		#pragma omp parallel for
 		for (int i = 0; i < points.size(); i++) {
 			const vec3 minPoint = cloud->getAABB().min();
@@ -494,21 +492,24 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 			#pragma omp critical
 			grid[x][y]->addPoint(i);
 		}
-		std::cout << "hola2" << std::endl;
 		const auto& instancedModel = dynamic_cast<InstancedPointCloud*>(ModelManager::getInstance()->getModel(pair.second));
 		for (auto& i : grid) {
 			for (const auto& voxel : i) {
 				vec3 center = voxel->getCenter();
-				if (voxel->getDensity() > getDensity(center) * 3.0f) {
+				if (voxel->getDensity() > getDensity(center) * 8.0f) {
 					vec3 pos = center;
 					pos.z = getHeight(center);
 					instancedModel->newInstance(pos);
 				}
 			}
 		}
-		std::cout << "hola3" << std::endl;
+
+		for (size_t x = 0; x < subdiv[0]; x++) {
+			for (size_t y = 0; y < subdiv[1]; y++) {
+				delete grid[x][y];
+			}
+		}
 	}
-	std::cout << "fin" << std::endl;
 }
 
 

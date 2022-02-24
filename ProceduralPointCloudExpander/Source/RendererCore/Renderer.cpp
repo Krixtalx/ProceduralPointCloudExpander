@@ -185,7 +185,12 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 		}
 	}
 	// Se guarda la imagen en formato PNG
-	unsigned error = lodepng_encode32_file(("Captures/" + filename + ".png").c_str(), (unsigned char*)flipped, ancho, alto);
+	static int i = 0;
+	while (FILE* file = fopen(("Captures/" + filename + std::to_string(i) + ".png").c_str(), "r")) {
+		fclose(file);
+		i++;
+	}
+	unsigned error = lodepng_encode32_file(("Captures/" + filename + std::to_string(i) + ".png").c_str(), (unsigned char*)flipped, ancho, alto);
 	delete[] pixeles;
 	delete[] flipped;
 
