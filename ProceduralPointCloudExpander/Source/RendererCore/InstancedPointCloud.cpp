@@ -40,6 +40,11 @@ void InstancedPointCloud::drawModel(const glm::mat4& MVPMatrix)
 	}
 }
 
+unsigned InstancedPointCloud::getNumberOfInstances()
+{
+	return offsets.size();
+}
+
 void InstancedPointCloud::updateInstancingData()
 {
 	if (instancingVBO != UINT_MAX) {
