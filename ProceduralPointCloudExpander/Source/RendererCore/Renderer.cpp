@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "Renderer.h"
 #include "ShaderManager.h"
-#include "Utilities/PlyLoader.h"
+#include "Utilities/Loader.h"
 #include "RendererCore/ModelManager.h"
 #include <RendererCore/InstancedPointCloud.h>
 
@@ -27,8 +27,8 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->addShaderToSP("InstancingVertexShader", "InstancingSP");
 		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "InstancingSP");
 
-		PlyLoader::loadPointCloud("OliveTree", false);
-		PlyLoader::loadPointCloud("PineTree", false);
+		Loader::loadPointCloud("OliveTree", false);
+		Loader::loadPointCloud("PineTree", false);
 	} catch (std::runtime_error& e) {
 		throw;
 	}
@@ -103,7 +103,7 @@ const GLubyte* PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
 }
 
 void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, const unsigned& pointsPerVoxel) {
-	PlyLoader::loadPointCloud(path);
+	Loader::loadPointCloud(path);
 	try {
 		const auto pCloud = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel("Ground"));
 		procGenerator.newPointCloud(pCloud, newScene, pointsPerVoxel);
@@ -170,10 +170,8 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	// Lanzar el proceso de rendering
 	refrescar();
 	// Finalizado el proceso de rendering, se recupera el contenido del FBO
-	GLubyte* pixeles = nullptr;
-	GLubyte* flipped;
-	pixeles = new GLubyte[ancho * alto * 4];
-	flipped = new GLubyte[ancho * alto * 4];
+	GLubyte* pixeles = new GLubyte[ancho * alto * 4];
+	GLubyte* flipped = new GLubyte[ancho * alto * 4];
 
 	glReadPixels(0, 0, ancho, alto, GL_RGBA, GL_UNSIGNED_BYTE, pixeles);
 

@@ -21,7 +21,7 @@ public:
 
 	PointCloud(PointCloud& orig);
 
-	~PointCloud();
+	~PointCloud() override;
 
 	void newPoint(const PointModel& point);
 

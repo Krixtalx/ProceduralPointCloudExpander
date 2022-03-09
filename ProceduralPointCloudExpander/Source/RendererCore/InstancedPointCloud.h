@@ -20,6 +20,6 @@ public:
 
 	void drawModel(const glm::mat4& MVPMatrix) override;
 
-	unsigned getNumberOfInstances();
+	unsigned getNumberOfInstances() const;
 
 };

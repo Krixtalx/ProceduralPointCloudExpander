@@ -1,18 +1,11 @@
 #include "stdafx.h"
 #include "ModelManager.h"
 
-ModelManager* ModelManager::instance = nullptr;
 
 ModelManager::~ModelManager() {
 	for (const auto& model : models) {
 		delete model.second;
 	}
-}
-
-ModelManager* ModelManager::getInstance() {
-	if (!instance)
-		instance = new ModelManager();
-	return instance;
 }
 
 /**

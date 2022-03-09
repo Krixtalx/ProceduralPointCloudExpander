@@ -4,7 +4,7 @@
 #include "Utilities/Image.h"
 #include <random>
 
-#include "Utilities/PlyLoader.h"
+#include "Utilities/Loader.h"
 #include <RendererCore/ModelManager.h>
 
 #include <pcl/point_types.h>
@@ -31,11 +31,11 @@ ProceduralGenerator::~ProceduralGenerator() {
 /**
  * @brief Initialize the voxel grid
 */
-void ProceduralGenerator::createVoxelGrid() {
+void ProceduralGenerator::createVoxelGrid(std::vector<std::vector<ProceduralVoxel*>>&grid, PointCloud * pointCloud) {
 	std::cout << "Creating voxel grid..." << std::endl;
 	this->progress = 0.2f;
-	vec3 size = aabb.size();
-	const vec3 minPoint = aabb.min();
+	vec3 size = pointCloud->getAABB().size();
+	const vec3 minPoint = pointCloud->getAABB().min();
 	float stride[3];
 
 	for (unsigned i = 0; i < 2; i++) {
@@ -43,9 +43,9 @@ void ProceduralGenerator::createVoxelGrid() {
 	}
 	stride[2] = size[2];
 
-	voxelGrid.resize(axisSubdivision[0]);
+	grid.resize(axisSubdivision[0]);
 	for (size_t x = 0; x < axisSubdivision[0]; x++) {
-		voxelGrid[x].resize(axisSubdivision[1]);
+		grid[x].resize(axisSubdivision[1]);
 		for (size_t y = 0; y < axisSubdivision[1]; y++) {
 			const auto newAABB = new AABB;
 			vec3 point(minPoint);
@@ -56,8 +56,8 @@ void ProceduralGenerator::createVoxelGrid() {
 			point[1] += stride[1];
 			point[2] += stride[2];
 			newAABB->update(point);
-			auto* procVoxel = new ProceduralVoxel(terrainCloud, newAABB);
-			voxelGrid[x][y] = procVoxel;
+			auto* procVoxel = new ProceduralVoxel(pointCloud, newAABB);
+			grid[x][y] = procVoxel;
 		}
 	}
 }
@@ -65,11 +65,11 @@ void ProceduralGenerator::createVoxelGrid() {
 /**
  * @brief Assign each point of the PointCloud to the corresponding voxel in the voxel grid and computes the corresponding height and color
 */
-void ProceduralGenerator::subdivideCloud() {
+void ProceduralGenerator::subdivideCloud(const std::vector<std::vector<ProceduralVoxel*>>&grid, PointCloud * pointCloud) {
 	std::cout << "Subdividing cloud..." << std::endl;
 	this->progress = 0.4f;
-	unsigned pointCloudSize = terrainCloud->getNumberOfPoints();
-	const std::vector<PointModel> points = terrainCloud->getPoints();
+	unsigned pointCloudSize = pointCloud->getNumberOfPoints();
+	const std::vector<PointModel>& points = pointCloud->getPoints();
 
 	vec3 size = aabb.size();
 	const vec3 minPoint = aabb.min();
@@ -89,8 +89,13 @@ void ProceduralGenerator::subdivideCloud() {
 		if (y == axisSubdivision[1])
 			y--;
 		#pragma omp critical
-		voxelGrid[x][y]->addPoint(i);
+		grid[x][y]->addPoint(i);
 	}
+
+
+}
+
+void ProceduralGenerator::computeHeightAndColor() {
 
 	std::cout << "Computing height and color..." << std::endl;
 	this->progress = 0.5f;
@@ -129,7 +134,6 @@ void ProceduralGenerator::subdivideCloud() {
 			}
 		}
 	}
-
 }
 
 float ProceduralGenerator::getHeight(const glm::vec2 pos) const {
@@ -372,7 +376,7 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 	for (unsigned i = 0; i < clusters.size(); i++) {
 		const auto newCloud = new PointCloud("DefaultSP");
 		glm::vec3 color(rand() % 256, rand() % 256, rand() % 256);
-		for (auto& origPoint : clusters[i].indices) {
+		for (const auto& origPoint : clusters[i].indices) {
 			point._point.x = (*cloud)[origPoint].x;
 			point._point.y = (*cloud)[origPoint].y;
 			point._point.z = (*cloud)[origPoint].z;
@@ -443,56 +447,15 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 
 void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>&data) {
 	for (auto& pair : data) {
-		vec3 size = aabb.size();
-		float stride[2];
-
-		for (unsigned i = 0; i < 2; i++) {
-			stride[i] = size[i] / axisSubdivision[i];
-		}
+		std::cout << pair.first << std::endl;
 		std::vector<std::vector<ProceduralVoxel*>> grid;
 		const auto& cloud = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel(pair.first));
+		const auto& instancedModel = dynamic_cast<InstancedPointCloud*>(ModelManager::getInstance()->getModel(pair.second));
 		const auto& points = cloud->getPoints();
 
-		vec3 cloudSize = cloud->getAABB().size();
-		unsigned subdiv[2];
-		subdiv[0] = cloudSize.x / stride[0];
-		subdiv[1] = cloudSize.y / stride[1];
-		grid.resize(subdiv[0]);
-		for (auto& i : grid) {
-			i.resize(subdiv[1]);
-		}
+		createVoxelGrid(grid, cloud);
+		subdivideCloud(grid, cloud);
 
-		for (size_t x = 0; x < subdiv[0]; x++) {
-			for (size_t y = 0; y < subdiv[1]; y++) {
-				const auto newAABB = new AABB;
-				vec3 point(cloud->getAABB().min());
-				point[0] += stride[0] * x;
-				point[1] += stride[1] * y;
-				newAABB->update(point);
-				point[0] += stride[0];
-				point[1] += stride[1];
-				point[2] += stride[2];
-				newAABB->update(point);
-				auto* procVoxel = new ProceduralVoxel(terrainCloud, newAABB);
-				grid[x][y] = procVoxel;
-			}
-		}
-		#pragma omp parallel for
-		for (int i = 0; i < points.size(); i++) {
-			const vec3 minPoint = cloud->getAABB().min();
-			const vec3 relativePoint = points[i]._point - minPoint;
-			int x = floor(relativePoint.x / stride[0]);
-			int y = floor(relativePoint.y / stride[1]);
-			if (x > subdiv[0] || y > subdiv[1])
-				std::cout << x << "-" << y << std::endl;
-			if (x == subdiv[0])
-				x--;
-			if (y == subdiv[1])
-				y--;
-			#pragma omp critical
-			grid[x][y]->addPoint(i);
-		}
-		const auto& instancedModel = dynamic_cast<InstancedPointCloud*>(ModelManager::getInstance()->getModel(pair.second));
 		for (auto& i : grid) {
 			for (const auto& voxel : i) {
 				vec3 center = voxel->getCenter();
@@ -504,11 +467,12 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 			}
 		}
 
-		for (size_t x = 0; x < subdiv[0]; x++) {
-			for (size_t y = 0; y < subdiv[1]; y++) {
+		for (size_t x = 0; x < grid.size(); x++) {
+			for (size_t y = 0; y < grid[x].size(); y++) {
 				delete grid[x][y];
 			}
 		}
+		this->progress = FLT_MAX;
 	}
 }
 
@@ -529,8 +493,9 @@ void ProceduralGenerator::generateVoxelGrid(const unsigned pointsPerVoxel) {
 	}
 
 	automaticGSD(pointsPerVoxel);
-	createVoxelGrid();
-	subdivideCloud();
+	createVoxelGrid(voxelGrid, terrainCloud);
+	subdivideCloud(voxelGrid, terrainCloud);
+	computeHeightAndColor();
 	this->progress = FLT_MAX;
 }
 
@@ -539,7 +504,7 @@ void ProceduralGenerator::generateVoxelGrid(const unsigned pointsPerVoxel) {
 * @brief Compute the voxel grid appropiate size automatically.
 * @param pointsPerVoxel number of points that should be in each voxel. Less points = more and smallers voxels
 */
-void ProceduralGenerator::automaticGSD(unsigned pointsPerVoxel) {
+void ProceduralGenerator::automaticGSD(const unsigned pointsPerVoxel) {
 	const unsigned voxelsNumber = terrainCloud->getNumberOfPoints() / pointsPerVoxel;
 	const vec3 cloudSize = terrainCloud->getAABB().size();
 	const float sizeProportion = cloudSize.x / cloudSize.y;
@@ -636,7 +601,7 @@ void ProceduralGenerator::saveHeightMap(const std::string & path) const {
 		}
 	}
 
-	auto image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
+	const auto image = new Image(pixels->data(), axisSubdivision[0], axisSubdivision[1], 4);
 	image->saveImage(path);
 }
 
@@ -669,6 +634,6 @@ void ProceduralGenerator::savePointCloud(const std::string & path) const {
 	std::vector<PointCloud*> aux;
 	//aux.push_back(terrainCloud[0]);
 	//aux.push_back(terrainCloud[1]);
-	std::thread thread(&PlyLoader::savePointCloud, path, aux);
+	std::thread thread(&Loader::savePointCloud, path, aux);
 	thread.detach();
 }

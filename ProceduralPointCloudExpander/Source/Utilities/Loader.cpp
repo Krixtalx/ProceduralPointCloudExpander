@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "PlyLoader.h"
+#include "Loader.h"
 #include <tinyply/tinyply.h>
 #include "Point.h"
 #include <filesystem>
@@ -9,10 +9,10 @@
 constexpr auto PLY_EXTENSION = ".ply";
 constexpr auto APPBIN_EXTENSION = ".ppcxbin";
 
-bool PlyLoader::saving = false;
-unsigned PlyLoader::LASClassificationSize = 13;
+bool Loader::saving = false;
+unsigned Loader::LASClassificationSize = 13;
 
-std::unordered_map<std::string, char> PlyLoader::LASClassification{
+std::unordered_map<std::string, char> Loader::LASClassification{
 	{"Never Classified", 0},
 	{"Unclassified", 1},
 	{"Ground", 2},
@@ -28,7 +28,7 @@ std::unordered_map<std::string, char> PlyLoader::LASClassification{
 	{"Overlaped points", 12}
 };
 
-std::string PlyLoader::LASClassificationStrings[] = {
+std::string Loader::LASClassificationStrings[] = {
 	"Never Classified",
 	"Unclassified",
 	"Ground",
@@ -44,7 +44,7 @@ std::string PlyLoader::LASClassificationStrings[] = {
 	"Overlaped points"
 };
 
-bool PlyLoader::writeToBinary(const std::string& filename, PointCloud* pointCloud) {
+bool Loader::writeToBinary(const std::string& filename, PointCloud* pointCloud) {
 	std::ofstream fout(filename, std::ios::out | std::ios::binary);
 	if (!fout.is_open()) {
 		return false;
@@ -60,7 +60,7 @@ bool PlyLoader::writeToBinary(const std::string& filename, PointCloud* pointClou
 	return true;
 }
 
-PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
+PointCloud* Loader::readFromBinary(const std::string& filename) {
 	std::ifstream fin(filename, std::ios::in | std::ios::binary);
 	if (!fin.is_open()) {
 		return nullptr;
@@ -88,7 +88,7 @@ PointCloud* PlyLoader::readFromBinary(const std::string& filename) {
  *
  * @param _filename PLY filename. Must contain .ply extension in the filename
  */
-void PlyLoader::readFromPlyWithClassification(const std::string& _filename) {
+void Loader::readFromPlyWithClassification(const std::string& _filename) {
 	std::vector<uint8_t> byteBuffer;
 
 	try {
@@ -210,17 +210,17 @@ void PlyLoader::readFromPlyWithClassification(const std::string& _filename) {
 		for (size_t i = 0; i < 13; i++) {
 			if (_points[i].size() > 100) {
 				const auto cloud = new PointCloud("DefaultSP", _points[i], _aabb[i]);
-				ModelManager::getInstance()->newModel(PlyLoader::LASClassificationStrings[i], cloud);
+				ModelManager::getInstance()->newModel(Loader::LASClassificationStrings[i], cloud);
 			}
 		}
 	} catch (const std::runtime_error& e) {
-		std::cerr << "[PlyLoader::readFromPly]: " << e.what() << std::endl;
+		std::cerr << "[Loader::readFromPly]: " << e.what() << std::endl;
 	} catch (const std::exception& e) {
 		std::cerr << "Caught tinyply exception: " << e.what() << std::endl;
 	}
 }
 
-void PlyLoader::readFromPlyWithoutClassification(const std::string& _filename)
+void Loader::readFromPlyWithoutClassification(const std::string& _filename)
 {
 	std::vector<uint8_t> byteBuffer;
 
@@ -324,7 +324,7 @@ void PlyLoader::readFromPlyWithoutClassification(const std::string& _filename)
 		ModelManager::getInstance()->newModel(filename, cloud);
 
 	} catch (const std::runtime_error& e) {
-		std::cerr << "[PlyLoader::readFromPly]: " << e.what() << std::endl;
+		std::cerr << "[Loader::readFromPly]: " << e.what() << std::endl;
 	} catch (const std::exception& e) {
 		std::cerr << "Caught tinyply exception: " << e.what() << std::endl;
 	}
@@ -335,7 +335,7 @@ void PlyLoader::readFromPlyWithoutClassification(const std::string& _filename)
  *
  * @param filename
  */
-void PlyLoader::loadPointCloud(const std::string& filename, const bool useClassification) {
+void Loader::loadPointCloud(const std::string& filename, const bool useClassification) {
 	if (useClassification)
 		readFromPlyWithClassification(filename + PLY_EXTENSION);
 	else
@@ -349,7 +349,7 @@ void PlyLoader::loadPointCloud(const std::string& filename, const bool useClassi
  * @param filename filename of the generated point cloud
  * @param clouds clouds that will be agregated to form the final point cloud.
  */
-void PlyLoader::savePointCloud(const std::string& filename, const std::vector<PointCloud*>& clouds) {
+void Loader::savePointCloud(const std::string& filename, const std::vector<PointCloud*>& clouds) {
 	std::cout << filename << std::endl;
 	std::filebuf fb_ascii;
 	fb_ascii.open(filename, std::ios::out);
@@ -379,3 +379,5 @@ void PlyLoader::savePointCloud(const std::string& filename, const std::vector<Po
 	fb_ascii.close();
 	saving = false;
 }
+
+void Loader::loadAllCloudsUnderFolder(const std::string& folder) {}

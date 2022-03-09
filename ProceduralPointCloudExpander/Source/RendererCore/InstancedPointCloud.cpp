@@ -2,24 +2,22 @@
 #include "InstancedPointCloud.h"
 #include <RendererCore/ShaderManager.h>
 
-InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const vec3& pos) : PointCloud(shaderProgram, pos)
-{
-	newInstanceUpdate = false;
-}
+#include <utility>
 
-InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos) : PointCloud(shaderProgram, points, pos)
-{
-	newInstanceUpdate = false;
-}
+InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const vec3& pos) : PointCloud(
+	std::move(shaderProgram), pos),
+	newInstanceUpdate(false) {}
 
-void InstancedPointCloud::newInstance(const glm::vec3& pos)
-{
+InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos) : PointCloud(
+	std::move(shaderProgram), points, pos),
+	newInstanceUpdate(false) {}
+
+void InstancedPointCloud::newInstance(const glm::vec3& pos) {
 	offsets.push_back(pos);
 	newInstanceUpdate = true;
 }
 
-void InstancedPointCloud::drawModel(const glm::mat4& MVPMatrix)
-{
+void InstancedPointCloud::drawModel(const glm::mat4& MVPMatrix) {
 	if (visible) {
 		if (needUpdating)
 			updateCloud();
@@ -40,13 +38,11 @@ void InstancedPointCloud::drawModel(const glm::mat4& MVPMatrix)
 	}
 }
 
-unsigned InstancedPointCloud::getNumberOfInstances()
-{
+unsigned InstancedPointCloud::getNumberOfInstances() const {
 	return offsets.size();
 }
 
-void InstancedPointCloud::updateInstancingData()
-{
+void InstancedPointCloud::updateInstancingData() {
 	if (instancingVBO != UINT_MAX) {
 		glDeleteBuffers(1, &instancingVBO);
 	}

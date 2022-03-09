@@ -5,7 +5,7 @@
 #include "Interface/Fonts/IconsFontAwesome5.h"
 #include "imfiledialog/ImGuiFileDialog.h"
 #include "RendererCore/Renderer.h"
-#include "Utilities/PlyLoader.h"
+#include "Utilities/Loader.h"
 #include <RendererCore/ModelManager.h>
 
 
@@ -29,7 +29,7 @@ void GUI::createMenu() {
 	if (_showVegetationSettings && procGenerator->progress >= 10000.0f)		showVegetationSelection();
 
 	if (ImGui::BeginMainMenuBar()) {
-		if (PlyLoader::saving)
+		if (Loader::saving)
 			Spinner("Saving Spinner", 8, 4, ImGui::GetColorU32(ImGuiCol_ButtonHovered));
 		if (ImGui::BeginMenu(ICON_FA_FILE "File")) {
 			ImGui::MenuItem(ICON_FA_FOLDER_OPEN "Open point cloud", nullptr, &_showFileDialog);
@@ -197,10 +197,10 @@ void GUI::showRenderingSettings() {
 				PPCX::Renderer::getInstancia()->setPointSize(value);
 
 				ImGui::Text("Loaded clouds");
-				for (unsigned i = 0; i < PlyLoader::LASClassificationSize; ++i) {
+				for (unsigned i = 0; i < Loader::LASClassificationSize; ++i) {
 					try {
-						PPCX::Model* model = ModelManager::getInstance()->getModel(PlyLoader::LASClassificationStrings[i]);
-						ImGui::Checkbox(PlyLoader::LASClassificationStrings[i].c_str(), &model->getVisibility());
+						PPCX::Model* model = ModelManager::getInstance()->getModel(Loader::LASClassificationStrings[i]);
+						ImGui::Checkbox(Loader::LASClassificationStrings[i].c_str(), &model->getVisibility());
 					} catch (std::runtime_error& e) {
 					}
 				}
@@ -340,20 +340,6 @@ void GUI::showVegetationSelection() {
 			ImGui::Text(model.first.c_str());
 			ImGui::SameLine();
 			ImGui::Combo(("##Picker Mode" + std::to_string(i)).c_str(), &values[i++], "OliveTree.ply\0PineTree.ply\0", 2);
-
-			//const char* combo_preview_value = items[values[i]];
-			//if (ImGui::BeginCombo("combo 1", combo_preview_value, 0)) {
-			//	for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
-			//		const bool is_selected = (values[i] == n);
-			//		if (ImGui::Selectable(items[n], is_selected))
-			//			values[i] = n;
-
-			//		// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			//		if (is_selected)
-			//			ImGui::SetItemDefaultFocus();
-			//	}
-			//	ImGui::EndCombo();
-			//}
 		}
 		if (ImGui::Button("Generate procedural vegetation")) {
 			std::vector<std::pair<std::string, std::string>> vec;

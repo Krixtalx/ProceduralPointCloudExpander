@@ -42,7 +42,7 @@ inline void FileManagement::clearTokens(std::vector<std::string>& stringTokens, 
 
 inline bool FileManagement::openImage(const std::string& filename, std::vector<unsigned char>* image, unsigned int& width, unsigned int& height)
 {
-	const unsigned error = lodepng::decode(*image, width, height, filename.c_str());
+	const unsigned error = lodepng::decode(*image, width, height, filename);
 
 	return error == 0;
 }

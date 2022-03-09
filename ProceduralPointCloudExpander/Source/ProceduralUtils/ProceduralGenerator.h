@@ -20,8 +20,9 @@ private:
 	bool useStatiticsMethod = true;
 
 	bool meanNeightbourHeightColor(unsigned x, unsigned y, char minCount) const;
-	void createVoxelGrid();
-	void subdivideCloud();
+	void createVoxelGrid(std::vector<std::vector<ProceduralVoxel*>>& grid, PointCloud* pointCloud);
+	void subdivideCloud(const std::vector<std::vector<ProceduralVoxel*>>& grid, PointCloud* pointCloud);
+	void computeHeightAndColor();
 	float getHeight(glm::vec2 pos) const;
 	float getDensity(glm::vec2 pos) const;
 

@@ -5,7 +5,7 @@
 
 /**
 *	@file GUI.h
-*	@authors Alfonso López Ruiz (alr00048@red.ujaen.es), José Antonio Collado Araque (jaca0011@red.ujaen.es)
+*	@authors José Antonio Collado Araque (jaca0011@red.ujaen.es)
 */
 
 /**
@@ -30,9 +30,9 @@ protected:
 	ProceduralGenerator*			procGenerator = nullptr;
 	int								saveOption = -1; // 0 - Point cloud, 1 - heightmap, 2 - texturemap
 	int								degree = 2;
-	int								internalSubdivision = 5;
-	float							densityMultiplier = 1.0f;
-	int								pointsPerVoxel = 40;
+	int								internalSubdivision = 3;
+	float							densityMultiplier = 2.0f;
+	int								pointsPerVoxel = 10;
 
 protected:
 	/**

@@ -1,16 +1,14 @@
 #pragma once
 #include "RendererCore/Model.h"
+#include "Utilities/Singleton.h"
 
-class ModelManager {
+class ModelManager : public Singleton<ModelManager> {
 private:
-	static ModelManager* instance;
-	ModelManager() = default;
 
 	std::map<std::string, PPCX::Model*> models;
 
 public:
 	~ModelManager();
-	static ModelManager* getInstance();
 	void drawModels(const glm::mat4& matrizMVP) const;
 	void drawAndDeleteSingleModel(const std::string& modelKey, const glm::mat4& matrizMVP);
 

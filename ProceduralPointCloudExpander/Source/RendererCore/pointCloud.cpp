@@ -11,7 +11,7 @@ PointCloud::PointCloud(std::string shaderProgram, const vec3& pos) : Model(std::
 /**
  * Constructor parametrizado
  * @param shaderProgram que se usará para renderizar el modelo
- * @param points
+ * @param points puntos de la nube
  * @param pos Posicion inicial de la nube de puntos
  */
 PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const
@@ -22,7 +22,7 @@ PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>&
 
 /**
  * Constructor copia. Copia el numVertices y el shaderProgram y realiza una nueva instanciacion de los vbos e ibos
- * @param orig
+ * @param orig nube de puntos original
  */
 PointCloud::PointCloud(PointCloud& orig) : Model(orig), vbo(orig.vbo) {
 	//Creamos nuestro VAO
