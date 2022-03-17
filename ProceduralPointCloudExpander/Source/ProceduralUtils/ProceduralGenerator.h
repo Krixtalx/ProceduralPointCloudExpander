@@ -8,7 +8,7 @@
 
 class ProceduralGenerator {
 	friend class GUI;
-private:
+protected:
 	unsigned axisSubdivision[2]{};
 	float gsd{};
 
@@ -19,22 +19,23 @@ private:
 	float progress = FLT_MAX;
 	bool useStatiticsMethod = true;
 
-	bool meanNeightbourHeightColor(unsigned x, unsigned y, char minCount) const;
-	void createVoxelGrid(std::vector<std::vector<ProceduralVoxel*>>& grid, PointCloud* pointCloud);
-	void subdivideCloud(const std::vector<std::vector<ProceduralVoxel*>>& grid, PointCloud* pointCloud);
-	void computeHeightAndColor();
+
 	float getHeight(glm::vec2 pos) const;
 	float getDensity(glm::vec2 pos) const;
-
-protected:
 	void saveHeightMap(const std::string& path) const;
 	void saveTextureMap(const std::string& path) const;
 	void savePointCloud(const std::string& path) const;
 	void automaticGSD(unsigned pointsPerVoxel);
-	void computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier);
 	void generateVoxelGrid(unsigned pointsPerVoxel);
+	bool meanNeightbourHeightColor(unsigned x, unsigned y, char minCount) const;
+	void createVoxelGrid(std::vector<std::vector<ProceduralVoxel*>>& grid, PointCloud* pointCloud);
+	void subdivideCloud(const std::vector<std::vector<ProceduralVoxel*>>& grid, PointCloud* pointCloud);
+	void computeHeightAndColor();
 	void RegionRGBSegmentation(float distanceThreshold, float pointColorThreshold, float regionColorThreshold, unsigned minClusterSize);
 	void RegionRGBSegmentationUsingCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, float distanceThreshold, float pointColorThreshold, float regionColorThreshold, unsigned minClusterSize);
+
+	
+	void computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier);
 	void generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>& data);
 
 public:

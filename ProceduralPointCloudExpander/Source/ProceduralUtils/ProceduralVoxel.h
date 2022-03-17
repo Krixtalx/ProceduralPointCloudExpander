@@ -11,6 +11,7 @@ private:
 	std::vector<unsigned> pointsIndex;
 	float height = FLT_MAX;
 	vec3 color = { 0, 0, 0 };
+	bool vegetationMark = false;
 
 public:
 
@@ -27,6 +28,7 @@ public:
 
 	void setHeight(float h);
 	void setColor(vec3 color);
+	void setVegetationMark();
 
 	float getHeight() const;
 	vec3 getRepresentativePoint() const;
@@ -34,9 +36,11 @@ public:
 	vec3 getCenter() const;
 	unsigned getNumberOfPoints() const;
 	float getDensity() const;
+	bool getVegetationMark() const;
+	AABB getAABB() const;
 
 	unsigned numberPointsToDensity(float density) const;
 
-	std::vector<float> internalDistribution(unsigned divX, unsigned divY);
+	std::vector<float> internalDistribution(const unsigned divX, const unsigned divY) const;
 };
 

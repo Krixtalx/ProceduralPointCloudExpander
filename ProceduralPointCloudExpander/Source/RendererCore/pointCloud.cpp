@@ -12,6 +12,7 @@ PointCloud::PointCloud(std::string shaderProgram, const vec3& pos) : Model(std::
  * Constructor parametrizado
  * @param shaderProgram que se usará para renderizar el modelo
  * @param points puntos de la nube
+ * @param aabb
  * @param pos Posicion inicial de la nube de puntos
  */
 PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const

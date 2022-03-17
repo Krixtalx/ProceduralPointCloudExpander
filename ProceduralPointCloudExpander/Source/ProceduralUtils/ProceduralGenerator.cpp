@@ -34,14 +34,13 @@ ProceduralGenerator::~ProceduralGenerator() {
 void ProceduralGenerator::createVoxelGrid(std::vector<std::vector<ProceduralVoxel*>>&grid, PointCloud * pointCloud) {
 	std::cout << "Creating voxel grid..." << std::endl;
 	this->progress = 0.2f;
-	vec3 size = pointCloud->getAABB().size();
+	vec3 size = aabb.size();
 	const vec3 minPoint = pointCloud->getAABB().min();
-	float stride[3];
+	float stride[2];
 
 	for (unsigned i = 0; i < 2; i++) {
 		stride[i] = size[i] / axisSubdivision[i];
 	}
-	stride[2] = size[2];
 
 	grid.resize(axisSubdivision[0]);
 	for (size_t x = 0; x < axisSubdivision[0]; x++) {
@@ -54,7 +53,6 @@ void ProceduralGenerator::createVoxelGrid(std::vector<std::vector<ProceduralVoxe
 			newAABB->update(point);
 			point[0] += stride[0];
 			point[1] += stride[1];
-			point[2] += stride[2];
 			newAABB->update(point);
 			auto* procVoxel = new ProceduralVoxel(pointCloud, newAABB);
 			grid[x][y] = procVoxel;
@@ -68,7 +66,6 @@ void ProceduralGenerator::createVoxelGrid(std::vector<std::vector<ProceduralVoxe
 void ProceduralGenerator::subdivideCloud(const std::vector<std::vector<ProceduralVoxel*>>&grid, PointCloud * pointCloud) {
 	std::cout << "Subdividing cloud..." << std::endl;
 	this->progress = 0.4f;
-	unsigned pointCloudSize = pointCloud->getNumberOfPoints();
 	const std::vector<PointModel>& points = pointCloud->getPoints();
 
 	vec3 size = aabb.size();
@@ -168,10 +165,10 @@ float ProceduralGenerator::getDensity(const glm::vec2 pos) const {
 	const vec2 relativePoint = pos - glm::vec2(minPoint);
 	int x = floor(relativePoint.x / stride[0]);
 	int y = floor(relativePoint.y / stride[1]);
-	if (x == axisSubdivision[0])
-		x--;
-	if (y == axisSubdivision[1])
-		y--;
+	if (x >= axisSubdivision[0])
+		x = axisSubdivision[0] - 1;
+	if (y >= axisSubdivision[1])
+		y= axisSubdivision[1] - 1;
 
 	return voxelGrid[x][y]->getNumberOfPoints() / (stride[0] * stride[1]);
 }
@@ -285,7 +282,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 					std::vector<float> allWeights = voxelGrid[x][y]->internalDistribution(divX, divY);
 					++count;
 					for (unsigned i = 0; i < divX; i++) {
-						intervals[0].push_back(x + (float)i / divX);
+						intervals[0].push_back(x + static_cast<float>(i) / divX);
 						float sum = 0;
 						for (unsigned j = 0; j < divY; j++) {
 							sum += allWeights[i * divX + j];
@@ -294,7 +291,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 					}
 					intervals[0].push_back(x + 1);
 					for (unsigned i = 0; i < divY; i++) {
-						intervals[1].push_back(y + (float)i / divY);
+						intervals[1].push_back(y + static_cast<float>(i) / divY);
 						float sum = 0;
 						for (unsigned j = 0; j < divX; j++) {
 							sum += allWeights[i * divY + j];
@@ -386,7 +383,7 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 		}
 
 		ModelManager::getInstance()->modifyModel("RGB Region Segment " + std::to_string(i), newCloud);
-		generatedCloudsName.push_back("RGB Region Segment " + i);
+		generatedCloudsName.emplace_back("RGB Region Segment " + i);
 	}
 	auto allModels = ModelManager::getInstance()->getAllModels();
 
@@ -451,25 +448,53 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 		std::vector<std::vector<ProceduralVoxel*>> grid;
 		const auto& cloud = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel(pair.first));
 		const auto& instancedModel = dynamic_cast<InstancedPointCloud*>(ModelManager::getInstance()->getModel(pair.second));
-		const auto& points = cloud->getPoints();
+		const glm::vec3 treeSize = instancedModel->getAABB().size();
 
 		createVoxelGrid(grid, cloud);
 		subdivideCloud(grid, cloud);
 
-		for (auto& i : grid) {
-			for (const auto& voxel : i) {
-				vec3 center = voxel->getCenter();
-				if (voxel->getDensity() > getDensity(center) * 8.0f) {
+		for (size_t i = 0; i < grid.size(); i++) {
+			for (size_t j = 0; j < grid[i].size(); j++) {
+				vec3 center = grid[i][j]->getCenter();
+				if (grid[i][j]->getDensity() > getDensity(center) * 5.0f) {
 					vec3 pos = center;
 					pos.z = getHeight(center);
 					instancedModel->newInstance(pos);
+					const glm::vec3 size = grid[i][j]->getAABB().size();
+					//std::cout << "Comp-> " << treeSize.x << "/" << size.x << std::endl;
+					/*const unsigned x = treeSize.x / size.x;
+					const unsigned y = treeSize.y / size.y;
+					int startX = i, endX = i, startY = j, endY = j;
+					if (x > 0) {
+						startX = i - (x / 2 + 0.5);
+						endX = i + (x / 2 + 0.5);
+						if (startX < 0)
+							startX = 0;
+						if (endX >= grid[i].size())
+							endX = grid[i].size() - 1;
+					}
+					if (y > 0) {
+						startY = j - (y / 2 + 0.5);
+						endY = j + (y / 2 + 0.5);
+						if (startY < 0)
+							startY = 0;
+						if (endY >= grid[i].size())
+							endY = grid[i].size() - 1;
+					}
+					for (int k = startX; k < endX; ++k) {
+						for (int l = startY; l < endY; ++l) {
+							grid[k][l]->setVegetationMark();
+						}
+					}*/
+					/*std::cout << "Pos i:" << i << " - Pos j: " << j << " -> " << x << "-" << y << std::endl;
+					std::cout << "X: " << startX << "-" << endX << std::endl << "Y: " << startY << "-" << endY << std::endl << std::endl;*/
 				}
 			}
 		}
 
-		for (size_t x = 0; x < grid.size(); x++) {
-			for (size_t y = 0; y < grid[x].size(); y++) {
-				delete grid[x][y];
+		for (auto& line : grid) {
+			for (const auto& voxel : line) {
+				delete voxel;
 			}
 		}
 		this->progress = FLT_MAX;

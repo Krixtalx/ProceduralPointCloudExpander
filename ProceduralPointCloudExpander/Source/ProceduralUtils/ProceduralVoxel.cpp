@@ -62,6 +62,10 @@ void ProceduralVoxel::setColor(vec3 color) {
 	this->color = color;
 }
 
+void ProceduralVoxel::setVegetationMark() {
+	vegetationMark = true;
+}
+
 float ProceduralVoxel::getHeight() const {
 	return height;
 }
@@ -89,6 +93,14 @@ float ProceduralVoxel::getDensity() const {
 	return pointsIndex.size() / (size.x * size.y);
 }
 
+bool ProceduralVoxel::getVegetationMark() const {
+	return vegetationMark;
+}
+
+AABB ProceduralVoxel::getAABB() const {
+	return *aabb;
+}
+
 unsigned ProceduralVoxel::numberPointsToDensity(const float density) const {
 	const vec3 size = aabb->size();
 	const unsigned number = size.x * size.y * density;
@@ -97,13 +109,13 @@ unsigned ProceduralVoxel::numberPointsToDensity(const float density) const {
 	return 0;
 }
 
-std::vector<float> ProceduralVoxel::internalDistribution(unsigned divX, unsigned divY) {
+std::vector<float> ProceduralVoxel::internalDistribution(const unsigned divX, const unsigned divY) const {
 	std::vector<float> distribution;
 	distribution.resize(divX * divY);
-	auto& points = cloud->getPoints();
-	float xSize = aabb->size().x / divX;
-	float ySize = aabb->size().y / divY;
-	glm::vec3 minPoint = aabb->min();
+	const auto& points = cloud->getPoints();
+	const float xSize = aabb->size().x / divX;
+	const float ySize = aabb->size().y / divY;
+	const glm::vec3 minPoint = aabb->min();
 	unsigned currentMax = 0;
 	for (unsigned i : pointsIndex) {
 		unsigned posX = (points[i]._point.x - minPoint.x) / xSize;

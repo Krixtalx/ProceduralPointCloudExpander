@@ -8,9 +8,8 @@ InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const vec3& 
 	std::move(shaderProgram), pos),
 	newInstanceUpdate(false) {}
 
-InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos) : PointCloud(
-	std::move(shaderProgram), points, pos),
-	newInstanceUpdate(false) {}
+InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos) : PointCloud(std::move(shaderProgram), points, aabb, pos),
+newInstanceUpdate(false) {}
 
 void InstancedPointCloud::newInstance(const glm::vec3& pos) {
 	offsets.push_back(pos);

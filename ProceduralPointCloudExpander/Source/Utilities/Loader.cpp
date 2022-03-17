@@ -220,8 +220,7 @@ void Loader::readFromPlyWithClassification(const std::string& _filename) {
 	}
 }
 
-void Loader::readFromPlyWithoutClassification(const std::string& _filename)
-{
+void Loader::readFromPlyWithoutClassification(const std::string& _filename) {
 	std::vector<uint8_t> byteBuffer;
 
 	try {
@@ -322,7 +321,7 @@ void Loader::readFromPlyWithoutClassification(const std::string& _filename)
 		}
 		const auto cloud = new InstancedPointCloud("InstancingSP", _points, _aabb);
 		ModelManager::getInstance()->newModel(filename, cloud);
-
+		std::cout << filename << ": " << _aabb.size().x << "-" << _aabb.size().y << std::endl;
 	} catch (const std::runtime_error& e) {
 		std::cerr << "[Loader::readFromPly]: " << e.what() << std::endl;
 	} catch (const std::exception& e) {
@@ -334,6 +333,7 @@ void Loader::readFromPlyWithoutClassification(const std::string& _filename)
  * Public method for loading a point cloud.
  *
  * @param filename
+ * @param useClassification
  */
 void Loader::loadPointCloud(const std::string& filename, const bool useClassification) {
 	if (useClassification)
