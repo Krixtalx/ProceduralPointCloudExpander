@@ -37,7 +37,7 @@ ProceduralGenerator::~ProceduralGenerator() {
 void ProceduralGenerator::createVoxelGrid(std::vector<std::vector<ProceduralVoxel*>>&grid, PointCloud * pointCloud) {
 	std::cout << "Creating voxel grid..." << std::endl;
 	this->progress = 0.2f;
-	vec3 size = aabb.size();
+	vec3 size = pointCloud->getAABB().size();
 	const vec3 minPoint = pointCloud->getAABB().min();
 	float stride[2];
 
@@ -71,8 +71,8 @@ void ProceduralGenerator::subdivideCloud(const std::vector<std::vector<Procedura
 	this->progress = 0.4f;
 	const std::vector<PointModel>& points = pointCloud->getPoints();
 
-	vec3 size = aabb.size();
-	const vec3 minPoint = aabb.min();
+	vec3 size = pointCloud->getAABB().size();
+	const vec3 minPoint = pointCloud->getAABB().min();
 	float stride[2];
 
 	for (unsigned i = 0; i < 2; i++) {
@@ -459,10 +459,12 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 
 		createVoxelGrid(grid, cloud);
 		subdivideCloud(grid, cloud);
-
+		int c = 0;
 		for (size_t i = 0; i < grid.size(); i++) {
 			for (size_t j = 0; j < grid[i].size(); j++) {
 				vec3 center = grid[i][j]->getCenter();
+				if (grid[i][j]->getVegetationMark())
+					c++;
 				if (grid[i][j]->getDensity() > getDensity(center) * 2.0f && !grid[i][j]->getVegetationMark()) {
 					vec3 pos = center;
 					pos.z = getHeight(center);
@@ -487,17 +489,17 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 						if (endY >= grid[i].size())
 							endY = grid[i].size() - 1;
 					}
-					for (int k = startX; k < endX; ++k) {
-						for (int l = startY; l < endY; ++l) {
+					for (int k = startX; k <= endX; ++k) {
+						for (int l = startY; l <= endY; ++l) {
 							grid[k][l]->setVegetationMark();
 						}
 					}
-					/*std::cout << "Pos i:" << i << " - Pos j: " << j << " -> " << x << "-" << y << std::endl;
-					std::cout << "X: " << startX << "-" << endX << std::endl << "Y: " << startY << "-" << endY << std::endl << std::endl;*/
+					std::cout << "Pos i:" << i << " - Pos j: " << j << " -> " << treeSize.x << "-" << size.x << std::endl;
+					std::cout << "X: " << startX << "-" << endX << std::endl << "Y: " << startY << "-" << endY << std::endl << std::endl;
 				}
 			}
 		}
-
+		std::cout << "Q: " << c << std::endl;
 		for (auto& line : grid) {
 			for (const auto& voxel : line) {
 				delete voxel;
