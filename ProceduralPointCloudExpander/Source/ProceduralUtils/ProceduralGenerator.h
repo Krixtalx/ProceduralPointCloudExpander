@@ -34,9 +34,12 @@ protected:
 	void RegionRGBSegmentation(float distanceThreshold, float pointColorThreshold, float regionColorThreshold, unsigned minClusterSize);
 	void RegionRGBSegmentationUsingCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, float distanceThreshold, float pointColorThreshold, float regionColorThreshold, unsigned minClusterSize);
 
-	
+
 	void computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier);
 	void generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>& data);
+
+	void saveClusterBinary(const std::string& filename, const std::vector<PointCloud*>& clouds);
+	bool loadClusterBinary(const std::string& filename) const;
 
 public:
 	ProceduralGenerator();

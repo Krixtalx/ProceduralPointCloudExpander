@@ -18,8 +18,8 @@ public:
 
 	PPCX::Model* getModel(const std::string& key);
 	std::vector<std::pair<std::string, PPCX::Model*>> getAllModels();
-	std::vector<std::pair<std::string, PPCX::Model*>> getAllModelsLike(const std::string& key);
+	std::vector<std::pair<std::string, PPCX::Model*>> getAllModelsLike(const std::string& key) const;
 
-	void setAllVisibility(bool visible);
-	void setVisibility(std::string key, bool visible);
+	void setAllVisibility(bool visible) const;
+	void setVisibility(const std::string& key, bool visible) const;
 };

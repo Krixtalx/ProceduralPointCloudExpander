@@ -48,7 +48,7 @@ void ModelManager::deleteModel(const std::string& key) {
  * @return Pointer to the model indicated by the key
  */
 PPCX::Model* ModelManager::getModel(const std::string& key) {
-	auto model = models.find(key);
+	const auto model = models.find(key);
 	if (model == models.end())
 		throw std::runtime_error("[ModelManager::getModel]: Cannot find any model with that key.");
 	return model->second;
@@ -64,11 +64,11 @@ std::vector<std::pair<std::string, PPCX::Model*>> ModelManager::getAllModels() {
 	return vec;
 }
 
-std::vector<std::pair<std::string, PPCX::Model*>> ModelManager::getAllModelsLike(const std::string& key) {
+std::vector<std::pair<std::string, PPCX::Model*>> ModelManager::getAllModelsLike(const std::string& key) const {
 	std::vector<std::pair<std::string, PPCX::Model*>> vec;
-	for (auto model : models) {
+	for (const auto& model : models) {
 		if (model.first.find(key) != std::string::npos)
-			vec.push_back(model);
+			vec.emplace_back(model);
 	}
 	return vec;
 }
@@ -93,13 +93,13 @@ void ModelManager::drawAndDeleteSingleModel(const std::string& modelKey, const g
 	}
 }
 
-void ModelManager::setAllVisibility(bool visible) {
-	for (auto model : models) {
+void ModelManager::setAllVisibility(const bool visible) const {
+	for (const auto& model : models) {
 		model.second->getVisibility() = visible;
 	}
 }
 
-void ModelManager::setVisibility(std::string key, bool visible) {
+void ModelManager::setVisibility(const std::string& key, const bool visible) const {
 	for (auto model : models) {
 		if (model.first.find(key) != std::string::npos)
 			model.second->getVisibility() = visible;

@@ -1,8 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-struct PointModel
-{
+struct PointModel {
 	glm::vec3 _point;
 	unsigned	_rgb;
 
@@ -14,7 +13,7 @@ struct PointModel
 	/**
 	*	@return RGB color packed as a single unsigned value.
 	*/
-	glm::vec4 getRGBVec3() { return glm::unpackUnorm4x8(_rgb) * 255.0f; }
+	glm::vec4 getRGBVec3() const { return glm::unpackUnorm4x8(_rgb) * 255.0f; }
 
 	/**
 	*	@brief Packs an RGB color into an unsigned value.

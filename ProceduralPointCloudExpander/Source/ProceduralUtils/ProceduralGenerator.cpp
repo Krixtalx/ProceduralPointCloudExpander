@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "ProceduralGenerator.h"
+
+#include <filesystem>
+
 #include "tinynurbs.h"
 #include "Utilities/Image.h"
 #include <random>
@@ -168,7 +171,7 @@ float ProceduralGenerator::getDensity(const glm::vec2 pos) const {
 	if (x >= axisSubdivision[0])
 		x = axisSubdivision[0] - 1;
 	if (y >= axisSubdivision[1])
-		y= axisSubdivision[1] - 1;
+		y = axisSubdivision[1] - 1;
 
 	return voxelGrid[x][y]->getNumberOfPoints() / (stride[0] * stride[1]);
 }
@@ -350,46 +353,50 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 	this->progress = 1.15f;
 
 	const auto& points = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel("High vegetation"))->getPoints();
-	for (auto point : points) {
-		const glm::vec3 color = point.getRGBVec3();
-		cloud->emplace_back(pcl::PointXYZRGB(point._point.x, point._point.y, point._point.z, color.r, color.g, color.b));
-	}
-
-	pcl::RegionGrowingRGB<pcl::PointXYZRGB> reg;
-	reg.setInputCloud(cloud);
-	reg.setSearchMethod(tree);
-	reg.setDistanceThreshold(distanceThreshold);
-	reg.setPointColorThreshold(pointColorThreshold);
-	reg.setRegionColorThreshold(regionColorThreshold);
-	reg.setMinClusterSize(minClusterSize);
-
-	this->progress = 1.3f;
-	std::vector <pcl::PointIndices> clusters;
-	reg.extract(clusters);
-
-	this->progress = 1.8f;
-
-	PointModel point;
-	for (unsigned i = 0; i < clusters.size(); i++) {
-		const auto newCloud = new PointCloud("DefaultSP");
-		glm::vec3 color(rand() % 256, rand() % 256, rand() % 256);
-		for (const auto& origPoint : clusters[i].indices) {
-			point._point.x = (*cloud)[origPoint].x;
-			point._point.y = (*cloud)[origPoint].y;
-			point._point.z = (*cloud)[origPoint].z;
-
-			point.saveRGB(color);
-			newCloud->newPoint(point);
+	std::string filename = "dist-" + std::to_string(distanceThreshold);
+	filename.append("color-" + std::to_string(pointColorThreshold));
+	filename.append("regionColor-" + std::to_string(regionColorThreshold));
+	filename.append("minClusterSize-" + std::to_string(minClusterSize));
+	filename.append("-" + std::to_string(points.size()));
+	if (!this->loadClusterBinary(filename)) {
+		for (auto point : points) {
+			const glm::vec3 color = point.getRGBVec3();
+			cloud->emplace_back(pcl::PointXYZRGB(point._point.x, point._point.y, point._point.z, color.r, color.g, color.b));
 		}
 
-		ModelManager::getInstance()->modifyModel("RGB Region Segment " + std::to_string(i), newCloud);
-		generatedCloudsName.emplace_back("RGB Region Segment " + i);
-	}
-	auto allModels = ModelManager::getInstance()->getAllModels();
+		pcl::RegionGrowingRGB<pcl::PointXYZRGB> reg;
+		reg.setInputCloud(cloud);
+		reg.setSearchMethod(tree);
+		reg.setDistanceThreshold(distanceThreshold);
+		reg.setPointColorThreshold(pointColorThreshold);
+		reg.setRegionColorThreshold(regionColorThreshold);
+		reg.setMinClusterSize(minClusterSize);
 
-	/*for (auto model : allModels) {
-		std::cout << model.first << std::endl;
-	}*/
+		this->progress = 1.3f;
+		std::vector <pcl::PointIndices> clusters;
+		reg.extract(clusters);
+
+		this->progress = 1.8f;
+
+		PointModel point;
+		std::vector<PointCloud*> clouds;
+		for (unsigned i = 0; i < clusters.size(); i++) {
+			const auto newCloud = new PointCloud("DefaultSP");
+			glm::vec3 color(rand() % 256, rand() % 256, rand() % 256);
+			for (const auto& origPoint : clusters[i].indices) {
+				point._point.x = (*cloud)[origPoint].x;
+				point._point.y = (*cloud)[origPoint].y;
+				point._point.z = (*cloud)[origPoint].z;
+
+				point.saveRGB(color);
+				newCloud->newPoint(point);
+			}
+			clouds.push_back(newCloud);
+			ModelManager::getInstance()->modifyModel("RGB Region Segment " + std::to_string(i), newCloud);
+			generatedCloudsName.emplace_back("RGB Region Segment " + i);
+		}
+		this->saveClusterBinary(filename, clouds);
+	}
 
 	this->progress = FLT_MAX;
 }
@@ -456,14 +463,13 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 		for (size_t i = 0; i < grid.size(); i++) {
 			for (size_t j = 0; j < grid[i].size(); j++) {
 				vec3 center = grid[i][j]->getCenter();
-				if (grid[i][j]->getDensity() > getDensity(center) * 5.0f) {
+				if (grid[i][j]->getDensity() > getDensity(center) * 2.0f && !grid[i][j]->getVegetationMark()) {
 					vec3 pos = center;
 					pos.z = getHeight(center);
 					instancedModel->newInstance(pos);
 					const glm::vec3 size = grid[i][j]->getAABB().size();
-					//std::cout << "Comp-> " << treeSize.x << "/" << size.x << std::endl;
-					/*const unsigned x = treeSize.x / size.x;
-					const unsigned y = treeSize.y / size.y;
+					const float x = treeSize.x / size.x;
+					const float y = treeSize.y / size.y;
 					int startX = i, endX = i, startY = j, endY = j;
 					if (x > 0) {
 						startX = i - (x / 2 + 0.5);
@@ -485,7 +491,7 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 						for (int l = startY; l < endY; ++l) {
 							grid[k][l]->setVegetationMark();
 						}
-					}*/
+					}
 					/*std::cout << "Pos i:" << i << " - Pos j: " << j << " -> " << x << "-" << y << std::endl;
 					std::cout << "X: " << startX << "-" << endX << std::endl << "Y: " << startY << "-" << endY << std::endl << std::endl;*/
 				}
@@ -500,6 +506,7 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 		this->progress = FLT_MAX;
 	}
 }
+
 
 
 //======================== Auxiliar methods ======================================
@@ -661,4 +668,47 @@ void ProceduralGenerator::savePointCloud(const std::string & path) const {
 	//aux.push_back(terrainCloud[1]);
 	std::thread thread(&Loader::savePointCloud, path, aux);
 	thread.detach();
+}
+
+void ProceduralGenerator::saveClusterBinary(const std::string & filename, const std::vector<PointCloud*>&clouds) {
+	std::ofstream wf(filename + ".bin", std::ios::out | std::ios::binary);
+	if (!wf.is_open()) {
+		throw std::runtime_error("Error while writing binary cluster file");
+	}
+	for (const auto& cloud : clouds) {
+		const size_t numPoints = cloud->getNumberOfPoints();
+		wf.write((char*)&numPoints, sizeof(size_t));
+		wf.write((char*)&cloud->getPoints()[0], numPoints * sizeof(PointModel));
+		wf.write((char*)&cloud->getAABB(), sizeof(AABB));
+
+	}
+	wf.close();
+}
+
+bool ProceduralGenerator::loadClusterBinary(const std::string & filename) const {
+	if (std::filesystem::exists(filename + ".bin")) {
+		std::ifstream rf(filename + ".bin", std::ios::in | std::ios::binary);
+		if (!rf.is_open()) {
+			throw std::runtime_error("Error while reading binary cluster file");
+		}
+		unsigned i = 0;
+		while (!rf.eof()) {
+			size_t numPoints;
+			std::vector<PointModel> points;
+			AABB _aabb;
+
+			rf.read((char*)&numPoints, sizeof(size_t));
+			points.resize(numPoints);
+			rf.read((char*)&points[0], numPoints * sizeof(PointModel));
+			rf.read((char*)&_aabb, sizeof(AABB));
+
+			PointCloud* cloud = new PointCloud("DefaultSP", points, aabb);
+			ModelManager::getInstance()->newModel("RGB Region Segment" + std::to_string(i), cloud);
+			generatedCloudsName.emplace_back("RGB Region Segment " + i);
+			i++;
+		}
+		rf.close();
+		return true;
+	}
+	return false;
 }
