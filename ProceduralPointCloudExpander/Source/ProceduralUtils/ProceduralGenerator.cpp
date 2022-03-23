@@ -474,7 +474,7 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 					const float y = treeSize.y / size.y;
 					int startX = i, endX = i, startY = j, endY = j;
 					if (x > 0) {
-						startX = i - (x / 2 + 0.5);
+						startX = i;
 						endX = i + (x / 2 + 0.5);
 						if (startX < 0)
 							startX = 0;
@@ -482,7 +482,7 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 							endX = grid[i].size() - 1;
 					}
 					if (y > 0) {
-						startY = j - (y / 2 + 0.5);
+						startY = j;
 						endY = j + (y / 2 + 0.5);
 						if (startY < 0)
 							startY = 0;
@@ -494,8 +494,8 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 							grid[k][l]->setVegetationMark();
 						}
 					}
-					std::cout << "Pos i:" << i << " - Pos j: " << j << " -> " << treeSize.x << "-" << size.x << std::endl;
-					std::cout << "X: " << startX << "-" << endX << std::endl << "Y: " << startY << "-" << endY << std::endl << std::endl;
+					/*std::cout << "Pos i:" << i << " - Pos j: " << j << " -> " << treeSize.x << "-" << size.x << std::endl;
+					std::cout << "X: " << startX << "-" << endX << std::endl << "Y: " << startY << "-" << endY << std::endl << std::endl;*/
 				}
 			}
 		}
