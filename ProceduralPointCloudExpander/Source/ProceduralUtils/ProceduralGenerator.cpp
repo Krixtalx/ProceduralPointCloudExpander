@@ -450,6 +450,7 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 }
 
 void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>&data) {
+	int c = 0;
 	for (auto& pair : data) {
 		std::cout << pair.first << std::endl;
 		std::vector<std::vector<ProceduralVoxel*>> grid;
@@ -459,7 +460,6 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 
 		createVoxelGrid(grid, cloud);
 		subdivideCloud(grid, cloud);
-		int c = 0;
 		for (size_t i = 0; i < grid.size(); i++) {
 			for (size_t j = 0; j < grid[i].size(); j++) {
 				vec3 center = grid[i][j]->getCenter();
@@ -468,24 +468,18 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 				if (grid[i][j]->getDensity() > getDensity(center) * 2.0f && !grid[i][j]->getVegetationMark()) {
 					vec3 pos = center;
 					pos.z = getHeight(center);
-					instancedModel->newInstance(pos);
+					instancedModel->newInstance(pos, { 0, 0,rand()%360 }, { 1,1,1 });
 					const glm::vec3 size = grid[i][j]->getAABB().size();
 					const float x = treeSize.x / size.x;
 					const float y = treeSize.y / size.y;
 					int startX = i, endX = i, startY = j, endY = j;
 					if (x > 0) {
-						startX = i;
 						endX = i + (x / 2 + 0.5);
-						if (startX < 0)
-							startX = 0;
 						if (endX >= grid[i].size())
 							endX = grid[i].size() - 1;
 					}
 					if (y > 0) {
-						startY = j;
 						endY = j + (y / 2 + 0.5);
-						if (startY < 0)
-							startY = 0;
 						if (endY >= grid[i].size())
 							endY = grid[i].size() - 1;
 					}
@@ -499,14 +493,16 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 				}
 			}
 		}
-		std::cout << "Q: " << c << std::endl;
 		for (auto& line : grid) {
 			for (const auto& voxel : line) {
 				delete voxel;
 			}
 		}
-		this->progress = FLT_MAX;
+
 	}
+
+	std::cout << "Q: " << c << std::endl;
+	this->progress = FLT_MAX;
 }
 
 
