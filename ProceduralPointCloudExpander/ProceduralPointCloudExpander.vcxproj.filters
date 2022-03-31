@@ -162,6 +162,18 @@
     <ClCompile Include="Source\RendererCore\InstancedPointCloud.cpp">
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
+    <ClCompile Include="Source\RendererCore\Luz.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RendererCore\Material.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RendererCore\MaterialManager.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RendererCore\TriangleMesh.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RendererCore\ShaderProgram.h">
@@ -260,6 +272,18 @@
     <ClInclude Include="Source\RendererCore\InstancedPointCloud.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
+    <ClInclude Include="Source\RendererCore\Luz.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\Material.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\MaterialManager.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RendererCore\TriangleMesh.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Shaders\FragmentShader.glsl">
@@ -269,6 +293,18 @@
       <Filter>Archivos de recursos\Shaders</Filter>
     </None>
     <None Include="Source\Shaders\InstancingVertexShader.glsl">
+      <Filter>Archivos de recursos\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\fs-ms.glsl">
+      <Filter>Archivos de recursos\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\pag-fs.glsl">
+      <Filter>Archivos de recursos\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\pag-vs.glsl">
+      <Filter>Archivos de recursos\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\vs-ms.glsl">
       <Filter>Archivos de recursos\Shaders</Filter>
     </None>
   </ItemGroup>

@@ -4,11 +4,11 @@
 
 #include <utility>
 
-InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const vec3& pos) : PointCloud(
-	std::move(shaderProgram), pos),
+InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const vec3& pos, const glm::vec3& rot, const glm::vec3& scale) : PointCloud(
+	std::move(shaderProgram), pos, rot, scale),
 	newInstanceUpdate(false) {}
 
-InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos) : PointCloud(std::move(shaderProgram), points, aabb, pos),
+InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos, const glm::vec3& rot, const glm::vec3& scale) : PointCloud(std::move(shaderProgram), points, aabb, pos, rot, scale),
 newInstanceUpdate(false) {}
 
 void InstancedPointCloud::newInstance(const glm::vec3& position, const glm::vec3& rot, const glm::vec3& scale) {

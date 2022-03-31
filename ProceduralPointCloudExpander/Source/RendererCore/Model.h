@@ -6,7 +6,6 @@
 #define PAG_MODEL_H
 
 #include "stdafx.h"
-#include "Utilities/Point.h"
 
 namespace PPCX {
 	class Model {
@@ -16,12 +15,12 @@ namespace PPCX {
 		GLuint idIBO;
 
 		std::string shaderProgram;
-		glm::vec3 pos;
+		glm::mat4 mModelado{};
 
 		bool visible = true;
 
 	public:
-		Model(std::string shaderProgram, const glm::vec3& pos = { 0, 0, 0 });
+		Model(std::string shaderProgram, const glm::vec3& pos = { 0, 0, 0 }, const glm::vec3& rot = { 0, 0, 0 }, const glm::vec3& scale = { 1, 1, 1 });
 
 		Model(Model& orig);
 

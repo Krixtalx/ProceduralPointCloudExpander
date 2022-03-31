@@ -46,7 +46,7 @@ namespace PPCX {
 
 		void screenshot(const std::string& filename);
 
-		void pendingScreenshot(const std::string& filename, const std::string& modelKey);
+		void pendingScreenshot(const std::string& filename, const std::string& modelKey) const;
 
 		void addPendingScreenshot(const std::string& filename, const std::string& modelKey);
 

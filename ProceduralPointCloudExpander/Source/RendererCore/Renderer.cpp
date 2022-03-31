@@ -9,6 +9,10 @@
 #include "RendererCore/ModelManager.h"
 #include <RendererCore/InstancedPointCloud.h>
 
+#include "Material.h"
+#include "MaterialManager.h"
+#include "TriangleMesh.h"
+
 
 PPCX::Renderer* PPCX::Renderer::instancia = nullptr;
 
@@ -20,15 +24,26 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->nuevoShader("VertexShader", GL_VERTEX_SHADER, "Source/Shaders/VertexShader.glsl");
 		ShaderManager::getInstancia()->nuevoShader("InstancingVertexShader", GL_VERTEX_SHADER, "Source/Shaders/InstancingVertexShader.glsl");
 		ShaderManager::getInstancia()->nuevoShader("FragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/FragmentShader.glsl");
+		ShaderManager::getInstancia()->nuevoShader("FullVertexShader", GL_VERTEX_SHADER, "Source/Shaders/pag-vs.glsl");
+		ShaderManager::getInstancia()->nuevoShader("FullFragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/pag-fs.glsl");
 		ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
 		ShaderManager::getInstancia()->nuevoShaderProgram("InstancingSP");
 		ShaderManager::getInstancia()->addShaderToSP("InstancingVertexShader", "InstancingSP");
 		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "InstancingSP");
+		ShaderManager::getInstancia()->nuevoShaderProgram("TriangleMeshSP");
+		ShaderManager::getInstancia()->addShaderToSP("FullVertexShader", "TriangleMeshSP");
+		ShaderManager::getInstancia()->addShaderToSP("FullFragmentShader", "TriangleMeshSP");
 
 		Loader::loadPointCloud("OliveTree", false);
 		Loader::loadPointCloud("PineTree", false);
+		/*PPCX::MaterialManager::getInstancia()->nuevoMaterial("Vaca",
+													   new PPCX::Material({ 0.7, 0.15, 0.7 }, { 1, 1, 1 }, { 0.8, 0.8, 0.8 },
+																	32, "spot_texture.png"));
+		auto newTriangleMesh = new TriangleMesh("TriangleMeshSP", "vaca.obj");
+		newTriangleMesh->setMaterial("Vaca");
+		ModelManager::getInstance()->newModel("Test", newTriangleMesh);*/
 	} catch (std::runtime_error& e) {
 		throw;
 	}
@@ -124,8 +139,8 @@ void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, 
 }
 
 void PPCX::Renderer::screenshot(const std::string& filename) {
-	GLuint ancho = camara.getAncho();
-	GLuint alto = camara.getAlto();
+	const GLuint ancho = camara.getAncho();
+	const GLuint alto = camara.getAlto();
 
 	// Creación de un FBO
 	GLuint idFBO;
@@ -159,7 +174,7 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, idRBO);
 
 	// Se comprueba que el FBO está listo para su uso
-	GLenum estado = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	const GLenum estado = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (estado != GL_FRAMEBUFFER_COMPLETE) {
 		// Hay un error. Se genera una excepción
 	}
@@ -170,8 +185,8 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	// Lanzar el proceso de rendering
 	refrescar();
 	// Finalizado el proceso de rendering, se recupera el contenido del FBO
-	GLubyte* pixeles = new GLubyte[ancho * alto * 4];
-	GLubyte* flipped = new GLubyte[ancho * alto * 4];
+	auto* pixeles = new GLubyte[ancho * alto * 4];
+	auto* flipped = new GLubyte[ancho * alto * 4];
 
 	glReadPixels(0, 0, ancho, alto, GL_RGBA, GL_UNSIGNED_BYTE, pixeles);
 
@@ -207,9 +222,9 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	std::cout << "Screenshot taken" << std::endl;
 }
 
-void PPCX::Renderer::pendingScreenshot(const std::string& filename, const std::string& modelKey) {
-	GLuint ancho = camara.getAncho();
-	GLuint alto = camara.getAlto();
+void PPCX::Renderer::pendingScreenshot(const std::string& filename, const std::string& modelKey) const {
+	const GLuint ancho = camara.getAncho();
+	const GLuint alto = camara.getAlto();
 
 	// Creación de un FBO
 	GLuint idFBO;
@@ -253,7 +268,7 @@ void PPCX::Renderer::pendingScreenshot(const std::string& filename, const std::s
 	glViewport(0, 0, ancho, alto);
 	// Lanzar el proceso de rendering
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	auto matrix = camara.matrizMVP();
+	const auto matrix = camara.matrizMVP();
 	ModelManager::getInstance()->drawAndDeleteSingleModel(modelKey, matrix);
 	// Finalizado el proceso de rendering, se recupera el contenido del FBO
 	GLubyte* pixeles = nullptr;
@@ -293,7 +308,7 @@ void PPCX::Renderer::addPendingScreenshot(const std::string& filename, const std
   * @param width ancho de la ventana
   * @param height alto de la ventana
   */
-void PPCX::Renderer::setViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
+void PPCX::Renderer::setViewport(const GLint x, const GLint y, const GLsizei width, const GLsizei height) {
 	glViewport(x, y, width, height);
 	camara.setAlto(height);
 	camara.setAncho(width);

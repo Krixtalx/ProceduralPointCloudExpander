@@ -2,8 +2,8 @@
 // Created by Niskp on 18/10/2021.
 //
 
-#ifndef PAG_CAMARA_H
-#define PAG_CAMARA_H
+#ifndef PPCX_CAMARA_H
+#define PPCX_CAMARA_H
 
 #include "stdafx.h"
 
@@ -91,13 +91,13 @@ namespace PPCX {
 		
 		void setOrthoPoints(glm::vec2 minPoint, glm::vec2 maxPoint);
 
-		GLuint getAncho();
+		GLuint getAncho() const;
 
-		GLuint getAlto();
+		GLuint getAlto() const;
 
 		void changeCamaraType();
 	};
 }
 
 
-#endif //PAG_CAMARA_H
+#endif //PPCX_CAMARA_H

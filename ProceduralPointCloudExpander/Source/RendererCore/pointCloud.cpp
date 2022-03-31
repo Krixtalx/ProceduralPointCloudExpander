@@ -6,7 +6,7 @@
 #include "GeometryUtils/AABB.h"
 
 
-PointCloud::PointCloud(std::string shaderProgram, const vec3& pos) : Model(std::move(shaderProgram), pos) {}
+PointCloud::PointCloud(std::string shaderProgram, const vec3& pos, const glm::vec3& rot, const glm::vec3& scale) : Model(std::move(shaderProgram), pos, rot, scale) {}
 
 /**
  * Constructor parametrizado
@@ -15,9 +15,8 @@ PointCloud::PointCloud(std::string shaderProgram, const vec3& pos) : Model(std::
  * @param aabb
  * @param pos Posicion inicial de la nube de puntos
  */
-PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const
-					   vec3& pos) :
-	Model(std::move(shaderProgram), pos), aabb(aabb), needUpdating(true) {
+PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos, const glm::vec3& rot, const glm::vec3& scale) :
+	Model(std::move(shaderProgram), pos, rot, scale), aabb(aabb), needUpdating(true) {
 	newPoints(points);
 }
 
@@ -148,5 +147,5 @@ float PointCloud::getDensity() const {
 }
 
 glm::vec3 PointCloud::getRandomPointColor() {
-	return vbo[rand()%vbo.size()].getRGBVec3();
+	return vbo[rand() % vbo.size()].getRGBVec3();
 }

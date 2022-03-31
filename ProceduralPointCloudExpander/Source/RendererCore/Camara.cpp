@@ -31,15 +31,16 @@ ancho(anchoVentanaPorDefecto) {
  * @param alto del viewport
  * @param ancho del viewport
  */
-PPCX::Camara::Camara(const glm::vec3& posicion, const glm::vec3& puntoMira, const glm::vec3& up, GLfloat zNear,
-					 GLfloat zFar, GLfloat fovX, GLuint alto, GLuint ancho) : posicion(posicion), puntoMira(puntoMira),
+PPCX::Camara::Camara(const glm::vec3& posicion, const glm::vec3& puntoMira, const glm::vec3& up, const GLfloat zNear,
+					 const GLfloat zFar, const GLfloat fovX, const GLuint alto, const GLuint ancho) :
+	posicion(posicion), puntoMira(puntoMira),
 	up(up), zNear(zNear), zFar(zFar),
-	alto(alto), ancho(ancho) {
+	fovX(glm::radians(fovX)), alto(alto), ancho(ancho) {
 	minPoint.x = aspecto() * 5;
 	minPoint.y = 5;
 	maxPoint.x = aspecto() * 5;
 	maxPoint.y = 5;
-	this->fovX = glm::radians(fovX);
+
 	calcularFovY();
 	calcularEjes();
 }
@@ -100,7 +101,7 @@ void PPCX::Camara::calcularFovY() {
   * Movimiento truck de la camara. Mueve la camara hacia delante o hacia atrás
   * @param mov magnitud del movimiento
   */
-void PPCX::Camara::truck(float mov) {
+void PPCX::Camara::truck(const float mov) {
 	const glm::mat4 translacion = translate(n * mov * speedMultiplier);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
@@ -110,7 +111,7 @@ void PPCX::Camara::truck(float mov) {
  * Movimiento dolly de la camara. Mueve la camara hacia la izquierda o hacia la derecha
  * @param mov magnitud del movimiento
  */
-void PPCX::Camara::dolly(float mov) {
+void PPCX::Camara::dolly(const float mov) {
 	const glm::mat4 translacion = translate(u * mov * speedMultiplier);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
@@ -120,7 +121,7 @@ void PPCX::Camara::dolly(float mov) {
  * Movimiento boom de la cámara. Mueve la cámara hacia arriba
  * @param mov magnitud del movimiento
  */
-void PPCX::Camara::boom(float mov) {
+void PPCX::Camara::boom(const float mov) {
 	const glm::mat4 translacion = translate(v * mov * speedMultiplier);
 	posicion = glm::vec3(translacion * glm::vec4(posicion, 1));
 	puntoMira = glm::vec3(translacion * glm::vec4(puntoMira, 1));
@@ -130,7 +131,7 @@ void PPCX::Camara::boom(float mov) {
  * Movimiento boom de la cámara. Mueve la cámara hacia abajo
  * @param mov magnitud del movimiento
  */
-void PPCX::Camara::crane(float mov) {
+void PPCX::Camara::crane(const float mov) {
 	boom(-mov);
 }
 
@@ -138,7 +139,7 @@ void PPCX::Camara::crane(float mov) {
  * Movimiento pan de la cámara. Rota la cámara horizontalmente
  * @param mov magnitud del movimiento
  */
-void PPCX::Camara::pan(float mov) {
+void PPCX::Camara::pan(const float mov) {
 	const glm::mat4 rotacion = rotate(glm::radians(mov), v);
 	puntoMira = glm::vec3(rotacion * glm::vec4(puntoMira - posicion, 1)) + posicion;
 	u = glm::vec3(rotacion * glm::vec4(u, 0.0f));
@@ -151,11 +152,11 @@ void PPCX::Camara::pan(float mov) {
  * Movimiento tilt de la cámara. Rota la cámara verticalmente
  * @param mov magnitud del movimiento
  */
-void PPCX::Camara::tilt(float mov) {
+void PPCX::Camara::tilt(const float mov) {
 	const glm::mat4 rotacion = rotate(glm::radians(mov), u);
 
-	const glm::vec3 aux = glm::vec3(rotacion * glm::vec4(n, 0.0f));
-	float alpha = glm::acos(dot(aux, glm::vec3(0.0f, 1.0f, 0.0f)));
+	const auto aux = glm::vec3(rotacion * glm::vec4(n, 0.0f));
+	const float alpha = glm::acos(dot(aux, glm::vec3(0.0f, 1.0f, 0.0f)));
 
 	if (alpha < mov || alpha >(glm::pi<float>() - mov)) {
 		return;
@@ -172,7 +173,7 @@ void PPCX::Camara::tilt(float mov) {
  * Orbita en longitud alrededor del punto al que se mira.
  * @param mov magnitud del movimiento
  */
-void PPCX::Camara::orbitX(float mov) {
+void PPCX::Camara::orbitX(const float mov) {
 	const glm::mat4 rotacion = rotate(glm::radians(mov), glm::vec3(.0f, .0f, 1.0f));
 	posicion = glm::vec3(rotacion * glm::vec4(posicion - puntoMira, 1)) + puntoMira;
 	u = glm::vec3(rotacion * glm::vec4(u, 0.0f));
@@ -194,7 +195,7 @@ void PPCX::Camara::orbitY(float mov) {
 	up = normalize(cross(n, u));
 }
 
-void PPCX::Camara::increaseZFar(float mov) {
+void PPCX::Camara::increaseZFar(const float mov) {
 	zFar += mov;
 }
 
@@ -244,36 +245,36 @@ void PPCX::Camara::reset() {
   * @return relacion de aspecto del viewport
   */
 GLfloat PPCX::Camara::aspecto() const {
-	return (GLfloat(ancho) / GLfloat(alto));
+	return (static_cast<GLfloat>(ancho) / static_cast<GLfloat>(alto));
 }
 
-void PPCX::Camara::setAlto(GLuint alto) {
+void PPCX::Camara::setAlto(const GLuint alto) {
 	Camara::alto = alto;
 	delete backup;
 	backup = new Camara(*this);
 }
 
-void PPCX::Camara::setAncho(GLuint ancho) {
+void PPCX::Camara::setAncho(const GLuint ancho) {
 	Camara::ancho = ancho;
 	delete backup;
 	backup = new Camara(*this);
 }
 
-void PPCX::Camara::setPosicion(glm::vec3 pos) {
+void PPCX::Camara::setPosicion(const glm::vec3 pos) {
 	posicion = pos;
 	calcularEjes();
 	delete backup;
 	backup = new Camara(*this);
 }
 
-void PPCX::Camara::setPuntoMira(glm::vec3 punto) {
+void PPCX::Camara::setPuntoMira(const glm::vec3 punto) {
 	puntoMira = punto;
 	calcularEjes();
 	delete backup;
 	backup = new Camara(*this);
 }
 
-void PPCX::Camara::setSpeedMultiplier(float speed) {
+void PPCX::Camara::setSpeedMultiplier(const float speed) {
 	speedMultiplier = speed;
 }
 
@@ -281,17 +282,17 @@ void PPCX::Camara::changeCamaraType() {
 	perspective = !perspective;
 }
 
-void PPCX::Camara::setOrthoPoints(glm::vec2 minPoint, glm::vec2 maxPoint) {
+void PPCX::Camara::setOrthoPoints(const glm::vec2 minPoint, const glm::vec2 maxPoint) {
 	this->minPoint = minPoint;
 	this->maxPoint = maxPoint;
 	backup->maxPoint = maxPoint;
 	backup->minPoint = minPoint;
 }
 
-GLuint PPCX::Camara::getAncho() {
+GLuint PPCX::Camara::getAncho() const {
 	return ancho;
 }
 
-GLuint PPCX::Camara::getAlto() {
+GLuint PPCX::Camara::getAlto() const {
 	return alto;
 }
