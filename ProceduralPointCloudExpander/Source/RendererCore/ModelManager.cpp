@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "ModelManager.h"
 
+#include "PointCloud.h"
+#include "Utilities/Loader.h"
+
 
 ModelManager::~ModelManager() {
 	for (const auto& model : models) {
@@ -104,4 +107,17 @@ void ModelManager::setVisibility(const std::string& key, const bool visible) con
 		if (model.first.find(key) != std::string::npos)
 			model.second->getVisibility() = visible;
 	}
+}
+
+void ModelManager::exportAllVisibleModels(const std::string& filename) const {
+	std::vector<PointCloud*> clouds;
+	for (const auto& model : models) {
+		if (model.second->getVisibility()) {
+			if (auto* cloud = dynamic_cast<PointCloud*>(model.second)) {
+				clouds.push_back(cloud);
+			}
+		}
+	}
+	std::thread thread(&Loader::savePointCloud, filename, clouds);
+	thread.detach();
 }

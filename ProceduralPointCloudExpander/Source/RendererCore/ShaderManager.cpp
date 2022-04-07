@@ -90,7 +90,7 @@ void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::str
 	if (SP != shaderPrograms.end()) {
 		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
 		if (location >= 0) {
-			glUniformMatrix4fv(location, 1, false, glm::value_ptr(matriz));
+			glUniformMatrix4fv(location, 1, false, value_ptr(matriz));
 		} else
 			throw std::runtime_error(
 				"[ShaderManager]: No se ha encontrado ninguna variable con el nombre " + variable +
@@ -112,7 +112,7 @@ void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::str
 	if (SP != shaderPrograms.end()) {
 		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
 		if (location >= 0) {
-			glUniform3fv(location, 1, glm::value_ptr(vec));
+			glUniform3fv(location, 1, value_ptr(vec));
 		} else
 			throw std::runtime_error(
 				"[ShaderManager]: No se ha encontrado ninguna variable con el nombre " + variable +

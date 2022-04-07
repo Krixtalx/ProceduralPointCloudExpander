@@ -36,7 +36,7 @@ PPCX::MaterialManager::~MaterialManager() {
  * @param nombreMaterial nombre con el que se guardará
  * @param material a guardar
  */
-void PPCX::MaterialManager::nuevoMaterial(const std::string &nombreMaterial, PPCX::Material *material) {
+void PPCX::MaterialManager::nuevoMaterial(const std::string &nombreMaterial, Material*material) {
 	materiales.insert(std::make_pair(nombreMaterial, material));
 }
 

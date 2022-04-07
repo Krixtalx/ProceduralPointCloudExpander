@@ -136,7 +136,7 @@ void ProceduralGenerator::computeHeightAndColor() {
 	}
 }
 
-float ProceduralGenerator::getHeight(const glm::vec2 pos) const {
+float ProceduralGenerator::getHeight(const vec2 pos) const {
 	vec3 size = aabb.size();
 	const vec3 minPoint = aabb.min();
 	float stride[2];
@@ -145,7 +145,7 @@ float ProceduralGenerator::getHeight(const glm::vec2 pos) const {
 		stride[i] = size[i] / axisSubdivision[i];
 	}
 
-	const vec2 relativePoint = pos - glm::vec2(minPoint);
+	const vec2 relativePoint = pos - vec2(minPoint);
 	int x = floor(relativePoint.x / stride[0]);
 	int y = floor(relativePoint.y / stride[1]);
 	if (x == axisSubdivision[0])
@@ -156,7 +156,7 @@ float ProceduralGenerator::getHeight(const glm::vec2 pos) const {
 	return voxelGrid[x][y]->getHeight();
 }
 
-float ProceduralGenerator::getDensity(const glm::vec2 pos) const {
+float ProceduralGenerator::getDensity(const vec2 pos) const {
 	vec3 size = aabb.size();
 	const vec3 minPoint = aabb.min();
 	float stride[2];
@@ -165,7 +165,7 @@ float ProceduralGenerator::getDensity(const glm::vec2 pos) const {
 		stride[i] = size[i] / axisSubdivision[i];
 	}
 
-	const vec2 relativePoint = pos - glm::vec2(minPoint);
+	const vec2 relativePoint = pos - vec2(minPoint);
 	int x = floor(relativePoint.x / stride[0]);
 	int y = floor(relativePoint.y / stride[1]);
 	if (x >= axisSubdivision[0])
@@ -181,7 +181,7 @@ void ProceduralGenerator::testRGBSegmentation() {
 	const pcl::PointCloud <pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud <pcl::PointXYZRGB>);
 	const auto& points = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel("High vegetation"))->getPoints();
 	for (auto point : points) {
-		const glm::vec3 color = point.getRGBVec3();
+		const vec3 color = point.getRGBVec3();
 		cloud->emplace_back(pcl::PointXYZRGB(point._point.x, point._point.y, point._point.z, color.r, color.g, color.b));
 	}
 	#pragma omp parallel for
@@ -339,8 +339,9 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 				}
 			}
 		}
-
-		ModelManager::getInstance()->modifyModel("Nurbs terrain cloud", new PointCloud("DefaultSP", points, newAABB));
+		auto cloud = new PointCloud("DefaultSP", points, newAABB);
+		cloud->optimize();
+		ModelManager::getInstance()->modifyModel("Nurbs terrain cloud", cloud);
 		this->progress = FLT_MAX;
 	}
 }
@@ -360,7 +361,7 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 	filename.append("-" + std::to_string(points.size()));
 	if (!this->loadClusterBinary(filename)) {
 		for (auto point : points) {
-			const glm::vec3 color = point.getRGBVec3();
+			const vec3 color = point.getRGBVec3();
 			cloud->emplace_back(pcl::PointXYZRGB(point._point.x, point._point.y, point._point.z, color.r, color.g, color.b));
 		}
 
@@ -382,7 +383,7 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 		std::vector<PointCloud*> clouds;
 		for (unsigned i = 0; i < clusters.size(); i++) {
 			const auto newCloud = new PointCloud("DefaultSP");
-			glm::vec3 color(rand() % 256, rand() % 256, rand() % 256);
+			vec3 color(rand() % 256, rand() % 256, rand() % 256);
 			for (const auto& origPoint : clusters[i].indices) {
 				point._point.x = (*cloud)[origPoint].x;
 				point._point.y = (*cloud)[origPoint].y;
@@ -438,7 +439,7 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 		point._point.y = (*colored_cloud)[i].y;
 		point._point.z = (*colored_cloud)[i].z;
 
-		point.saveRGB(glm::vec3((*colored_cloud)[i].r, (*colored_cloud)[i].g, (*colored_cloud)[i].b));
+		point.saveRGB(vec3((*colored_cloud)[i].r, (*colored_cloud)[i].g, (*colored_cloud)[i].b));
 		newCloud->newPoint(point);
 	}
 	ModelManager::getInstance()->newModel("RGB Region Segmentation" + currentRegion, newCloud);
@@ -450,26 +451,24 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 }
 
 void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>&data) {
-	int c = 0;
+
 	for (auto& pair : data) {
 		std::cout << pair.first << std::endl;
 		std::vector<std::vector<ProceduralVoxel*>> grid;
 		const auto& cloud = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel(pair.first));
 		const auto& instancedModel = dynamic_cast<InstancedPointCloud*>(ModelManager::getInstance()->getModel(pair.second));
-		const glm::vec3 treeSize = instancedModel->getAABB().size();
+		const vec3 treeSize = instancedModel->getAABB().size();
 
 		createVoxelGrid(grid, cloud);
 		subdivideCloud(grid, cloud);
 		for (size_t i = 0; i < grid.size(); i++) {
 			for (size_t j = 0; j < grid[i].size(); j++) {
 				vec3 center = grid[i][j]->getCenter();
-				if (grid[i][j]->getVegetationMark())
-					c++;
 				if (grid[i][j]->getDensity() > getDensity(center) * 2.0f && !grid[i][j]->getVegetationMark()) {
 					vec3 pos = center;
 					pos.z = getHeight(center);
-					instancedModel->newInstance(pos, { 0, 0,rand()%360 }, { 1,1,1 });
-					const glm::vec3 size = grid[i][j]->getAABB().size();
+					instancedModel->newInstance(pos, { 0, 0,rand() % 360 }, { 1,1,1 });
+					const vec3 size = grid[i][j]->getAABB().size();
 					const float x = treeSize.x / size.x;
 					const float y = treeSize.y / size.y;
 					int startX = i, endX = i, startY = j, endY = j;
@@ -500,8 +499,6 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 		}
 
 	}
-
-	std::cout << "Q: " << c << std::endl;
 	this->progress = FLT_MAX;
 }
 

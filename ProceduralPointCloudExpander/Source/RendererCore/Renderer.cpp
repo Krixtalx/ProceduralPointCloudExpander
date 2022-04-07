@@ -131,7 +131,7 @@ void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, 
 		camara.setSpeedMultiplier((pCloud->getAABB().size().x + pCloud->getAABB().size().y) * 0.02f);
 		const float y = sqrt((pow(dist, 2) - pow(camara.aspecto(), 2) / 2));
 		const float x = camara.aspecto() * y;
-		camara.setOrthoPoints(glm::vec2(-x, -y), glm::vec2(x, y));
+		camara.setOrthoPoints(vec2(-x, -y), vec2(x, y));
 
 	} catch (std::runtime_error& e) {
 		std::cerr << "[Renderer:cargaModelo]: " << e.what() << std::endl;
@@ -317,7 +317,7 @@ void PPCX::Renderer::setViewport(const GLint x, const GLint y, const GLsizei wid
 /**
  * Método para cambiar el colorSeleccionado de fondo de la escena
  */
-void PPCX::Renderer::setColorFondo(vec3 color) {
+void PPCX::Renderer::setColorFondo(const vec3 color) {
 	this->colorFondo = color;
 	actualizarColorFondo();
 }
@@ -334,7 +334,7 @@ float PPCX::Renderer::getPointSize() const {
 	return pointSize;
 }
 
-void PPCX::Renderer::setPointSize(float pointS) {
+void PPCX::Renderer::setPointSize(const float pointS) {
 	pointSize = pointS;
 	glPointSize(pointSize);
 }

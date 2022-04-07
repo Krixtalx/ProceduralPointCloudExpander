@@ -13,7 +13,7 @@ namespace PPCX {
 	};
 
 	static unsigned numModosDibujo() {
-		return modoDibujado::mallaTriangulos + 1;
+		return mallaTriangulos + 1;
 	}
 
 	enum paramShader {

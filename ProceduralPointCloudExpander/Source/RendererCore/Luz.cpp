@@ -10,7 +10,7 @@
  * Constructor parametrizado para una luz ambiente
  * @param ia color ambiente de la luz
  */
-PPCX::Luz::Luz(const glm::vec3 &ia) : ia(ia), tipoLuz(PPCX::tipoLuz::ambiente) { inicializarMapaSombras(); }
+PPCX::Luz::Luz(const glm::vec3 &ia) : ia(ia), tipoLuz(tipoLuz::ambiente) { inicializarMapaSombras(); }
 
 
 /**
@@ -24,10 +24,10 @@ PPCX::Luz::Luz(const glm::vec3 &id, const glm::vec3 &is, const glm::vec3 &posici
 		id), is(is) {
 	if (puntual) {
 		posicion = posicionOdireccion;
-		tipoLuz = PPCX::tipoLuz::puntual;
+		tipoLuz = tipoLuz::puntual;
 	} else {
 		direccion = posicionOdireccion;
-		tipoLuz = PPCX::tipoLuz::direccional;
+		tipoLuz = tipoLuz::direccional;
 
 	}
 	inicializarMapaSombras();
@@ -45,32 +45,32 @@ PPCX::Luz::Luz(const glm::vec3 &id, const glm::vec3 &is, const glm::vec3 &posici
 PPCX::Luz::Luz(const glm::vec3 &id, const glm::vec3 &is, const glm::vec3 &posicion, const glm::vec3 &direccion,
               float gamma, GLuint exponenteBordes) : id(id), is(is), posicion(posicion), direccion(direccion),
                                                      exponenteBordes(exponenteBordes),
-                                                     tipoLuz(PPCX::tipoLuz::foco) {
+                                                     tipoLuz(tipoLuz::foco) {
 	this->gamma = glm::radians(gamma);
 	inicializarMapaSombras();
 }
 
 void PPCX::Luz::aplicarLuz(const std::string &shader, const glm::mat4 &matriz) const {
-	PPCX::ShaderManager::getInstancia()->activarSP(shader);
-	if (this->tipoLuz == PPCX::tipoLuz::ambiente) {
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "Ia", ia);
-	} else if (this->tipoLuz == PPCX::tipoLuz::puntual) {
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "Id", id);
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "Is", is);
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "posLuz", glm::vec3(matriz * glm::vec4(posicion, 1)));
-	} else if (this->tipoLuz == PPCX::tipoLuz::direccional) {
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "Id", id);
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "Is", is);
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "dirLuz", glm::normalize(glm::vec3(
-				glm::transpose(glm::inverse(matriz)) * glm::vec4(direccion, 0))));
-	} else if (this->tipoLuz == PPCX::tipoLuz::foco) {
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "Id", id);
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "Is", is);
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "posLuz", glm::vec3(matriz * glm::vec4(posicion, 1)));
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "dirLuz", glm::normalize(glm::vec3(
-				glm::transpose(glm::inverse(matriz)) * glm::vec4(direccion, 0))));
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "spotAngle", gamma);
-		PPCX::ShaderManager::getInstancia()->setUniform(shader, "expBordes", exponenteBordes);
+	ShaderManager::getInstancia()->activarSP(shader);
+	if (this->tipoLuz == tipoLuz::ambiente) {
+		ShaderManager::getInstancia()->setUniform(shader, "Ia", ia);
+	} else if (this->tipoLuz == tipoLuz::puntual) {
+		ShaderManager::getInstancia()->setUniform(shader, "Id", id);
+		ShaderManager::getInstancia()->setUniform(shader, "Is", is);
+		ShaderManager::getInstancia()->setUniform(shader, "posLuz", glm::vec3(matriz * glm::vec4(posicion, 1)));
+	} else if (this->tipoLuz == tipoLuz::direccional) {
+		ShaderManager::getInstancia()->setUniform(shader, "Id", id);
+		ShaderManager::getInstancia()->setUniform(shader, "Is", is);
+		ShaderManager::getInstancia()->setUniform(shader, "dirLuz", normalize(glm::vec3(
+			                                          transpose(inverse(matriz)) * glm::vec4(direccion, 0))));
+	} else if (this->tipoLuz == tipoLuz::foco) {
+		ShaderManager::getInstancia()->setUniform(shader, "Id", id);
+		ShaderManager::getInstancia()->setUniform(shader, "Is", is);
+		ShaderManager::getInstancia()->setUniform(shader, "posLuz", glm::vec3(matriz * glm::vec4(posicion, 1)));
+		ShaderManager::getInstancia()->setUniform(shader, "dirLuz", normalize(glm::vec3(
+			                                          transpose(inverse(matriz)) * glm::vec4(direccion, 0))));
+		ShaderManager::getInstancia()->setUniform(shader, "spotAngle", gamma);
+		ShaderManager::getInstancia()->setUniform(shader, "expBordes", exponenteBordes);
 	}
 	//Activamos el muestrador aunque no se use mapa de sombras para evitar undefined behaviours de OpenGL.
 	//https://stackoverflow.com/a/45203667
@@ -91,7 +91,7 @@ void PPCX::Luz::inicializarMapaSombras() {
 	//https://stackoverflow.com/a/45203667
 	glBindTexture(GL_TEXTURE_2D, idMapaSombras);
 	if (tipoLuz == tipoLuz::direccional || tipoLuz == tipoLuz::foco)
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, PPCX::anchoMS, PPCX::altoMS, 0,
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, anchoMS, altoMS, 0,
 		             GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
 	else //Hacemos que la textura no usada sea 1x1 para evitar consumo excesivo de VRAM
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, 1, 1, 0,
@@ -112,16 +112,16 @@ void PPCX::Luz::inicializarMapaSombras() {
  * @return matriz VP
  */
 glm::mat4 PPCX::Luz::generarMatrizVPMS() const {
-	if (tipoLuz == PPCX::tipoLuz::direccional) {
+	if (tipoLuz == tipoLuz::direccional) {
 		glm::mat4 matriz = glm::ortho(-3.0, 3.0, -3.0, 3.0, 0.1, 10.0);
-		matriz *= glm::lookAt(glm::vec3(2.0) * (-direccion), glm::vec3(0, 0, 0),
-		                      glm::vec3(0, 1, 0));
+		matriz *= lookAt(glm::vec3(2.0) * (-direccion), glm::vec3(0, 0, 0),
+		                 glm::vec3(0, 1, 0));
 		return matriz;
 	}
-	if (tipoLuz == PPCX::tipoLuz::foco) {
-		glm::mat4 matriz = glm::perspective(2 * gamma, (float) PPCX::anchoMS / (float) PPCX::altoMS, 0.1f,
+	if (tipoLuz == tipoLuz::foco) {
+		glm::mat4 matriz = glm::perspective(2 * gamma, (float)anchoMS / (float)altoMS, 0.1f,
 		                                    10.0f);
-		matriz *= glm::lookAt(posicion, posicion + direccion, glm::vec3(0, 1, 0));
+		matriz *= lookAt(posicion, posicion + direccion, glm::vec3(0, 1, 0));
 
 		return matriz;
 	}
@@ -134,7 +134,7 @@ PPCX::tipoLuz PPCX::Luz::getTipoLuz() const {
 }
 
 bool PPCX::Luz::emiteSombras() const {
-	return tipoLuz == PPCX::tipoLuz::direccional || tipoLuz == PPCX::tipoLuz::foco;
+	return tipoLuz == tipoLuz::direccional || tipoLuz == tipoLuz::foco;
 }
 
 GLuint PPCX::Luz::getIdMapaSombras() const {

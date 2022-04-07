@@ -5,22 +5,26 @@
 
 
 class InstancedPointCloud :public PointCloud {
-	std::vector<glm::mat4> offsets;
+	std::vector<mat4> offsets;
 	unsigned int instancingVBO;
 	bool newInstanceUpdate = false;
-
+	std::vector<PointModel> allPoints;
 	void updateInstancingData();
 
 public:
 
-	InstancedPointCloud(std::string shaderProgram, const glm::vec3& pos = { 0, 0, 0 }, const glm::vec3& rot = { 0, 0, 0 }, const glm::vec3& scale = { 1, 1, 1 });
+	InstancedPointCloud(std::string shaderProgram, const vec3& pos = { 0, 0, 0 }, const vec3& rot = { 0, 0, 0 }, const
+						vec3& scale = { 1, 1, 1 });
 
-	InstancedPointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const glm::vec3& pos = { 0, 0, 0 }, const glm::vec3& rot = { 0, 0, 0 }, const glm::vec3& scale = { 1, 1, 1 });
+	InstancedPointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos = { 0, 0, 0 }, const
+						vec3& rot = { 0, 0, 0 }, const vec3& scale = { 1, 1, 1 });
 
-	void newInstance(const glm::vec3& position, const glm::vec3& rot, const glm::vec3& scale);
+	void newInstance(const vec3& position, const vec3& rot, const vec3& scale);
 
-	void drawModel(const glm::mat4& MVPMatrix) override;
+	void drawModel(const mat4& MVPMatrix) override;
 
 	unsigned getNumberOfInstances() const;
+
+	std::vector<PointModel>& getPoints() override;
 
 };

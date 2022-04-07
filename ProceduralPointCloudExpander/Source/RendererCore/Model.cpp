@@ -9,10 +9,10 @@ PPCX::Model::Model(std::string shaderProgram, const glm::vec3& pos, const glm::v
 	idVAO(UINT_MAX), idVBO(UINT_MAX), idIBO(UINT_MAX),
 	shaderProgram(std::move(shaderProgram)) {
 	mModelado = glm::mat4(1.0f);
-	mModelado = glm::translate(mModelado, pos);
-	mModelado = glm::rotate(mModelado, glm::radians(rot.x), { 1, 0, 0 });
-	mModelado = glm::rotate(mModelado, glm::radians(rot.y), { 0, 1, 0 });
-	mModelado = glm::rotate(mModelado, glm::radians(rot.z), { 0, 0, 1 });
+	mModelado = translate(mModelado, pos);
+	mModelado = rotate(mModelado, glm::radians(rot.x), { 1, 0, 0 });
+	mModelado = rotate(mModelado, glm::radians(rot.y), { 0, 1, 0 });
+	mModelado = rotate(mModelado, glm::radians(rot.z), { 0, 0, 1 });
 	mModelado = glm::scale(mModelado, scale);
 	//Creamos nuestro VAO
 	glGenVertexArrays(1, &idVAO);

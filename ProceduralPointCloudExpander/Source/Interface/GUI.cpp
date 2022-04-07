@@ -142,7 +142,7 @@ void GUI::showSaveWindow() {
 		if (ImGuiFileDialog::Instance()->IsOk()) {
 			_pointCloudPath = ImGuiFileDialog::Instance()->GetFilePathName();
 			if (saveOption == 0)
-				procGenerator->savePointCloud(_pointCloudPath);
+				ModelManager::getInstance()->exportAllVisibleModels(_pointCloudPath);
 			else if (saveOption == 1)
 				procGenerator->saveHeightMap(_pointCloudPath);
 			else if (saveOption == 2)

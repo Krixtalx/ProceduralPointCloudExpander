@@ -22,7 +22,7 @@ namespace PPCX {
 		float gamma{};
 		GLuint exponenteBordes{};
 
-		PPCX::tipoLuz tipoLuz;
+		tipoLuz tipoLuz;
 		GLuint idMapaSombras = UINT_MAX;
 
 		void inicializarMapaSombras();

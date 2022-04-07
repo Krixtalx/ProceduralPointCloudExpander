@@ -41,7 +41,7 @@ namespace PPCX {
 
 		GLuint getPhong() const;
 
-		GLuint getIdTextura(PPCX::tipoTextura tipo) const;
+		GLuint getIdTextura(tipoTextura tipo) const;
 	};
 }
 

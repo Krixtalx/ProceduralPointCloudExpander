@@ -9,7 +9,7 @@
 
 PPCX::Material::Material(const glm::vec3 &ambiente, const glm::vec3 &difuso, const glm::vec3 &especular, GLuint phong)
 		: ambiente(ambiente), difuso(difuso), especular(especular), phong(phong) {
-	for (unsigned i = 0; i < PPCX::numTiposTextura(); ++i) {
+	for (unsigned i = 0; i < numTiposTextura(); ++i) {
 		idTextura.push_back(UINT_MAX);
 	}
 }
@@ -27,11 +27,11 @@ PPCX::Material::Material(const glm::vec3 &ambiente, const glm::vec3 &difuso, con
                                                           difuso(difuso),
                                                           especular(especular),
                                                           phong(phong) {
-	for (unsigned i = 0; i < PPCX::numTiposTextura(); ++i) {
+	for (unsigned i = 0; i < numTiposTextura(); ++i) {
 		idTextura.push_back(UINT_MAX);
 	}
 
-	idTextura[PPCX::texturaColor] = cargarTextura(rutaTextura);
+	idTextura[texturaColor] = cargarTextura(rutaTextura);
 }
 
 
@@ -50,17 +50,17 @@ PPCX::Material::Material(const glm::vec3 &ambiente, const glm::vec3 &difuso, con
                                                                                             especular(especular),
                                                                                             phong(phong) {
 
-	for (unsigned i = 0; i < PPCX::numTiposTextura(); ++i) {
+	for (unsigned i = 0; i < numTiposTextura(); ++i) {
 		idTextura.push_back(UINT_MAX);
 	}
 
-	idTextura[PPCX::texturaColor] = cargarTextura(rutaTextura);
-	idTextura[PPCX::normalMap] = cargarTextura(rutaNormalMap);
+	idTextura[texturaColor] = cargarTextura(rutaTextura);
+	idTextura[normalMap] = cargarTextura(rutaNormalMap);
 
 }
 
 PPCX::Material::~Material() {
-	for (unsigned i = 0; i < PPCX::numTiposTextura(); ++i) {
+	for (unsigned i = 0; i < numTiposTextura(); ++i) {
 		glDeleteTextures(1, &idTextura[i]);
 	}
 }
@@ -136,6 +136,6 @@ GLuint PPCX::Material::getPhong() const {
  * @param tipo tipo de textura
  * @return id de OpenGL de la textura. Puede ser UINT_MAX en caso de que no este cargada.
  */
-GLuint PPCX::Material::getIdTextura(PPCX::tipoTextura tipo) const {
+GLuint PPCX::Material::getIdTextura(tipoTextura tipo) const {
 	return idTextura[tipo];
 }

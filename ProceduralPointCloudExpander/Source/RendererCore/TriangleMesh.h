@@ -27,9 +27,9 @@ namespace PPCX {
 		bool usarNormalMap = true;
 		bool usarTexturas = true;
 
-		PPCX::modoDibujado modo;
+		modoDibujado modo;
 
-		GLenum getGLDrawMode(PPCX::modoDibujado modo);
+		GLenum getGLDrawMode(modoDibujado modo);
 
 	private:
 
@@ -48,17 +48,17 @@ namespace PPCX {
 
 		~TriangleMesh() override;
 
-		void nuevoVBO(PPCX::paramShader tipoDato, const std::vector<glm::vec3>& datos, GLenum freqAct);
+		void nuevoVBO(paramShader tipoDato, const std::vector<glm::vec3>& datos, GLenum freqAct);
 
-		void nuevoVBO(PPCX::paramShader tipoDato, const std::vector<glm::vec2>& datos, GLenum freqAct);
+		void nuevoVBO(paramShader tipoDato, const std::vector<glm::vec2>& datos, GLenum freqAct);
 
-		void nuevoIBO(PPCX::modoDibujado modo, const std::vector<GLuint>& datos, GLenum freqAct);
+		void nuevoIBO(modoDibujado modo, const std::vector<GLuint>& datos, GLenum freqAct);
 
 		void setMaterial(const std::string& material);
 
 		virtual void drawModel(const glm::mat4& MVPMatrix) override;
 
-		virtual void dibujarModelo(glm::mat4 matrizMVP, glm::mat4 matrizMV, glm::mat4 matrizMS, PPCX::tipoLuz tipoLuz);
+		virtual void dibujarModelo(glm::mat4 matrizMVP, glm::mat4 matrizMV, glm::mat4 matrizMS, tipoLuz tipoLuz);
 
 		virtual void dibujarModeloParaSombras();
 
@@ -70,7 +70,7 @@ namespace PPCX {
 
 		void cambiarUsoTextura();
 
-		PPCX::modoDibujado getModo() const;
+		modoDibujado getModo() const;
 
 		const glm::mat4& getMModelado() const;
 	};

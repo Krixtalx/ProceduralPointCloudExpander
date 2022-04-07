@@ -22,4 +22,6 @@ public:
 
 	void setAllVisibility(bool visible) const;
 	void setVisibility(const std::string& key, bool visible) const;
+
+	void exportAllVisibleModels(const std::string& filename) const;
 };

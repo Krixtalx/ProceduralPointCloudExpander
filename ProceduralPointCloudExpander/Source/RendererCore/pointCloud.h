@@ -8,6 +8,7 @@ class PointCloud : public PPCX::Model {
 protected:
 	std::vector<PointModel> vbo;
 	AABB aabb;
+	bool optimized;
 
 	void newVBO(GLenum freqAct);
 
@@ -16,9 +17,10 @@ protected:
 public:
 	bool needUpdating = false;
 
-	PointCloud(std::string shaderProgram, const glm::vec3& pos = { 0, 0, 0 }, const glm::vec3& rot = { 0, 0, 0 }, const glm::vec3& scale = { 1, 1, 1 });
+	PointCloud(std::string shaderProgram, const vec3& pos = { 0, 0, 0 }, const vec3& rot = { 0, 0, 0 }, const vec3& scale = { 1, 1, 1 });
 
-	PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const glm::vec3& pos = { 0, 0, 0 }, const glm::vec3& rot = { 0, 0, 0 }, const glm::vec3& scale = { 1, 1, 1 });
+	PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos = { 0, 0, 0 }, const
+	           vec3& rot = { 0, 0, 0 }, const vec3& scale = { 1, 1, 1 });
 
 	PointCloud(PointCloud& orig);
 
@@ -30,9 +32,9 @@ public:
 
 	void updateCloud();
 
-	virtual void drawModel(const glm::mat4& MVPMatrix) override;
+	virtual void drawModel(const mat4& MVPMatrix) override;
 
-	std::vector<PointModel>& getPoints();
+	virtual std::vector<PointModel>& getPoints();
 
 	unsigned getNumberOfPoints() const;
 
@@ -40,6 +42,8 @@ public:
 
 	float getDensity() const;
 
-	glm::vec3 getRandomPointColor();
+	vec3 getRandomPointColor();
+
+	void optimize();
 };
 

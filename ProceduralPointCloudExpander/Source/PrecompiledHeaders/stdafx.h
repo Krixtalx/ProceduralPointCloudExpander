@@ -40,6 +40,7 @@
 #include <string>
 #include <ctime>
 #include <thread>
+#include <random>
 
 #include <omp.h>
 

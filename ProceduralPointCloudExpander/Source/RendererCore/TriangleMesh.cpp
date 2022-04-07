@@ -23,17 +23,17 @@
  * @param scale
  */
 PPCX::TriangleMesh::TriangleMesh(std::string shaderProgram, const std::string& path, glm::vec3 pos, glm::vec3 rot, glm::vec3 scale) :
-	Model(std::move(shaderProgram), pos, rot, scale), modo(PPCX::mallaTriangulos) {
+	Model(std::move(shaderProgram), pos, rot, scale), modo(mallaTriangulos) {
 
 	//Ponemos tanto espacios en el vector de VBO como parametros tengamos para el shader.
-	idVBO.resize(PPCX::numParamShader());
-	vbos.resize(PPCX::numParamShader());
+	idVBO.resize(numParamShader());
+	vbos.resize(numParamShader());
 	for (unsigned int& i : idVBO) {
 		i = UINT_MAX;
 	}
 	//Ponemos tanto espacios en el vector de IBO como modos de dibujado tengamos.
-	idIBO.resize(PPCX::numModosDibujo());
-	ibos.resize(PPCX::numModosDibujo());
+	idIBO.resize(numModosDibujo());
+	ibos.resize(numModosDibujo());
 	for (unsigned int& i : idIBO) {
 		i = UINT_MAX;
 	}
@@ -46,13 +46,13 @@ PPCX::TriangleMesh::TriangleMesh(std::string shaderProgram, const std::string& p
  * Constructor copia. Copia el numVertices y el shaderProgram y realiza una nueva instanciacion de los vbos e ibos
  * @param orig
  */
-PPCX::TriangleMesh::TriangleMesh(PPCX::TriangleMesh& orig) : Model(orig),
-vbos(orig.vbos), ibos(orig.ibos), material(orig.material) {
+PPCX::TriangleMesh::TriangleMesh(TriangleMesh& orig) : Model(orig),
+                                                       vbos(orig.vbos), ibos(orig.ibos), material(orig.material) {
 
 	//Ponemos tanto espacios en el vector de VBO como parametros tengamos para el shader.
-	idVBO.resize(PPCX::numParamShader());
+	idVBO.resize(numParamShader());
 	//Ponemos tanto espacios en el vector de IBO como modos de dibujado tengamos.
-	idIBO.resize(PPCX::numModosDibujo());
+	idIBO.resize(numModosDibujo());
 
 	for (int i = 0; i < vbos.size(); ++i) {
 		nuevoVBO(static_cast<paramShader>(i), vbos[i], GL_STATIC_DRAW);
@@ -83,7 +83,7 @@ PPCX::TriangleMesh::~TriangleMesh() {
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PPCX::TriangleMesh::nuevoVBO(PPCX::paramShader tipoDato, const std::vector<glm::vec3>& datos, const GLenum freqAct) {
+void PPCX::TriangleMesh::nuevoVBO(paramShader tipoDato, const std::vector<glm::vec3>& datos, const GLenum freqAct) {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idVBO[tipoDato] != UINT_MAX) {
 		glDeleteBuffers(1, &idVBO[tipoDato]);
@@ -104,7 +104,7 @@ void PPCX::TriangleMesh::nuevoVBO(PPCX::paramShader tipoDato, const std::vector<
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PPCX::TriangleMesh::nuevoVBO(const PPCX::paramShader tipoDato, const std::vector<glm::vec2>& datos, const GLenum freqAct) {
+void PPCX::TriangleMesh::nuevoVBO(const paramShader tipoDato, const std::vector<glm::vec2>& datos, const GLenum freqAct) {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idVBO[tipoDato] != UINT_MAX) {
 		glDeleteBuffers(1, &idVBO[tipoDato]);
@@ -125,7 +125,7 @@ void PPCX::TriangleMesh::nuevoVBO(const PPCX::paramShader tipoDato, const std::v
  * @param datos a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PPCX::TriangleMesh::nuevoIBO(PPCX::modoDibujado modo, const std::vector<GLuint>& datos, GLenum freqAct) {
+void PPCX::TriangleMesh::nuevoIBO(modoDibujado modo, const std::vector<GLuint>& datos, GLenum freqAct) {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idIBO[modo] != UINT_MAX) {
 		glDeleteBuffers(1, &idIBO[modo]);
@@ -142,23 +142,23 @@ void PPCX::TriangleMesh::drawModel(const glm::mat4& MVPMatrix) {
 	if (visible) {
 		try {
 			auto matrixMVP = MVPMatrix * mModelado;
-			PPCX::ShaderManager::getInstancia()->activarSP(shaderProgram);
-			PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrixMVP);
-			PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMV", glm::mat4(1.0f));
-			PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMS", glm::mat4(1.0f));
+			ShaderManager::getInstancia()->activarSP(shaderProgram);
+			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrixMVP);
+			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMV", glm::mat4(1.0f));
+			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMS", glm::mat4(1.0f));
 
 			const std::vector<std::string> nombreUniforms = { "luzElegida", "colorElegido", "normalMap" };
 
-			if (modo == PPCX::wireframe) {
+			if (modo == wireframe) {
 				const std::vector<std::string> nombreSubrutinas = { "colorDefecto", "colorMaterial", "noUsarNormalMap" };
-				PPCX::ShaderManager::getInstancia()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
-																				nombreUniforms, nombreSubrutinas);
+				ShaderManager::getInstancia()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
+				                                                          nombreUniforms, nombreSubrutinas);
 			} else {
 
 				std::vector<std::string> nombreSubrutinas;
 
 				const GLuint idTextura = MaterialManager::getInstancia()->getMaterial(material)->getIdTextura(
-					PPCX::texturaColor);
+					texturaColor);
 				if (usarTexturas && idTextura != UINT_MAX) {
 					nombreSubrutinas.emplace_back("colorTextura");
 					nombreSubrutinas.emplace_back("noUsarNormalMap");
@@ -188,52 +188,52 @@ void PPCX::TriangleMesh::drawModel(const glm::mat4& MVPMatrix) {
  * @param matrizMVP
  * @param tipoLuz Tipo de luz que se esta renderizando actualmente. Es necesario para la activación de las subrutinas del shader
  */
-void PPCX::TriangleMesh::dibujarModelo(glm::mat4 matrizMVP, glm::mat4 matrizMV, glm::mat4 matrizMS, PPCX::tipoLuz tipoLuz) {
+void PPCX::TriangleMesh::dibujarModelo(glm::mat4 matrizMVP, glm::mat4 matrizMV, glm::mat4 matrizMS, tipoLuz tipoLuz) {
 	if (visible)
 		try {
 		matrizMVP = matrizMVP * mModelado;
 		matrizMV = matrizMV * mModelado;
 		matrizMS = matrizMS * mModelado;
 
-		PPCX::ShaderManager::getInstancia()->activarSP(shaderProgram);
-		PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrizMVP);
-		PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMV", matrizMV);
-		PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMS", matrizMS);
+		ShaderManager::getInstancia()->activarSP(shaderProgram);
+		ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrizMVP);
+		ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMV", matrizMV);
+		ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMS", matrizMS);
 		const std::vector<std::string> nombreUniforms = { "luzElegida", "colorElegido", "normalMap" };
 
-		if (modo == PPCX::wireframe) {
+		if (modo == wireframe) {
 			const std::vector<std::string> nombreSubrutinas = { "colorDefecto", "colorMaterial", "noUsarNormalMap" };
-			PPCX::ShaderManager::getInstancia()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
-																			nombreUniforms, nombreSubrutinas);
+			ShaderManager::getInstancia()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
+			                                                          nombreUniforms, nombreSubrutinas);
 		} else {
-			const glm::vec3 ambiente = PPCX::MaterialManager::getInstancia()->getMaterial(
+			const glm::vec3 ambiente = MaterialManager::getInstancia()->getMaterial(
 				this->material)->getAmbiente();
-			const glm::vec3 difusa = PPCX::MaterialManager::getInstancia()->getMaterial(
+			const glm::vec3 difusa = MaterialManager::getInstancia()->getMaterial(
 				this->material)->getDifuso();
-			const glm::vec3 especular = PPCX::MaterialManager::getInstancia()->getMaterial(
+			const glm::vec3 especular = MaterialManager::getInstancia()->getMaterial(
 				this->material)->getEspecular();
-			const GLuint phong = PPCX::MaterialManager::getInstancia()->getMaterial(
+			const GLuint phong = MaterialManager::getInstancia()->getMaterial(
 				this->material)->getPhong();
-			PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "Ka", ambiente);
-			PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "Kd", difusa);
-			PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "Ks", especular);
-			PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "phong", phong);
+			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "Ka", ambiente);
+			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "Kd", difusa);
+			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "Ks", especular);
+			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "phong", phong);
 
 			std::vector<std::string> nombreSubrutinas;
-			if (tipoLuz == PPCX::tipoLuz::ambiente) {
+			if (tipoLuz == tipoLuz::ambiente) {
 				nombreSubrutinas.emplace_back("luzAmbiente");
-			} else if (tipoLuz == PPCX::tipoLuz::puntual) {
+			} else if (tipoLuz == tipoLuz::puntual) {
 				nombreSubrutinas.emplace_back("luzPuntual");
-			} else if (tipoLuz == PPCX::tipoLuz::direccional) {
+			} else if (tipoLuz == tipoLuz::direccional) {
 				nombreSubrutinas.emplace_back("luzDireccional");
 			} else {
 				nombreSubrutinas.emplace_back("luzFoco");
 			}
 
 			const GLuint idTextura = MaterialManager::getInstancia()->getMaterial(material)->getIdTextura(
-				PPCX::texturaColor);
+				texturaColor);
 			const GLuint idNormalMap = MaterialManager::getInstancia()->getMaterial(material)->getIdTextura(
-				PPCX::normalMap);
+				normalMap);
 			if (usarTexturas && usarNormalMap && idTextura != UINT_MAX && idNormalMap != UINT_MAX) {
 				nombreSubrutinas.emplace_back("colorTextura");
 				nombreSubrutinas.emplace_back("siUsarNormalMap");
@@ -255,8 +255,8 @@ void PPCX::TriangleMesh::dibujarModelo(glm::mat4 matrizMVP, glm::mat4 matrizMV, 
 				nombreSubrutinas.emplace_back("noUsarNormalMap");
 			}
 
-			PPCX::ShaderManager::getInstancia()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
-																			nombreUniforms, nombreSubrutinas);
+			ShaderManager::getInstancia()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
+			                                                          nombreUniforms, nombreSubrutinas);
 		}
 		glBindVertexArray(idVAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO[modo]);
@@ -286,11 +286,11 @@ void PPCX::TriangleMesh::dibujarModeloParaSombras() {
  * @param modo de modoDibujado
  * @return GLenum que indica como debe de dibujarse
  */
-GLenum PPCX::TriangleMesh::getGLDrawMode(PPCX::modoDibujado modo) {
+GLenum PPCX::TriangleMesh::getGLDrawMode(modoDibujado modo) {
 	switch (modo) {
-		case PPCX::nubePuntos:
+		case nubePuntos:
 			return GL_POINT;
-		case PPCX::wireframe:
+		case wireframe:
 			return GL_LINE;
 		default:
 			return GL_FILL;
@@ -352,13 +352,13 @@ void PPCX::TriangleMesh::procesarMalla(const aiMesh* mesh, const aiScene* scene)
 		vec.x = mesh->mVertices[i].x;
 		vec.y = mesh->mVertices[i].y;
 		vec.z = mesh->mVertices[i].z;
-		vbos[PPCX::posicion].push_back(vec);
+		vbos[posicion].push_back(vec);
 
 		//Normales
 		vec.x = mesh->mNormals[i].x;
 		vec.y = mesh->mNormals[i].y;
 		vec.z = mesh->mNormals[i].z;
-		vbos[PPCX::normal].push_back(vec);
+		vbos[normal].push_back(vec);
 
 		if (mesh->mTextureCoords[0]) {
 			//Coordenadas de textura
@@ -376,34 +376,34 @@ void PPCX::TriangleMesh::procesarMalla(const aiMesh* mesh, const aiScene* scene)
 			t.x = mesh->mTangents[i].x;
 			t.y = mesh->mTangents[i].y;
 			t.z = mesh->mTangents[i].z;
-			vbos[PPCX::tangente].push_back(t);
+			vbos[tangente].push_back(t);
 
 			//Bitangentes
 			glm::vec3 bt;
 			bt.x = mesh->mBitangents[i].x;
 			bt.y = mesh->mBitangents[i].y;
 			bt.z = mesh->mBitangents[i].z;
-			vbos[PPCX::bitangente].push_back(bt);
+			vbos[bitangente].push_back(bt);
 		}
 
 	}
 	//Creamos los VBOs
-	this->nuevoVBO(PPCX::posicion, vbos[PPCX::posicion], GL_STATIC_DRAW);
-	this->nuevoVBO(PPCX::normal, vbos[PPCX::normal], GL_STATIC_DRAW);
-	this->nuevoVBO(PPCX::tangente, vbos[PPCX::tangente], GL_STATIC_DRAW);
-	this->nuevoVBO(PPCX::bitangente, vbos[PPCX::bitangente], GL_STATIC_DRAW);
+	this->nuevoVBO(posicion, vbos[posicion], GL_STATIC_DRAW);
+	this->nuevoVBO(normal, vbos[normal], GL_STATIC_DRAW);
+	this->nuevoVBO(tangente, vbos[tangente], GL_STATIC_DRAW);
+	this->nuevoVBO(bitangente, vbos[bitangente], GL_STATIC_DRAW);
 	this->nuevoVBO(PPCX::textura, textura, GL_STATIC_DRAW);
 
 	//Cargamos las caras del modelo
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 		const aiFace face = mesh->mFaces[i];
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
-			ibos[PPCX::mallaTriangulos].push_back(face.mIndices[j]);
+			ibos[mallaTriangulos].push_back(face.mIndices[j]);
 	}
 
 	//Creamos los IBOs
-	this->nuevoIBO(PPCX::mallaTriangulos, ibos[mallaTriangulos], GL_STATIC_DRAW);
-	this->nuevoIBO(PPCX::wireframe, ibos[mallaTriangulos], GL_STATIC_DRAW);
+	this->nuevoIBO(mallaTriangulos, ibos[mallaTriangulos], GL_STATIC_DRAW);
+	this->nuevoIBO(wireframe, ibos[mallaTriangulos], GL_STATIC_DRAW);
 	//for (int i = 0; i < vbos[posicion].size(); i++) {
 	//	ibos[nubePuntos][i] = i;
 	//}
@@ -415,10 +415,10 @@ void PPCX::TriangleMesh::cambiarUsoTextura() {
 }
 
 void PPCX::TriangleMesh::cambiarModoDibujado() {
-	if (modo == PPCX::mallaTriangulos)
-		modo = PPCX::wireframe;
+	if (modo == mallaTriangulos)
+		modo = wireframe;
 	else
-		modo = PPCX::mallaTriangulos;
+		modo = mallaTriangulos;
 }
 
 PPCX::modoDibujado PPCX::TriangleMesh::getModo() const {

@@ -68,7 +68,7 @@ namespace tinyply
     {
         uint8_t * alias{ nullptr };
         struct delete_array { void operator()(uint8_t * p) { delete[] p; } };
-        std::unique_ptr<uint8_t, decltype(Buffer::delete_array())> data;
+        std::unique_ptr<uint8_t, decltype(delete_array())> data;
         size_t size {0};
     public:
         Buffer() {};

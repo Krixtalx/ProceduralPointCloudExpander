@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "PointCloud.h"
-
 #include <utility>
 #include "ShaderManager.h"
 #include "GeometryUtils/AABB.h"
+#include "morton.h"
 
 
-PointCloud::PointCloud(std::string shaderProgram, const vec3& pos, const glm::vec3& rot, const glm::vec3& scale) : Model(std::move(shaderProgram), pos, rot, scale) {}
+PointCloud::PointCloud(std::string shaderProgram, const vec3& pos, const vec3& rot, const vec3& scale) : Model(std::move(shaderProgram), pos, rot, scale) {}
 
 /**
  * Constructor parametrizado
@@ -15,7 +15,8 @@ PointCloud::PointCloud(std::string shaderProgram, const vec3& pos, const glm::ve
  * @param aabb
  * @param pos Posicion inicial de la nube de puntos
  */
-PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos, const glm::vec3& rot, const glm::vec3& scale) :
+PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos, const
+                       vec3& rot, const vec3& scale) :
 	Model(std::move(shaderProgram), pos, rot, scale), aabb(aabb), needUpdating(true) {
 	newPoints(points);
 }
@@ -41,6 +42,7 @@ void PointCloud::newPoint(const PointModel & point) {
 	vbo.push_back(point);
 	aabb.update(point._point);
 	needUpdating = true;
+	optimized = false;
 }
 
 void PointCloud::newPoints(const std::vector<PointModel>&points) {
@@ -48,6 +50,7 @@ void PointCloud::newPoints(const std::vector<PointModel>&points) {
 	vbo.resize(points.size());
 	std::copy(points.begin(), points.end(), vbo.begin());
 	needUpdating = true;
+	optimized = false;
 }
 
 void PointCloud::updateCloud() {
@@ -109,7 +112,7 @@ void PointCloud::newIBO(const std::vector<GLuint>&data, const GLenum freqAct) {
 /**
  * Función a la que se llama cuando se debe de dibujar el modelo
  */
-void PointCloud::drawModel(const glm::mat4 & MVPMatrix) {
+void PointCloud::drawModel(const mat4& MVPMatrix) {
 	if (visible) {
 		if (needUpdating)
 			updateCloud();
@@ -146,6 +149,32 @@ float PointCloud::getDensity() const {
 	return numberPoints / (AABBSize.x * AABBSize.y);
 }
 
-glm::vec3 PointCloud::getRandomPointColor() {
+vec3 PointCloud::getRandomPointColor() {
 	return vbo[rand() % vbo.size()].getRGBVec3();
 }
+
+bool compareFunction(const PointModel & a, const PointModel & b) {
+	const uint_fast64_t aVal = libmorton::morton3D_64_encode(a._point.x * 10000, a._point.y * 10000, a._point.z * 10000);
+	const uint_fast64_t bVal = libmorton::morton3D_64_encode(b._point.x * 10000, b._point.y * 10000, b._point.z * 10000);
+	return aVal < bVal;
+}
+
+void PointCloud::optimize() {
+	if (!optimized) {
+		std::sort(vbo.begin(), vbo.end(), compareFunction);
+		std::vector<PointModel> newVbo(vbo.size());
+		const auto size = static_cast<unsigned>(vbo.size() / 128 + .5f);
+		std::vector<unsigned> batchOrder(size);
+		std::iota(batchOrder.begin(), batchOrder.end(), 0);
+		const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::shuffle(batchOrder.begin(), batchOrder.end(), std::default_random_engine(seed));
+
+		for (int i = 0; i < size; ++i) {
+			std::copy_n(vbo.begin() + 128 * batchOrder[i], 128, newVbo.begin() + 128 * i);
+		}
+		vbo = newVbo;
+		newVBO(GL_STATIC_DRAW);
+		optimized = true;
+	}
+}
+

@@ -115,7 +115,7 @@ std::vector<float> ProceduralVoxel::internalDistribution(const unsigned divX, co
 	const auto& points = cloud->getPoints();
 	const float xSize = aabb->size().x / divX;
 	const float ySize = aabb->size().y / divY;
-	const glm::vec3 minPoint = aabb->min();
+	const vec3 minPoint = aabb->min();
 	unsigned currentMax = 0;
 	for (unsigned i : pointsIndex) {
 		unsigned posX = (points[i]._point.x - minPoint.x) / xSize;

@@ -20,8 +20,8 @@ protected:
 	bool useStatiticsMethod = true;
 
 
-	float getHeight(glm::vec2 pos) const;
-	float getDensity(glm::vec2 pos) const;
+	float getHeight(vec2 pos) const;
+	float getDensity(vec2 pos) const;
 	void saveHeightMap(const std::string& path) const;
 	void saveTextureMap(const std::string& path) const;
 	void savePointCloud(const std::string& path) const;
