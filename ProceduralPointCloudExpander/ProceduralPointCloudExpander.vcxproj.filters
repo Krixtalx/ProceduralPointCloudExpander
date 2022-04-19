@@ -174,6 +174,9 @@
     <ClCompile Include="Source\RendererCore\TriangleMesh.cpp">
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
+    <ClCompile Include="Source\RendererCore\ComputeShader.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RendererCore\ShaderProgram.h">
@@ -284,6 +287,9 @@
     <ClInclude Include="Source\RendererCore\TriangleMesh.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
+    <ClInclude Include="Source\RendererCore\ComputeShader.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Shaders\FragmentShader.glsl">
@@ -305,6 +311,9 @@
       <Filter>Archivos de recursos\Shaders</Filter>
     </None>
     <None Include="Source\Shaders\vs-ms.glsl">
+      <Filter>Archivos de recursos\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\TestComputeShader.glsl">
       <Filter>Archivos de recursos\Shaders</Filter>
     </None>
   </ItemGroup>

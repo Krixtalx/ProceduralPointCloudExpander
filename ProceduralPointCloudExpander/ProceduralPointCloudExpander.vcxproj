@@ -276,6 +276,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-NoOpenMP|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\RendererCore\ComputeShader.cpp" />
     <ClCompile Include="Source\RendererCore\InstancedPointCloud.cpp" />
     <ClCompile Include="Source\RendererCore\Luz.cpp" />
     <ClCompile Include="Source\RendererCore\Material.cpp" />
@@ -313,6 +314,7 @@
     <ClCompile Include="Source\Utilities\Loader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\RendererCore\ComputeShader.h" />
     <ClInclude Include="Source\RendererCore\InstancedPointCloud.h" />
     <ClInclude Include="Libraries\imfiledialog\ImGuiFileDialog.h" />
     <ClInclude Include="Libraries\imfiledialog\ImGuiFileDialogConfig.h" />
@@ -356,6 +358,7 @@
     <None Include="Source\Shaders\InstancingVertexShader.glsl" />
     <None Include="Source\Shaders\pag-fs.glsl" />
     <None Include="Source\Shaders\pag-vs.glsl" />
+    <None Include="Source\Shaders\TestComputeShader.glsl" />
     <None Include="Source\Shaders\VertexShader.glsl" />
     <None Include="Source\Shaders\vs-ms.glsl" />
   </ItemGroup>

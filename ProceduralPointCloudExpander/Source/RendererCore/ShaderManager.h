@@ -8,8 +8,10 @@
 #include "ShaderProgram.h"
 
 namespace PPCX {
+	class ComputeShader;
+
 	class ShaderManager {
-		static ShaderManager *instancia;
+		static ShaderManager* instancia;
 
 		ShaderManager() = default;
 
@@ -17,33 +19,37 @@ namespace PPCX {
 		std::map<std::string, Shader*> shaders;
 		std::map<std::string, GLuint> uniformsLocation;
 	public:
-		static ShaderManager *getInstancia();
+		static ShaderManager* getInstancia();
 
-		ShaderManager(const ShaderManager &orig) = delete;
+		ShaderManager(const ShaderManager& orig) = delete;
 
 		~ShaderManager();
 
-		void nuevoShader(const std::string &nombreShader, GLenum tipoShader, const std::string &ruta);
+		void nuevoShader(const std::string& nombreShader, GLenum tipoShader, const std::string& ruta);
 
-		void nuevoShaderProgram(const std::string &nombreSP);
+		void nuevoShaderProgram(const std::string& nombreSP);
 
-		void addShaderToSP(const std::string &nombreShader, const std::string &nombreSP);
+		void addShaderToSP(const std::string& nombreShader, const std::string& nombreSP);
 
-		void activarSP(const std::string &nombreSP);void setUniform(const std::string &nombreSP, const std::string &variable, glm::mat4 matriz);
+		void activarSP(const std::string& nombreSP);
 
-		void setUniform(const std::string &nombreSP, const std::string &variable, glm::vec3 vec);
+		void setUniform(const std::string& nombreSP, const std::string& variable, glm::mat4 matriz);
 
-		void setUniform(const std::string &nombreSP, const std::string &variable, GLuint valor);
+		void setUniform(const std::string& nombreSP, const std::string& variable, glm::vec3 vec);
 
-		void setUniform(const std::string &nombreSP, const std::string &variable, GLint valor);
+		void setUniform(const std::string& nombreSP, const std::string& variable, GLuint valor);
 
-		void setUniform(const std::string &nombreSP, const std::string &variable, float valor);
+		void setUniform(const std::string& nombreSP, const std::string& variable, GLint valor);
 
-		void activarSubrutina(const std::string &nombreSP, GLenum tipoShader, const std::string &nombreSubrutina);
+		void setUniform(const std::string& nombreSP, const std::string& variable, float valor);
 
-		void activarMultiplesSubrutinas(const std::string &nombreSP, GLenum tipoShader,
-		                                const std::vector<std::string> &nombreUniform,
-		                                const std::vector<std::string> &nombreSubrutina);
+		void activarSubrutina(const std::string& nombreSP, GLenum tipoShader, const std::string& nombreSubrutina);
+
+		void activarMultiplesSubrutinas(const std::string& nombreSP, GLenum tipoShader,
+										const std::vector<std::string>& nombreUniform,
+										const std::vector<std::string>& nombreSubrutina);
+
+		ComputeShader* getComputeShader(const std::string& name);
 	};
 }
 

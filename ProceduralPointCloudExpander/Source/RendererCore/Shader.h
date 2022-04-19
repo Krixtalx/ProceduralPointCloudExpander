@@ -26,7 +26,7 @@ namespace PPCX {
 
 		Shader(const Shader &orig)=delete;
 
-		~Shader();
+		virtual ~Shader();
 
 		GLuint getShaderId() const;
 

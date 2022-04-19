@@ -12,19 +12,17 @@
  * @param ruta donde se encuentra el código GLSL del shader
  * @throw runtime_error en caso de que ocurra algún error durante la carga o compilación
  */
-PPCX::Shader::Shader(std::string nombreShader, GLenum tipoShader, const std::string &ruta) : nombreShader(std::move(
-		nombreShader)), tipoShader(tipoShader) {
-	idShader = glCreateShader(tipoShader);
+PPCX::Shader::Shader(std::string nombreShader, GLenum tipoShader, const std::string& ruta) : nombreShader(std::move(
+	nombreShader)), idShader(glCreateShader(tipoShader)), tipoShader(tipoShader) {
 	if (idShader == 0) {
 		// Ha ocurrido un error al intentar crear el shader
 		throw std::runtime_error("[Shader]: Error desconocido al intentar construir el shader.");
-	} else {
-		try {
-			cargaShader(ruta);
-			compilaShader();
-		} catch (std::runtime_error &e) {
-			throw;
-		}
+	}
+	try {
+		cargaShader(ruta);
+		compilaShader();
+	} catch (std::runtime_error& e) {
+		throw;
 	}
 }
 
@@ -40,7 +38,7 @@ PPCX::Shader::~Shader() {
  * @param ruta donde se encuentra el código GLSL del shader
  * @throw runtime_error Si no se puede abrir el fichero
  */
-void PPCX::Shader::cargaShader(const std::string &ruta) const {
+void PPCX::Shader::cargaShader(const std::string& ruta) const {
 	std::ifstream archivoShader;
 	archivoShader.open(ruta, std::ifstream::in);
 
@@ -55,7 +53,7 @@ void PPCX::Shader::cargaShader(const std::string &ruta) const {
 
 	archivoShader.close();
 
-	const GLchar *codigoFuenteFormatoC = codigoFuenteShader.c_str();
+	const GLchar* codigoFuenteFormatoC = codigoFuenteShader.c_str();
 	glShaderSource(idShader, 1, &codigoFuenteFormatoC, nullptr);
 }
 
@@ -74,7 +72,7 @@ void PPCX::Shader::compruebaErroresShader() const {
 		glGetShaderiv(idShader, GL_INFO_LOG_LENGTH, &tamMsj);
 		if (tamMsj > 0) {
 			std::string mensaje;
-			auto *mensajeFormatoC = new GLchar[tamMsj];
+			auto* mensajeFormatoC = new GLchar[tamMsj];
 			GLint datosEscritos = 0;
 			glGetShaderInfoLog(idShader, tamMsj, &datosEscritos, mensajeFormatoC);
 			mensaje.assign(mensajeFormatoC);
@@ -89,12 +87,11 @@ void PPCX::Shader::compruebaErroresShader() const {
  * Realiza la compilación del shader y después lanza la comprobación de errores
  * @throw runtime_error en caso de que haya algún error de compilación
  */
-void PPCX::Shader::compilaShader() const
-{
+void PPCX::Shader::compilaShader() const {
 	glCompileShader(idShader);
 	try {
 		compruebaErroresShader();
-	} catch (std::runtime_error &e) {
+	} catch (std::runtime_error& e) {
 		throw;
 	}
 }

@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "ShaderManager.h"
 
+#include "ComputeShader.h"
+
 PPCX::ShaderManager* PPCX::ShaderManager::instancia = nullptr;
 
 /**
@@ -216,7 +218,7 @@ void PPCX::ShaderManager::activarMultiplesSubrutinas(const std::string& nombreSP
 				"[ShaderManager::MultiplesSubrutinas]: No se ha pasado el mismo nº de uniforms que de subrutinas");
 
 		GLint tam = 0;
-		glGetProgramStageiv(SP->second->getIdSP(), GL_FRAGMENT_SHADER,
+		glGetProgramStageiv(SP->second->getIdSP(), tipoShader,
 							GL_ACTIVE_SUBROUTINE_UNIFORMS, &tam);
 
 		if (nombreUniform.size() != tam)
@@ -246,4 +248,14 @@ void PPCX::ShaderManager::activarMultiplesSubrutinas(const std::string& nombreSP
 		throw std::runtime_error(
 			"[ShaderManager]: No se ha encontrado ningun shader program con el nombre " + nombreSP);
 	}
+}
+
+PPCX::ComputeShader* PPCX::ShaderManager::getComputeShader(const std::string& name) {
+	const auto shader = shaders.find(name);
+	Shader* s(shader->second);
+	if (shader == shaders.end() || s->getTipoShader() != GL_COMPUTE_SHADER) {
+		throw std::runtime_error("[ShaderManager]: No se ha encontrado ningun ComputeShader con el nombre " + name);
+	}
+
+	return dynamic_cast<ComputeShader*>(s);
 }
