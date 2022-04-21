@@ -27,7 +27,10 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->nuevoShader("FragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/FragmentShader.glsl");
 		ShaderManager::getInstancia()->nuevoShader("FullVertexShader", GL_VERTEX_SHADER, "Source/Shaders/pag-vs.glsl");
 		ShaderManager::getInstancia()->nuevoShader("FullFragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/pag-fs.glsl");
-		ShaderManager::getInstancia()->nuevoShader("ComputeShader", GL_COMPUTE_SHADER, "Source/Shaders/TestComputeShader.glsl");
+		ShaderManager::getInstancia()->nuevoShader("resetBuffersHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/resetBuffersHQR.glsl");
+		ShaderManager::getInstancia()->nuevoShader("depthBufferHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR.glsl");
+		ShaderManager::getInstancia()->nuevoShader("addColorHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR.glsl");
+		ShaderManager::getInstancia()->nuevoShader("storeTextureHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/storeTextureHQR.glsl");
 		ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
@@ -37,8 +40,14 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->nuevoShaderProgram("TriangleMeshSP");
 		ShaderManager::getInstancia()->addShaderToSP("FullVertexShader", "TriangleMeshSP");
 		ShaderManager::getInstancia()->addShaderToSP("FullFragmentShader", "TriangleMeshSP");
-		ShaderManager::getInstancia()->nuevoShaderProgram("TestComputeShader");
-		ShaderManager::getInstancia()->addShaderToSP("ComputeShader", "TestComputeShader");
+		ShaderManager::getInstancia()->nuevoShaderProgram("ResetComputeShaderSP");
+		ShaderManager::getInstancia()->addShaderToSP("resetBuffersHQR", "ResetComputeShaderSP");
+		ShaderManager::getInstancia()->nuevoShaderProgram("DepthComputeShaderSP");
+		ShaderManager::getInstancia()->addShaderToSP("depthBufferHQR", "DepthComputeShaderSP");
+		ShaderManager::getInstancia()->nuevoShaderProgram("ColorComputeShaderSP");
+		ShaderManager::getInstancia()->addShaderToSP("addColorHQR", "ColorComputeShaderSP");
+		ShaderManager::getInstancia()->nuevoShaderProgram("StoreComputeShaderSP");
+		ShaderManager::getInstancia()->addShaderToSP("storeTextureHQR", "StoreComputeShaderSP");
 
 		Loader::loadPointCloud("OliveTree", false);
 		Loader::loadPointCloud("PineTree", false);
@@ -49,15 +58,16 @@ PPCX::Renderer::Renderer() {
 		newTriangleMesh->setMaterial("Vaca");
 		ModelManager::getInstance()->newModel("Test", newTriangleMesh);*/
 
-		ComputeShader* compute = ShaderManager::getInstancia()->getComputeShader("ComputeShader");
+		/*ComputeShader* compute = ShaderManager::getInstancia()->getComputeShader("ComputeShader");
 		unsigned bufferID = ComputeShader::setWriteBuffer(unsigned(), 100);
+		ShaderManager::getInstancia()->activarSP("TestComputeShader");
+		compute->bindBuffers({bufferID});
+		compute->execute(1, 1, 1, 100, 1, 1);
 
-		compute->execute(100, 1, 1, ComputeShader::getMaxGroupSize(), 1, 1);
-
-		unsigned* data = compute->readData(bufferID, unsigned());
+		const unsigned* data = ComputeShader::readData(bufferID, unsigned());
 		for (int i = 0; i < 100; ++i) {
 			std::cout << data[i] << std::endl;
-		}
+		}*/
 	} catch (std::runtime_error& e) {
 		throw;
 	}
@@ -326,6 +336,7 @@ void PPCX::Renderer::setViewport(const GLint x, const GLint y, const GLsizei wid
 	glViewport(x, y, width, height);
 	camara.setAlto(height);
 	camara.setAncho(width);
+	ModelManager::getInstance()->updateWindowSize({ width, height });
 }
 
 /**

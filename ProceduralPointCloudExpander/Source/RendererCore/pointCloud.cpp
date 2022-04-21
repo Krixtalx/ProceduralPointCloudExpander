@@ -4,6 +4,7 @@
 #include "ShaderManager.h"
 #include "GeometryUtils/AABB.h"
 #include "morton.h"
+#include "Renderer.h"
 
 
 PointCloud::PointCloud(std::string shaderProgram, const vec3& pos, const vec3& rot, const vec3& scale) : Model(std::move(shaderProgram), pos, rot, scale) {}
@@ -16,7 +17,7 @@ PointCloud::PointCloud(std::string shaderProgram, const vec3& pos, const vec3& r
  * @param pos Posicion inicial de la nube de puntos
  */
 PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos, const
-                       vec3& rot, const vec3& scale) :
+					   vec3& rot, const vec3& scale) :
 	Model(std::move(shaderProgram), pos, rot, scale), aabb(aabb), needUpdating(true) {
 	newPoints(points);
 }
@@ -112,7 +113,7 @@ void PointCloud::newIBO(const std::vector<GLuint>&data, const GLenum freqAct) {
 /**
  * Función a la que se llama cuando se debe de dibujar el modelo
  */
-void PointCloud::drawModel(const mat4& MVPMatrix) {
+void PointCloud::drawModel(const mat4 & MVPMatrix) {
 	if (visible) {
 		if (needUpdating)
 			updateCloud();
@@ -128,6 +129,8 @@ void PointCloud::drawModel(const mat4& MVPMatrix) {
 		} catch (std::runtime_error& e) {
 			throw;
 		}
+
+
 	}
 }
 

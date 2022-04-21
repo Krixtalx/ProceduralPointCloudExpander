@@ -1,7 +1,12 @@
 #include "stdafx.h"
 #include "ComputeShader.h"
 
-std::vector<GLint> PPCX::ComputeShader::MAX_WORK_GROUP_SIZE = { 1024, 1024, 64 };	
+#include <utility>
+
+std::vector<GLint> PPCX::ComputeShader::MAX_WORK_GROUP_SIZE = { 1024, 1024, 64 };
+
+PPCX::ComputeShader::ComputeShader(std::string nombreShader, const std::string& ruta) :
+	PPCX::Shader(std::move(nombreShader), GL_COMPUTE_SHADER, ruta) {}
 
 void PPCX::ComputeShader::bindBuffers(const std::vector<GLuint>& bufferID) {
 	for (unsigned i = 0; i < bufferID.size(); ++i) {

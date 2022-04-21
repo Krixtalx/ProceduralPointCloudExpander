@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ModelManager.h"
 
+#include "ComputeShader.h"
 #include "PointCloud.h"
 #include "Utilities/Loader.h"
 
@@ -120,4 +121,8 @@ void ModelManager::exportAllVisibleModels(const std::string& filename) const {
 	}
 	std::thread thread(&Loader::savePointCloud, filename, clouds);
 	thread.detach();
+}
+
+void ModelManager::updateWindowSize(glm::vec2 newWindowSize) {
+	hqrRenderer->updateWindowSize(newWindowSize);
 }

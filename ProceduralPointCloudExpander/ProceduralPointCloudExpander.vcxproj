@@ -304,6 +304,7 @@
       <OpenMPSupport Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</OpenMPSupport>
     </ClCompile>
     <ClCompile Include="Source\RendererCore\Model.cpp" />
+    <ClCompile Include="Source\RendererCore\PointCloudHQRRenderer.cpp" />
     <ClCompile Include="Source\RendererCore\TriangleMesh.cpp" />
     <ClCompile Include="Source\RendererCore\PointCloud.cpp" />
     <ClCompile Include="Source\RendererCore\Renderer.cpp" />
@@ -339,6 +340,7 @@
     <ClInclude Include="Source\ProceduralUtils\ProceduralVoxel.h" />
     <ClInclude Include="Source\RendererCore\Camara.h" />
     <ClInclude Include="Source\RendererCore\Model.h" />
+    <ClInclude Include="Source\RendererCore\PointCloudHQRRenderer.h" />
     <ClInclude Include="Source\RendererCore\TriangleMesh.h" />
     <ClInclude Include="Source\RendererCore\PointCloud.h" />
     <ClInclude Include="Source\RendererCore\Renderer.h" />
@@ -353,6 +355,10 @@
     <ClInclude Include="Source\Utilities\Singleton.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Source\Shaders\ComputeShaders\addColorsHQR.glsl" />
+    <None Include="Source\Shaders\ComputeShaders\computeDepthBufferHQR.glsl" />
+    <None Include="Source\Shaders\ComputeShaders\resetBuffersHQR.glsl" />
+    <None Include="Source\Shaders\ComputeShaders\storeTextureHQR.glsl" />
     <None Include="Source\Shaders\FragmentShader.glsl" />
     <None Include="Source\Shaders\fs-ms.glsl" />
     <None Include="Source\Shaders\InstancingVertexShader.glsl" />

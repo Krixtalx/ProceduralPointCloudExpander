@@ -4,9 +4,10 @@
 namespace PPCX {
 	class ComputeShader : public Shader {
 	protected:
-		ComputeShader(std::string nombreShader, const std::string& ruta);
 		static std::vector<GLint> MAX_WORK_GROUP_SIZE;
 	public:
+		ComputeShader(std::string nombreShader, const std::string& ruta);
+
 		enum WorkGroupAxis { X_AXIS, Y_AXIS, Z_AXIS };
 		/**
 		*	@brief Binds all those buffers which have been defined (either in / out buffers).

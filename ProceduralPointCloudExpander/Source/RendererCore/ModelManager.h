@@ -1,12 +1,11 @@
 #pragma once
+#include "PointCloudHQRRenderer.h"
 #include "RendererCore/Model.h"
 #include "Utilities/Singleton.h"
 
 class ModelManager : public Singleton<ModelManager> {
-private:
-
 	std::map<std::string, PPCX::Model*> models;
-
+	std::unique_ptr<PointCloudHQRRenderer> hqrRenderer;
 public:
 	~ModelManager();
 	void drawModels(const glm::mat4& matrizMVP) const;
@@ -24,4 +23,5 @@ public:
 	void setVisibility(const std::string& key, bool visible) const;
 
 	void exportAllVisibleModels(const std::string& filename) const;
+	void updateWindowSize(glm::vec2 newWindowSize);
 };

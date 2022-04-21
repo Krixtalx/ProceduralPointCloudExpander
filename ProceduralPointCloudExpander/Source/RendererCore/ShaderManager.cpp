@@ -40,8 +40,13 @@ PPCX::ShaderManager::~ShaderManager() {
  * @param ruta en la que se encuentra el código fuente
  */
 void PPCX::ShaderManager::nuevoShader(const std::string& nombreShader, const GLenum tipoShader, const std::string& ruta) {
-	auto nuevoShader = new Shader(nombreShader, tipoShader, ruta);
-	shaders.insert(std::make_pair(nombreShader, nuevoShader));
+	if (tipoShader == GL_COMPUTE_SHADER) {
+		auto nuevoShader = new ComputeShader(nombreShader, ruta);
+		shaders.insert(std::make_pair(nombreShader, nuevoShader));
+	} else {
+		auto nuevoShader = new Shader(nombreShader, tipoShader, ruta);
+		shaders.insert(std::make_pair(nombreShader, nuevoShader));
+	}
 }
 
 /**
@@ -115,6 +120,22 @@ void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::str
 		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
 		if (location >= 0) {
 			glUniform3fv(location, 1, value_ptr(vec));
+		} else
+			throw std::runtime_error(
+				"[ShaderManager]: No se ha encontrado ninguna variable con el nombre " + variable +
+				" en el shaderProgram " + nombreSP);
+	} else {
+		throw std::runtime_error(
+			"[ShaderManager]: No se ha encontrado ningun shader program con el nombre " + nombreSP);
+	}
+}
+
+void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::string& variable, glm::vec2 vec) {
+	const auto SP = shaderPrograms.find(nombreSP);
+	if (SP != shaderPrograms.end()) {
+		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
+		if (location >= 0) {
+			glUniform2fv(location, 1, value_ptr(vec));
 		} else
 			throw std::runtime_error(
 				"[ShaderManager]: No se ha encontrado ninguna variable con el nombre " + variable +

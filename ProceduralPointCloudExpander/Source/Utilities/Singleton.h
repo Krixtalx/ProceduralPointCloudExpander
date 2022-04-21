@@ -4,8 +4,6 @@
 
 /**
 *	@file Singleton.h
-*	@authors Alfonso López Ruiz (alr00048@red.ujaen.es)
-*	@date 07/09/2019
 */
 
 /**
@@ -16,7 +14,6 @@ class Singleton {
 protected:
 	static std::unique_ptr<T> _instance;							//!< Singleton instance
 
-protected:
 	/**
 	*	@brief Protected constructor as this class implements the Singleton pattern.
 	*/

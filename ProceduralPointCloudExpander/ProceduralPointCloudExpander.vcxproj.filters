@@ -76,6 +76,9 @@
     <Filter Include="Archivos de origen\GeometryUtils">
       <UniqueIdentifier>{2385a8cb-58a7-470e-b8da-efbc60a7f10d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de recursos\Shaders\ComputeShaders">
+      <UniqueIdentifier>{77130e77-60e7-4044-8ea8-dff0387f95d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\RendererCore\ShaderProgram.cpp">
@@ -175,6 +178,9 @@
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
     <ClCompile Include="Source\RendererCore\ComputeShader.cpp">
+      <Filter>Archivos de origen\RendererCore</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RendererCore\PointCloudHQRRenderer.cpp">
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
   </ItemGroup>
@@ -290,6 +296,9 @@
     <ClInclude Include="Source\RendererCore\ComputeShader.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
+    <ClInclude Include="Source\RendererCore\PointCloudHQRRenderer.h">
+      <Filter>Archivos de encabezado\RendererCore</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Shaders\FragmentShader.glsl">
@@ -315,6 +324,18 @@
     </None>
     <None Include="Source\Shaders\TestComputeShader.glsl">
       <Filter>Archivos de recursos\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\ComputeShaders\addColorsHQR.glsl">
+      <Filter>Archivos de recursos\Shaders\ComputeShaders</Filter>
+    </None>
+    <None Include="Source\Shaders\ComputeShaders\computeDepthBufferHQR.glsl">
+      <Filter>Archivos de recursos\Shaders\ComputeShaders</Filter>
+    </None>
+    <None Include="Source\Shaders\ComputeShaders\resetBuffersHQR.glsl">
+      <Filter>Archivos de recursos\Shaders\ComputeShaders</Filter>
+    </None>
+    <None Include="Source\Shaders\ComputeShaders\storeTextureHQR.glsl">
+      <Filter>Archivos de recursos\Shaders\ComputeShaders</Filter>
     </None>
   </ItemGroup>
 </Project>
