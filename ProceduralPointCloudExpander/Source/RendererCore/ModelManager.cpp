@@ -6,6 +6,8 @@
 #include "Utilities/Loader.h"
 
 
+ModelManager::ModelManager() :hqrRenderer(new PointCloudHQRRenderer) {}
+
 ModelManager::~ModelManager() {
 	for (const auto& model : models) {
 		delete model.second;
@@ -20,6 +22,10 @@ ModelManager::~ModelManager() {
  */
 void ModelManager::newModel(const std::string& key, PPCX::Model* model) {
 	models.insert(std::make_pair(key, model));
+	auto cloud = dynamic_cast<PointCloud*>(model);
+	if (cloud) {
+		pendingClouds.emplace_back(key, cloud);
+	}
 }
 
 /**
@@ -82,9 +88,19 @@ std::vector<std::pair<std::string, PPCX::Model*>> ModelManager::getAllModelsLike
  *
  * @param matrizMVP Model view perspective view matrix.
  */
-void ModelManager::drawModels(const glm::mat4& matrizMVP) const {
-	for (const auto& model : models) {
-		model.second->drawModel(matrizMVP);
+void ModelManager::drawModels(const glm::mat4& matrizMVP) {
+	if (hqrRendering && !models.empty()) {
+		if (!pendingClouds.empty()) {
+			for (const auto& pendingCloud : pendingClouds) {
+				hqrRenderer->addPointCloud(pendingCloud.first, pendingCloud.second);
+			}
+			pendingClouds.clear();
+		}
+		hqrRenderer->render(matrizMVP);
+	} else {
+		for (const auto& model : models) {
+			model.second->drawModel(matrizMVP);
+		}
 	}
 }
 

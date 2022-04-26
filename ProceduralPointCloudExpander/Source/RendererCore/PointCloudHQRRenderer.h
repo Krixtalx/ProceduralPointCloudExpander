@@ -4,22 +4,24 @@
 #include "pointCloud.h"
 #pragma once
 class PointCloudHQRRenderer {
-	glm::vec2 windowSize;
+	glm::uvec2 windowSize;
 
 	//GL buffers
 	GLuint _depthBufferSSBO, _rawDepthBufferSSBO, _color01SSBO, _color02SSBO;
 	GLuint _textureID;
+	GLuint fboID;
 	// Shaders
-	PPCX::ComputeShader* _resetDepthBufferHQRShader;
-	PPCX::ComputeShader* _DepthHQRShader;
-	PPCX::ComputeShader* _addColorsHQRShader;
-	PPCX::ComputeShader* _storeHQRTexture;
+	PPCX::ComputeShader* resetDepthBufferHQRShader;
+	PPCX::ComputeShader* depthHQRShader;
+	PPCX::ComputeShader* addColorsHQRShader;
+	PPCX::ComputeShader* storeHQRTexture;
 
 	std::map<std::string, GLuint> pointCloudVBOs;
-	std::map<std::string, unsigned> pointCloudNpoints;
+	std::map<std::string, PointCloud*> pointClouds;
 public:
+	PointCloudHQRRenderer();
 	~PointCloudHQRRenderer();
 	void addPointCloud(const std::string& name, PointCloud* pointCloud);
 	void render(const mat4& MVPmatrix);
-	void updateWindowSize(const vec2 newWindowSize);
+	void updateWindowSize(const uvec2 newWindowSize);
 };

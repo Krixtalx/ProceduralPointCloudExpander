@@ -188,7 +188,7 @@ void GUI::showRenderingSettings() {
 		ImGui::ColorEdit3("Background color", &color[0]);
 		PPCX::Renderer::getInstancia()->setColorFondo(color);
 		this->leaveSpace(3);
-		ImGui::Checkbox("High quality rendering", &PPCX::Renderer::getInstancia()->hqr);
+		ImGui::Checkbox("High quality rendering", &ModelManager::getInstance()->hqrRendering);
 		this->leaveSpace(3);
 
 		if (ImGui::BeginTabBar("")) {

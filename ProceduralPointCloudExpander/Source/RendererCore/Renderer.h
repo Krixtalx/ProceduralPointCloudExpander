@@ -32,8 +32,6 @@ namespace PPCX {
 		Camara camara;
 
 	public:
-		bool hqr = true;
-
 		virtual ~Renderer();
 
 		static Renderer* getInstancia();

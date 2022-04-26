@@ -146,12 +146,28 @@ void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::str
 	}
 }
 
+void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::string& variable, glm::uvec2 vec) {
+	const auto SP = shaderPrograms.find(nombreSP);
+	if (SP != shaderPrograms.end()) {
+		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
+		if (location >= 0) {
+			glUniform2uiv(location, 1, value_ptr(vec));
+		} else
+			throw std::runtime_error(
+				"[ShaderManager]: No se ha encontrado ninguna variable con el nombre " + variable +
+				" en el shaderProgram " + nombreSP);
+	} else {
+		throw std::runtime_error(
+			"[ShaderManager]: No se ha encontrado ningun shader program con el nombre " + nombreSP);
+	}
+}
+
 /**
  * Método para establecer una variable uniform dentro de un Shader Program
  * @param nombreSP nombre del ShaderProgram en el que establecer el uniform
  * @param variable nombre de la variable a establecer
  */
-void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::string& variable, GLuint valor) {
+void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::string& variable, const GLuint valor) {
 	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
@@ -172,7 +188,7 @@ void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::str
  * @param nombreSP nombre del ShaderProgram en el que establecer el uniform
  * @param variable nombre de la variable a establecer
  */
-void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::string& variable, GLint valor) {
+void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::string& variable, const GLint valor) {
 	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());
@@ -188,7 +204,7 @@ void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::str
 	}
 }
 
-void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::string& variable, float valor) {
+void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::string& variable, const float valor) {
 	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		const GLint location = glGetUniformLocation(SP->second->getIdSP(), variable.c_str());

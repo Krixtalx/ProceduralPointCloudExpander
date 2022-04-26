@@ -39,6 +39,8 @@ namespace PPCX {
 
 		void setUniform(const std::string& nombreSP, const std::string& variable, glm::vec2 vec);
 
+		void setUniform(const std::string& nombreSP, const std::string& variable, glm::uvec2 vec);
+
 		void setUniform(const std::string& nombreSP, const std::string& variable, GLuint valor);
 
 		void setUniform(const std::string& nombreSP, const std::string& variable, GLint valor);

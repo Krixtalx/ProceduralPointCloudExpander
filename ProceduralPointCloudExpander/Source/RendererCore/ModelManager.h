@@ -6,9 +6,12 @@
 class ModelManager : public Singleton<ModelManager> {
 	std::map<std::string, PPCX::Model*> models;
 	std::unique_ptr<PointCloudHQRRenderer> hqrRenderer;
+	std::vector<std::pair<std::string, PointCloud*>> pendingClouds;
 public:
+	bool hqrRendering = true;
+	ModelManager();
 	~ModelManager();
-	void drawModels(const glm::mat4& matrizMVP) const;
+	void drawModels(const glm::mat4& matrizMVP);
 	void drawAndDeleteSingleModel(const std::string& modelKey, const glm::mat4& matrizMVP);
 
 	void newModel(const std::string& key, PPCX::Model* model);
