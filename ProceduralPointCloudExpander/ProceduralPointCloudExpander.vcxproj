@@ -355,7 +355,9 @@
     <ClInclude Include="Source\Utilities\Singleton.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Source\Shaders\ComputeShaders\addColorsHQR-Instancing.glsl" />
     <None Include="Source\Shaders\ComputeShaders\addColorsHQR.glsl" />
+    <None Include="Source\Shaders\ComputeShaders\computeDepthBufferHQR-Instancing.glsl" />
     <None Include="Source\Shaders\ComputeShaders\computeDepthBufferHQR.glsl" />
     <None Include="Source\Shaders\ComputeShaders\resetBuffersHQR.glsl" />
     <None Include="Source\Shaders\ComputeShaders\storeTextureHQR.glsl" />
@@ -364,7 +366,6 @@
     <None Include="Source\Shaders\InstancingVertexShader.glsl" />
     <None Include="Source\Shaders\pag-fs.glsl" />
     <None Include="Source\Shaders\pag-vs.glsl" />
-    <None Include="Source\Shaders\TestComputeShader.glsl" />
     <None Include="Source\Shaders\VertexShader.glsl" />
     <None Include="Source\Shaders\vs-ms.glsl" />
   </ItemGroup>

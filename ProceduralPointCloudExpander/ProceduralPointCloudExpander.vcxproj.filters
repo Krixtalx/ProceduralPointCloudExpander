@@ -322,9 +322,6 @@
     <None Include="Source\Shaders\vs-ms.glsl">
       <Filter>Archivos de recursos\Shaders</Filter>
     </None>
-    <None Include="Source\Shaders\TestComputeShader.glsl">
-      <Filter>Archivos de recursos\Shaders</Filter>
-    </None>
     <None Include="Source\Shaders\ComputeShaders\addColorsHQR.glsl">
       <Filter>Archivos de recursos\Shaders\ComputeShaders</Filter>
     </None>
@@ -335,6 +332,12 @@
       <Filter>Archivos de recursos\Shaders\ComputeShaders</Filter>
     </None>
     <None Include="Source\Shaders\ComputeShaders\storeTextureHQR.glsl">
+      <Filter>Archivos de recursos\Shaders\ComputeShaders</Filter>
+    </None>
+    <None Include="Source\Shaders\ComputeShaders\computeDepthBufferHQR-Instancing.glsl">
+      <Filter>Archivos de recursos\Shaders\ComputeShaders</Filter>
+    </None>
+    <None Include="Source\Shaders\ComputeShaders\addColorsHQR-Instancing.glsl">
       <Filter>Archivos de recursos\Shaders\ComputeShaders</Filter>
     </None>
   </ItemGroup>

@@ -13,6 +13,8 @@ class InstancedPointCloud :public PointCloud {
 
 public:
 
+	bool HQRNeedUpdate = false;
+
 	InstancedPointCloud(std::string shaderProgram, const vec3& pos = { 0, 0, 0 }, const vec3& rot = { 0, 0, 0 }, const
 						vec3& scale = { 1, 1, 1 });
 
@@ -23,8 +25,12 @@ public:
 
 	void drawModel(const mat4& MVPMatrix) override;
 
+	std::vector<PointModel>& getPoints() override;
+
+	std::vector<mat4>& getOffsets();
+
 	unsigned getNumberOfInstances() const;
 
-	std::vector<PointModel>& getPoints() override;
+	unsigned getNumberOfPoints() const override;
 
 };

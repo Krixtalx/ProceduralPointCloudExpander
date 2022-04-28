@@ -22,6 +22,7 @@ void InstancedPointCloud::newInstance(const vec3& position, const vec3& rot, con
 
 	offsets.push_back(matrix);
 	newInstanceUpdate = true;
+	HQRNeedUpdate = true;
 }
 
 void InstancedPointCloud::drawModel(const mat4& MVPMatrix) {
@@ -65,6 +66,10 @@ std::vector<PointModel>& InstancedPointCloud::getPoints() {
 	return allPoints;
 }
 
+std::vector<mat4>& InstancedPointCloud::getOffsets() {
+	return offsets;
+}
+
 void InstancedPointCloud::updateInstancingData() {
 	if (instancingVBO != UINT_MAX) {
 		glDeleteBuffers(1, &instancingVBO);
@@ -89,4 +94,9 @@ void InstancedPointCloud::updateInstancingData() {
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(vec4), reinterpret_cast<void*>(3 * sizeof(vec4)));
 	glVertexAttribDivisor(5, 1);
 	newInstanceUpdate = false;
+}
+
+
+unsigned InstancedPointCloud::getNumberOfPoints() const {
+	return vbo.size() * offsets.size();
 }

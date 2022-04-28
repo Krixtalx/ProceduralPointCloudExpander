@@ -326,6 +326,16 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 					if (posColorY >= axisSubdivision[1])
 						posColorY = axisSubdivision[1] - 1;
 					vec3 color = voxelGrid[posColorX][posColorY]->getColor();
+					/*if (posColorX + 1 < axisSubdivision[0] && posColorY + 1 < axisSubdivision[1]) {
+						vec2 coordinate = point._point / voxelGrid[posColorX][posColorY]->getRepresentativePoint();
+						vec3 color00, color01, color10, color11;
+						color00 = color;
+						color01 = voxelGrid[posColorX + 1][posColorY]->getColor();
+						color10 = voxelGrid[posColorX][posColorY + 1]->getColor();
+						color11 = voxelGrid[posColorX + 1][posColorY + 1]->getColor();
+						color = color00 * (1 - coordinate.x) * (1 - coordinate.y) + color01 * (coordinate.x) * (1 - coordinate.y) +
+							color10 * (1 - coordinate.x) * (coordinate.y) + color11 * (coordinate.x) * (coordinate.y);
+					}*/
 					color.r += genColor(generator);
 					color.g += genColor(generator);
 					color.b += genColor(generator);

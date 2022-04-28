@@ -13,15 +13,18 @@ class PointCloudHQRRenderer {
 	// Shaders
 	PPCX::ComputeShader* resetDepthBufferHQRShader;
 	PPCX::ComputeShader* depthHQRShader;
+	PPCX::ComputeShader* depthHQRShaderInstancing;
 	PPCX::ComputeShader* addColorsHQRShader;
+	PPCX::ComputeShader* addColorsHQRShaderInstancing;
 	PPCX::ComputeShader* storeHQRTexture;
 
 	std::map<std::string, GLuint> pointCloudVBOs;
+	std::map<std::string, GLuint> instancedPointCloudVBOs;
 	std::map<std::string, PointCloud*> pointClouds;
 public:
 	PointCloudHQRRenderer();
 	~PointCloudHQRRenderer();
 	void addPointCloud(const std::string& name, PointCloud* pointCloud);
-	void render(const mat4& MVPmatrix);
+	void render(const mat4& MVPmatrix, const float& distanceThreshold);
 	void updateWindowSize(const uvec2 newWindowSize);
 };

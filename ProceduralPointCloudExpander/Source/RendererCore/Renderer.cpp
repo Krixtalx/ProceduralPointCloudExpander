@@ -31,6 +31,9 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->nuevoShader("depthBufferHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR.glsl");
 		ShaderManager::getInstancia()->nuevoShader("addColorHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR.glsl");
 		ShaderManager::getInstancia()->nuevoShader("storeTextureHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/storeTextureHQR.glsl");
+		ShaderManager::getInstancia()->nuevoShader("depthBufferHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR-Instancing.glsl");
+		ShaderManager::getInstancia()->nuevoShader("addColorHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR-Instancing.glsl");
+		
 		ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
@@ -46,6 +49,12 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->addShaderToSP("depthBufferHQR", "DepthComputeShaderSP");
 		ShaderManager::getInstancia()->nuevoShaderProgram("ColorComputeShaderSP");
 		ShaderManager::getInstancia()->addShaderToSP("addColorHQR", "ColorComputeShaderSP");
+
+		ShaderManager::getInstancia()->nuevoShaderProgram("DepthComputeShaderSPInstancing");
+		ShaderManager::getInstancia()->addShaderToSP("depthBufferHQRInstancing", "DepthComputeShaderSPInstancing");
+		ShaderManager::getInstancia()->nuevoShaderProgram("ColorComputeShaderSPInstancing");
+		ShaderManager::getInstancia()->addShaderToSP("addColorHQRInstancing", "ColorComputeShaderSPInstancing");
+
 		ShaderManager::getInstancia()->nuevoShaderProgram("StoreComputeShaderSP");
 		ShaderManager::getInstancia()->addShaderToSP("storeTextureHQR", "StoreComputeShaderSP");
 
@@ -167,47 +176,50 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	const GLuint alto = camara.getAlto();
 
 	// Creación de un FBO
-	GLuint idFBO;
-	glGenFramebuffers(1, &idFBO);
-
-	// Activación del FBO
-	glBindFramebuffer(GL_FRAMEBUFFER, idFBO);
-
+	GLuint idFBO = -1;
 	// Creación de una textura para utilizarla de buffer de color
-	GLuint idTextura;
-	glGenTextures(1, &idTextura);
-	// Activación de la textura
-	glBindTexture(GL_TEXTURE_2D, idTextura);
-	// Configuración de la textura. Las dimensiones son (ancho, alto)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ancho, alto, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-
+	GLuint idTextura = -1;
 	// Creación de un renderbuffer object para utilizarlo como buffer de profundidad
-	GLuint idRBO;
-	glGenRenderbuffers(1, &idRBO);
-	// Activación del RBO
-	glBindRenderbuffer(GL_RENDERBUFFER, idRBO);
-	// Configuración del RBO. Las dimensiones son (ancho, alto)
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, ancho, alto);
+	GLuint idRBO = -1;
+	if (!ModelManager::getInstance()->hqrRendering) {
+		glGenFramebuffers(1, &idFBO);
 
-	// Se vincula la textura y el RBO al FBO
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, idTextura, 0);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, idRBO);
+		// Activación del FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, idFBO);
 
-	// Se comprueba que el FBO está listo para su uso
-	const GLenum estado = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (estado != GL_FRAMEBUFFER_COMPLETE) {
-		// Hay un error. Se genera una excepción
+		glGenTextures(1, &idTextura);
+		// Activación de la textura
+		glBindTexture(GL_TEXTURE_2D, idTextura);
+		// Configuración de la textura. Las dimensiones son (ancho, alto)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, ancho, alto, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+
+		glGenRenderbuffers(1, &idRBO);
+		// Activación del RBO
+		glBindRenderbuffer(GL_RENDERBUFFER, idRBO);
+		// Configuración del RBO. Las dimensiones son (ancho, alto)
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, ancho, alto);
+
+		// Se vincula la textura y el RBO al FBO
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, idTextura, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, idRBO);
+
+		// Se comprueba que el FBO está listo para su uso
+		const GLenum estado = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (estado != GL_FRAMEBUFFER_COMPLETE) {
+			// Hay un error. Se genera una excepción
+		}
+
+		// Ahora se puede utilizar el FBO. Es MUY IMPORTANTE ajustar el tamaño del viewport para que
+		// coincida con el del FBO
+		glViewport(0, 0, ancho, alto);
+		// Lanzar el proceso de rendering
+		refrescar();
 	}
-
-	// Ahora se puede utilizar el FBO. Es MUY IMPORTANTE ajustar el tamaño del viewport para que
-	// coincida con el del FBO
-	glViewport(0, 0, ancho, alto);
-	// Lanzar el proceso de rendering
-	refrescar();
 	// Finalizado el proceso de rendering, se recupera el contenido del FBO
 	auto* pixeles = new GLubyte[ancho * alto * 4];
 	auto* flipped = new GLubyte[ancho * alto * 4];
@@ -231,18 +243,20 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	delete[] pixeles;
 	delete[] flipped;
 
-	// VUELTA A LA NORMALIDAD
-	glDeleteTextures(1, &idTextura);
-	glDeleteRenderbuffers(1, &idRBO);
-	glDeleteFramebuffers(1, &idFBO);
-	// Se vuelve a activar el renderbuffer por defecto
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	if (!ModelManager::getInstance()->hqrRendering) {
+		// VUELTA A LA NORMALIDAD
+		glDeleteTextures(1, &idTextura);
+		glDeleteRenderbuffers(1, &idRBO);
+		glDeleteFramebuffers(1, &idFBO);
+		// Se vuelve a activar el renderbuffer por defecto
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-	// Se vuelve a activar la textura por defecto
-	glBindTexture(GL_TEXTURE_2D, 0);
+		// Se vuelve a activar la textura por defecto
+		glBindTexture(GL_TEXTURE_2D, 0);
 
-	// Se vuelve a activar el framebuffer del gestor de ventanas
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// Se vuelve a activar el framebuffer del gestor de ventanas
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 	std::cout << "Screenshot taken" << std::endl;
 }
 

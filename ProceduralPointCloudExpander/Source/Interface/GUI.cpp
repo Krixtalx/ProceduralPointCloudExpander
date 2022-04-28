@@ -189,8 +189,9 @@ void GUI::showRenderingSettings() {
 		PPCX::Renderer::getInstancia()->setColorFondo(color);
 		this->leaveSpace(3);
 		ImGui::Checkbox("High quality rendering", &ModelManager::getInstance()->hqrRendering);
+		this->leaveSpace(1);
+		ImGui::InputFloat("Distance Threshold", &ModelManager::getInstance()->distanceThreshold, 0.01f, 0.05f);
 		this->leaveSpace(3);
-
 		if (ImGui::BeginTabBar("")) {
 			if (ImGui::BeginTabItem("Point Cloud")) {
 				this->leaveSpace(1);
@@ -224,8 +225,7 @@ void GUI::showRenderingSettings() {
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
 					ImGui::Text("Number of points loaded"); ImGui::TableNextColumn();
-					if (procGenerator->terrainCloud)
-						ImGui::Text("%i", procGenerator->terrainCloud->getNumberOfPoints());
+					ImGui::Text("%i", ModelManager::getInstance()->getNumberOfPoints());
 					ImGui::TableNextRow(); ImGui::TableNextColumn();
 
 					ImGui::Text("Number of subdivisions in x"); ImGui::TableNextColumn();

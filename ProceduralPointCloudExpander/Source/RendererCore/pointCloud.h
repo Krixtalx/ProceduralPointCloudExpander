@@ -32,11 +32,11 @@ public:
 
 	void updateCloud();
 
-	virtual void drawModel(const mat4& MVPMatrix) override;
+	virtual void drawModel(const mat4& MVPMatrix);
 
 	virtual std::vector<PointModel>& getPoints();
 
-	unsigned getNumberOfPoints() const;
+	virtual unsigned getNumberOfPoints() const;
 
 	const AABB& getAABB();
 

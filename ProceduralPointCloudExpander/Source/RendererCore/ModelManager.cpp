@@ -96,7 +96,7 @@ void ModelManager::drawModels(const glm::mat4& matrizMVP) {
 			}
 			pendingClouds.clear();
 		}
-		hqrRenderer->render(matrizMVP);
+		hqrRenderer->render(matrizMVP, distanceThreshold);
 	} else {
 		for (const auto& model : models) {
 			model.second->drawModel(matrizMVP);
@@ -141,4 +141,16 @@ void ModelManager::exportAllVisibleModels(const std::string& filename) const {
 
 void ModelManager::updateWindowSize(glm::vec2 newWindowSize) {
 	hqrRenderer->updateWindowSize(newWindowSize);
+}
+
+unsigned ModelManager::getNumberOfPoints() {
+	unsigned n = 0;
+	for (const auto& model : models) {
+		if (model.second->getVisibility()) {
+			if (const auto* cloud = dynamic_cast<PointCloud*>(model.second)) {
+				n += cloud->getNumberOfPoints();
+			}
+		}
+	}
+	return n;
 }
