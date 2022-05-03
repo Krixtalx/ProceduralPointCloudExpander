@@ -9,7 +9,7 @@ class ModelManager : public Singleton<ModelManager> {
 	std::vector<std::pair<std::string, PointCloud*>> pendingClouds;
 public:
 	bool hqrRendering = true;
-	float distanceThreshold = 1.01f;
+	float distanceThreshold = 1.00001f;
 	ModelManager();
 	~ModelManager();
 	void drawModels(const glm::mat4& matrizMVP);

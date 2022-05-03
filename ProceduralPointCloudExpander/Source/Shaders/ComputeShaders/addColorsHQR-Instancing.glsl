@@ -46,10 +46,10 @@ void main()
 	int pointIndex			= int(windowPosition.y * windowSize.x + windowPosition.x);
 	float depth				= projectedPoint.w;
 	float depthInBuffer		= uintBitsToFloat(depthBuffer[pointIndex]);
-	uvec3 rgbColor			= uvec3(unpackUnorm4x8(points[index].rgb).rgb * 255.0f);
 
 	if (depth < depthInBuffer * distanceThreshold)			// Same surface
 	{
+		uvec3 rgbColor = uvec3(unpackUnorm4x8(points[index].rgb).rgb * 255.0f);
 		uint64_t rg = (uint64_t(rgbColor.r) << 32) | rgbColor.g;
 		uint64_t ba = (uint64_t(rgbColor.b) << 32) | 1;
 

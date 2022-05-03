@@ -25,7 +25,7 @@ public:
 
 	void drawModel(const mat4& MVPMatrix) override;
 
-	std::vector<PointModel>& getPoints() override;
+	std::vector<PointModel>& getAllPoints();
 
 	std::vector<mat4>& getOffsets();
 
@@ -33,4 +33,5 @@ public:
 
 	unsigned getNumberOfPoints() const override;
 
+	unsigned getOneInstanceNumberOfPoints() const;
 };

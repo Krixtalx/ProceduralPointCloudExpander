@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "PointCloudHQRRenderer.h"
 
+#include <iomanip>
+
 #include "InstancedPointCloud.h"
 #include "Renderer.h"
 #include "ShaderManager.h"
@@ -42,7 +44,7 @@ PointCloudHQRRenderer::~PointCloudHQRRenderer() {
 	glDeleteTextures(1, &_textureID);
 }
 
-void PointCloudHQRRenderer::addPointCloud(const std::string& name, PointCloud* pointCloud) {
+void PointCloudHQRRenderer::addPointCloud(const std::string name, PointCloud* pointCloud) {
 	auto previous = pointCloudVBOs.find(name);
 	if (previous != pointCloudVBOs.end()) {
 		glDeleteBuffers(1, &previous->second);
@@ -50,13 +52,13 @@ void PointCloudHQRRenderer::addPointCloud(const std::string& name, PointCloud* p
 		if (previous2 != instancedPointCloudVBOs.end())
 			glDeleteBuffers(1, &previous2->second);
 	}
-	GLuint id = PPCX::ComputeShader::setReadBuffer(pointCloud->getPoints().data(), pointCloud->getNumberOfPoints(), GL_STATIC_DRAW);
+	GLuint id = PPCX::ComputeShader::setReadBuffer(pointCloud->getPoints(), GL_STATIC_DRAW);
 	pointCloudVBOs.insert_or_assign(name, id);
 	pointClouds.insert_or_assign(name, pointCloud);
 
 	auto instancedCloud = dynamic_cast<InstancedPointCloud*>(pointCloud);
 	if (instancedCloud) {
-		GLuint id = PPCX::ComputeShader::setReadBuffer(instancedCloud->getOffsets().data(), instancedCloud->getNumberOfInstances(), GL_STATIC_DRAW);
+		GLuint id = PPCX::ComputeShader::setReadBuffer(instancedCloud->getOffsets(), GL_STATIC_DRAW);
 		instancedPointCloudVBOs.insert_or_assign(name, id);
 	}
 }
@@ -73,10 +75,10 @@ void PointCloudHQRRenderer::render(const mat4& MVPmatrix, const float& distanceT
 	for (const auto& pointCloudVBO : pointCloudVBOs) {
 		const auto pointCloud = pointClouds.find(pointCloudVBO.first)->second;
 		if (pointCloud->getVisibility()) {
-			const unsigned numPoints = pointCloud->getNumberOfPoints();
 			const auto instancedCloudVBO = instancedPointCloudVBOs.find(pointCloudVBO.first);
 
 			if (instancedCloudVBO == instancedPointCloudVBOs.end()) {
+				const unsigned numPoints = pointCloud->getNumberOfPoints();
 				const unsigned numGroupsPoints = PPCX::ComputeShader::getNumGroups(numPoints);
 				// 2. Transform points and use atomicMin to retrieve the nearest point
 				depthHQRShader->bindBuffers(std::vector{ _rawDepthBufferSSBO, pointCloudVBO.second });
@@ -100,32 +102,37 @@ void PointCloudHQRRenderer::render(const mat4& MVPmatrix, const float& distanceT
 					auto previous = instancedPointCloudVBOs.find(pointCloudVBO.first);
 					if (previous != instancedPointCloudVBOs.end())
 						glDeleteBuffers(1, &previous->second);
-					GLuint id = PPCX::ComputeShader::setReadBuffer(instancedPointCloud->getOffsets().data(), instancedPointCloud->getNumberOfInstances(), GL_STATIC_DRAW);
+					GLuint id = PPCX::ComputeShader::setReadBuffer(instancedPointCloud->getOffsets(), GL_STATIC_DRAW);
 					instancedPointCloudVBOs.insert_or_assign(pointCloudVBO.first, id);
 					instancedPointCloud->HQRNeedUpdate = false;
 
 				}
+				const unsigned numPoints = instancedPointCloud->getOneInstanceNumberOfPoints();
 				const unsigned numInstances = instancedPointCloud->getNumberOfInstances();
 				const unsigned numGroupsPoints = PPCX::ComputeShader::getNumGroups(numPoints * numInstances);
 
-				// 2. Transform points and use atomicMin to retrieve the nearest point
-				depthHQRShaderInstancing->bindBuffers(std::vector{ _rawDepthBufferSSBO, pointCloudVBO.second, instancedCloudVBO->second });
-				PPCX::ShaderManager::getInstancia()->activarSP("DepthComputeShaderSPInstancing");
-				PPCX::ShaderManager::getInstancia()->setUniform("DepthComputeShaderSPInstancing", "windowSize", windowSize);
-				PPCX::ShaderManager::getInstancia()->setUniform("DepthComputeShaderSPInstancing", "numPoints", numPoints);
-				PPCX::ShaderManager::getInstancia()->setUniform("DepthComputeShaderSPInstancing", "numInstances", numInstances);
-				PPCX::ShaderManager::getInstancia()->setUniform("DepthComputeShaderSPInstancing", "cameraMatrix", MVPmatrix);
-				depthHQRShaderInstancing->execute(numGroupsPoints, 1, 1, PPCX::ComputeShader::getMaxGroupSize(), 1, 1);
+				if (numInstances > 0) {
+					// 2. Transform points and use atomicMin to retrieve the nearest point
+					depthHQRShaderInstancing->bindBuffers(std::vector{ _rawDepthBufferSSBO, pointCloudVBO.second, instancedCloudVBO->second });
+					PPCX::ShaderManager::getInstancia()->activarSP("DepthComputeShaderSPInstancing");
+					PPCX::ShaderManager::getInstancia()->setUniform("DepthComputeShaderSPInstancing", "windowSize", windowSize);
+					PPCX::ShaderManager::getInstancia()->setUniform("DepthComputeShaderSPInstancing", "numPoints", numPoints);
+					PPCX::ShaderManager::getInstancia()->setUniform("DepthComputeShaderSPInstancing", "numInstances", numInstances);
+					PPCX::ShaderManager::getInstancia()->setUniform("DepthComputeShaderSPInstancing", "cameraMatrix", MVPmatrix);
+					depthHQRShaderInstancing->execute(numGroupsPoints, 1, 1, PPCX::ComputeShader::getMaxGroupSize(), 1, 1);
 
-				// 3. Accumulate colors once the minimum depth is defined
-				addColorsHQRShaderInstancing->bindBuffers(std::vector<GLuint> { _rawDepthBufferSSBO, _color01SSBO, _color02SSBO, pointCloudVBO.second, instancedCloudVBO->second });
-				PPCX::ShaderManager::getInstancia()->activarSP("ColorComputeShaderSPInstancing");
-				PPCX::ShaderManager::getInstancia()->setUniform("ColorComputeShaderSPInstancing", "windowSize", windowSize);
-				PPCX::ShaderManager::getInstancia()->setUniform("ColorComputeShaderSPInstancing", "numPoints", numPoints);
-				PPCX::ShaderManager::getInstancia()->setUniform("ColorComputeShaderSPInstancing", "numInstances", numInstances);
-				PPCX::ShaderManager::getInstancia()->setUniform("ColorComputeShaderSPInstancing", "cameraMatrix", MVPmatrix);
-				PPCX::ShaderManager::getInstancia()->setUniform("ColorComputeShaderSPInstancing", "distanceThreshold", distanceThreshold);
-				addColorsHQRShaderInstancing->execute(numGroupsPoints, 1, 1, PPCX::ComputeShader::getMaxGroupSize(), 1, 1);
+
+					// 3. Accumulate colors once the minimum depth is defined
+					addColorsHQRShaderInstancing->bindBuffers(std::vector<GLuint> { _rawDepthBufferSSBO, _color01SSBO, _color02SSBO, pointCloudVBO.second, instancedCloudVBO->second });
+					PPCX::ShaderManager::getInstancia()->activarSP("ColorComputeShaderSPInstancing");
+					PPCX::ShaderManager::getInstancia()->setUniform("ColorComputeShaderSPInstancing", "windowSize", windowSize);
+					PPCX::ShaderManager::getInstancia()->setUniform("ColorComputeShaderSPInstancing", "numPoints", numPoints);
+					PPCX::ShaderManager::getInstancia()->setUniform("ColorComputeShaderSPInstancing", "numInstances", numInstances);
+					PPCX::ShaderManager::getInstancia()->setUniform("ColorComputeShaderSPInstancing", "cameraMatrix", MVPmatrix);
+					PPCX::ShaderManager::getInstancia()->setUniform("ColorComputeShaderSPInstancing", "distanceThreshold", distanceThreshold);
+					addColorsHQRShaderInstancing->execute(numGroupsPoints, 1, 1, PPCX::ComputeShader::getMaxGroupSize(), 1, 1);
+
+				}
 			}
 		}
 	}

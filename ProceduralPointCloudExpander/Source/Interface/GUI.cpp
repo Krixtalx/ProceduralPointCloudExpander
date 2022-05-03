@@ -190,7 +190,7 @@ void GUI::showRenderingSettings() {
 		this->leaveSpace(3);
 		ImGui::Checkbox("High quality rendering", &ModelManager::getInstance()->hqrRendering);
 		this->leaveSpace(1);
-		ImGui::InputFloat("Distance Threshold", &ModelManager::getInstance()->distanceThreshold, 0.01f, 0.05f);
+		ImGui::InputFloat("Distance Threshold", &ModelManager::getInstance()->distanceThreshold, 0.00001f, 0.01f, "%4f");
 		this->leaveSpace(3);
 		if (ImGui::BeginTabBar("")) {
 			if (ImGui::BeginTabItem("Point Cloud")) {

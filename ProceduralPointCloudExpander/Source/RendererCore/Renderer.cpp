@@ -4,6 +4,9 @@
 
 #include "stdafx.h"
 #include "Renderer.h"
+
+#include <iomanip>
+
 #include "ShaderManager.h"
 #include "Utilities/Loader.h"
 #include "RendererCore/ModelManager.h"
@@ -33,7 +36,7 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->nuevoShader("storeTextureHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/storeTextureHQR.glsl");
 		ShaderManager::getInstancia()->nuevoShader("depthBufferHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR-Instancing.glsl");
 		ShaderManager::getInstancia()->nuevoShader("addColorHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR-Instancing.glsl");
-		
+
 		ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");

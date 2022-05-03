@@ -50,7 +50,7 @@ unsigned InstancedPointCloud::getNumberOfInstances() const {
 	return offsets.size();
 }
 
-std::vector<PointModel>& InstancedPointCloud::getPoints() {
+std::vector<PointModel>& InstancedPointCloud::getAllPoints() {
 	allPoints.clear();
 	allPoints.resize(offsets.size() * vbo.size());
 	for (auto& offset : offsets) {
@@ -99,4 +99,9 @@ void InstancedPointCloud::updateInstancingData() {
 
 unsigned InstancedPointCloud::getNumberOfPoints() const {
 	return vbo.size() * offsets.size();
+}
+
+unsigned InstancedPointCloud::getOneInstanceNumberOfPoints() const
+{
+	return vbo.size();
 }
