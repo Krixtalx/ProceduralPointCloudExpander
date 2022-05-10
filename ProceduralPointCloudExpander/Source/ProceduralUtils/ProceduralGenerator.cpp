@@ -69,6 +69,7 @@ void ProceduralGenerator::createVoxelGrid(std::vector<std::vector<ProceduralVoxe
 void ProceduralGenerator::subdivideCloud(const std::vector<std::vector<ProceduralVoxel*>>&grid, PointCloud * pointCloud) {
 	std::cout << "Subdividing cloud..." << std::endl;
 	this->progress = 0.4f;
+	auto start = std::chrono::high_resolution_clock::now();
 	const std::vector<PointModel>& points = pointCloud->getPoints();
 
 	vec3 size = pointCloud->getAABB().size();
@@ -79,7 +80,7 @@ void ProceduralGenerator::subdivideCloud(const std::vector<std::vector<Procedura
 		stride[i] = size[i] / axisSubdivision[i];
 	}
 
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (int i = 0; i < points.size(); i++) {
 		const vec3 relativePoint = points[i]._point - minPoint;
 		int x = floor(relativePoint.x / stride[0]);
@@ -88,18 +89,23 @@ void ProceduralGenerator::subdivideCloud(const std::vector<std::vector<Procedura
 			x--;
 		if (y == axisSubdivision[1])
 			y--;
-		#pragma omp critical
+#pragma omp critical
 		grid[x][y]->addPoint(i);
 	}
 
+	auto end = std::chrono::high_resolution_clock::now();
 
+	auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+	std::cout << "Cloud subdivision: " << int_s.count() << " ms" << std::endl << std::endl;
 }
 
 void ProceduralGenerator::computeHeightAndColor() {
 
 	std::cout << "Computing height and color..." << std::endl;
 	this->progress = 0.5f;
-	#pragma omp parallel for collapse(2)
+	auto start = std::chrono::high_resolution_clock::now();
+#pragma omp parallel for collapse(2)
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
 			voxelGrid[x][y]->computeHeight();
@@ -134,6 +140,11 @@ void ProceduralGenerator::computeHeightAndColor() {
 			}
 		}
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+
+	auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+	std::cout << "Height and color: " << int_s.count() << " ms" << std::endl << std::endl;
 }
 
 float ProceduralGenerator::getHeight(const vec2 pos) const {
@@ -184,7 +195,7 @@ void ProceduralGenerator::testRGBSegmentation() {
 		const vec3 color = point.getRGBVec3();
 		cloud->emplace_back(pcl::PointXYZRGB(point._point.x, point._point.y, point._point.z, color.r, color.g, color.b));
 	}
-	#pragma omp parallel for
+#pragma omp parallel for
 	for (int distance = 15; distance > 0; --distance) {
 		for (int clusterSize = 5; clusterSize > 0; --clusterSize) {
 			for (int regionColor = 0; regionColor < 6; ++regionColor) {
@@ -212,6 +223,7 @@ void ProceduralGenerator::testRGBSegmentation() {
 void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned divY, float desiredDensityMultiplier) {
 	std::cout << "Creating nurbs..." << std::endl;
 	this->progress = 0.6f;
+	auto start = std::chrono::high_resolution_clock::now();
 
 	tinynurbs::RationalSurface<float> srf;
 	srf.degree_u = degree;
@@ -275,7 +287,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 		std::default_random_engine generator(seed);
 		std::uniform_int_distribution<unsigned> genColor(0, 10);
 		std::atomic<int> count = 0;
-		#pragma omp parallel for private(point, generator)
+#pragma omp parallel for private(point, generator)
 		for (int x = 0; x < axisSubdivision[0]; x++) {
 			for (int y = 0; y < axisSubdivision[1]; y++) {
 				unsigned limit = voxelGrid[x][y]->numberPointsToDensity(cloudDensity * desiredDensityMultiplier);
@@ -342,9 +354,9 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 					color.b += genColor(generator);
 					point.saveRGB(color);
 					if (point._point.z < maxPoint.z + 20 && point._point.z > minPoint.z - 20) {
-						#pragma omp critical
+#pragma omp critical
 						points.push_back(point);
-						#pragma omp critical
+#pragma omp critical
 						newAABB.update(point._point);
 					}
 				}
@@ -352,6 +364,11 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 		}
 		auto cloud = new PointCloud("DefaultSP", points, newAABB);
 		cloud->optimize();
+		auto end = std::chrono::high_resolution_clock::now();
+
+		auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+		std::cout << "NURBS: " << int_s.count() << " ms" << std::endl << std::endl;
 		ModelManager::getInstance()->modifyModel("Nurbs terrain cloud", cloud);
 		this->progress = FLT_MAX;
 	}
@@ -455,14 +472,14 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 	}
 	ModelManager::getInstance()->newModel("RGB Region Segmentation" + currentRegion, newCloud);
 
-	#pragma omp critical
+#pragma omp critical
 	PPCX::Renderer::getInstancia()->addPendingScreenshot(filename, "RGB Region Segmentation" + currentRegion++);
 
 	this->progress = FLT_MAX;
 }
 
 void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>&data) {
-
+	auto start = std::chrono::high_resolution_clock::now();
 	for (auto& pair : data) {
 		std::cout << pair.first << std::endl;
 		std::vector<std::vector<ProceduralVoxel*>> grid;
@@ -508,7 +525,11 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 				delete voxel;
 			}
 		}
+		auto end = std::chrono::high_resolution_clock::now();
 
+		auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+		std::cout << "Vegetation instancing: " << int_s.count() << " ms" << std::endl << std::endl;
 	}
 	this->progress = FLT_MAX;
 }
