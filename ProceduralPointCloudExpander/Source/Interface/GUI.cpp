@@ -274,7 +274,7 @@ void GUI::showProceduralSettings() {
 					ImGui::InputInt("##internalSubDiv", &internalSubdivision, 1, 1);
 				}
 				ImGui::Text("Density multiplier: ");
-				ImGui::SliderFloat("##densityMultiplier", &densityMultiplier, 1.0f, 10.0f, "%.1f");
+				ImGui::SliderFloat("##densityMultiplier", &densityMultiplier, 1.0f, 100.0f, "%.1f");
 				ImGui::SameLine(); renderHelpMarker("Multiplier used to get the desired cloud density. Using a value of 1, you will generate points only in voxels that don't have enought points (Empty voxels or voxels with big holes for example)");
 				this->leaveSpace(1);
 				if (ImGui::Button("Generate nurbs cloud")) {
@@ -286,7 +286,7 @@ void GUI::showProceduralSettings() {
 			}
 			if (ImGui::BeginTabItem("Voxel grid")) {
 				ImGui::Text("Desired points per voxel: ");
-				ImGui::SliderInt("##pointPerVoxel", &pointsPerVoxel, 5, 400);
+				ImGui::SliderInt("##pointPerVoxel", &pointsPerVoxel, 1, 400);
 				this->leaveSpace(1);
 				if (ImGui::Button("Generate voxel grid")) {
 					std::thread thread(&ProceduralGenerator::generateVoxelGrid, procGenerator, pointsPerVoxel);

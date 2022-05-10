@@ -273,7 +273,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 		std::cout << "[DEBUG]: Seed-" << seed << std::endl;
 		std::default_random_engine generator(seed);
-		std::uniform_int_distribution<unsigned> genColor(0, 20);
+		std::uniform_int_distribution<unsigned> genColor(0, 10);
 		std::atomic<int> count = 0;
 		#pragma omp parallel for private(point, generator)
 		for (int x = 0; x < axisSubdivision[0]; x++) {
@@ -326,7 +326,8 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 					if (posColorY >= axisSubdivision[1])
 						posColorY = axisSubdivision[1] - 1;
 					vec3 color = voxelGrid[posColorX][posColorY]->getColor();
-					/*if (posColorX + 1 < axisSubdivision[0] && posColorY + 1 < axisSubdivision[1]) {
+					//std::cout << "Color " << color.r << " " << color.g << " " << color.b << std::endl;
+					if (posColorX + 1 < axisSubdivision[0] && posColorY + 1 < axisSubdivision[1]) {
 						vec2 coordinate = point._point / voxelGrid[posColorX][posColorY]->getRepresentativePoint();
 						vec3 color00, color01, color10, color11;
 						color00 = color;
@@ -335,7 +336,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 						color11 = voxelGrid[posColorX + 1][posColorY + 1]->getColor();
 						color = color00 * (1 - coordinate.x) * (1 - coordinate.y) + color01 * (coordinate.x) * (1 - coordinate.y) +
 							color10 * (1 - coordinate.x) * (coordinate.y) + color11 * (coordinate.x) * (coordinate.y);
-					}*/
+					}
 					color.r += genColor(generator);
 					color.g += genColor(generator);
 					color.b += genColor(generator);
