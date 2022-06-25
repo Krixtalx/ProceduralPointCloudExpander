@@ -42,7 +42,7 @@ namespace PPCX {
 	public:
 
 		TriangleMesh(std::string shaderProgram, const std::string& path = "NULL", glm::vec3 pos = { 0, 0, 0 },
-					 glm::vec3 rot = { 0, 0, 0 }, glm::vec3 scale = { 1, 1, 1 });
+			glm::vec3 rot = { 0, 0, 0 }, glm::vec3 scale = { 1, 1, 1 });
 
 		TriangleMesh(TriangleMesh& orig);
 

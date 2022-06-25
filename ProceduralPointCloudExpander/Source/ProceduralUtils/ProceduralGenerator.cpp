@@ -18,7 +18,7 @@
 #include "RendererCore/InstancedPointCloud.h"
 #include "RendererCore/Renderer.h"
 
-std::vector<std::string> ProceduralGenerator::generatedCloudsName = { "Nurbs terrain cloud", "OliveTree.ply", "PineTree.ply" };
+std::vector<std::string> ProceduralGenerator::generatedCloudsName = { "Nurbs terrain cloud", "OliveTree.ply", "PineTree.ply"}; //"Nurbs cloud"};
 
 ProceduralGenerator::ProceduralGenerator() = default;
 
@@ -252,15 +252,20 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 	std::vector<float> weights;
 	unsigned numPoints = terrainCloud->getNumberOfPoints();
 	float density;
+	auto pc = new PointCloud("DefaultSP");
+	PointModel p;
+	p.saveRGB({ 0,0,0 });
 	for (int x = 0; x < axisSubdivision[0]; x++) {
 		for (int y = 0; y < axisSubdivision[1]; y++) {
 			vec3 aux = voxelGrid[x][y]->getRepresentativePoint();
 			controlPoints.push_back(aux);
 			density = static_cast<float>(voxelGrid[x][y]->getNumberOfPoints() + 1);
 			weights.push_back(pow(density, 2));
+			p._point = aux;
+			pc->newPoint(p);
 		}
 	}
-
+	//ModelManager::getInstance()->newModel("Nurbs cloud", pc);
 	srf.control_points = { axisSubdivision[0], axisSubdivision[1], controlPoints };
 	srf.weights = { axisSubdivision[0], axisSubdivision[1], weights };
 
