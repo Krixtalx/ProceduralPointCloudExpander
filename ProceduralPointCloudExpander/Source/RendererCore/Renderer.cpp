@@ -20,19 +20,13 @@ PPCX::Renderer* PPCX::Renderer::instancia = nullptr;
 /**
  * Constructor por defecto
  */
-PPCX::Renderer::Renderer() {
+PPCX::Renderer::Renderer() :hqr(true) {
 	try {
 		ShaderManager::getInstancia()->nuevoShader("VertexShader", GL_VERTEX_SHADER, "Source/Shaders/VertexShader.glsl");
 		ShaderManager::getInstancia()->nuevoShader("InstancingVertexShader", GL_VERTEX_SHADER, "Source/Shaders/InstancingVertexShader.glsl");
 		ShaderManager::getInstancia()->nuevoShader("FragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/FragmentShader.glsl");
 		ShaderManager::getInstancia()->nuevoShader("FullVertexShader", GL_VERTEX_SHADER, "Source/Shaders/pag-vs.glsl");
 		ShaderManager::getInstancia()->nuevoShader("FullFragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/pag-fs.glsl");
-		ShaderManager::getInstancia()->nuevoShader("resetBuffersHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/resetBuffersHQR.glsl");
-		ShaderManager::getInstancia()->nuevoShader("depthBufferHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR.glsl");
-		ShaderManager::getInstancia()->nuevoShader("addColorHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR.glsl");
-		ShaderManager::getInstancia()->nuevoShader("storeTextureHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/storeTextureHQR.glsl");
-		ShaderManager::getInstancia()->nuevoShader("depthBufferHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR-Instancing.glsl");
-		ShaderManager::getInstancia()->nuevoShader("addColorHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR-Instancing.glsl");
 
 		ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
 		ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
@@ -44,7 +38,13 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->addShaderToSP("FullVertexShader", "TriangleMeshSP");
 		ShaderManager::getInstancia()->addShaderToSP("FullFragmentShader", "TriangleMeshSP");
 
-		try {
+		if (GLEW_ARB_compute_variable_group_size && GLEW_NV_gpu_shader5) {
+			ShaderManager::getInstancia()->nuevoShader("resetBuffersHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/resetBuffersHQR.glsl");
+			ShaderManager::getInstancia()->nuevoShader("depthBufferHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR.glsl");
+			ShaderManager::getInstancia()->nuevoShader("addColorHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR.glsl");
+			ShaderManager::getInstancia()->nuevoShader("storeTextureHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/storeTextureHQR.glsl");
+			ShaderManager::getInstancia()->nuevoShader("depthBufferHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR-Instancing.glsl");
+			ShaderManager::getInstancia()->nuevoShader("addColorHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR-Instancing.glsl");
 			ShaderManager::getInstancia()->nuevoShaderProgram("ResetComputeShaderSP");
 			ShaderManager::getInstancia()->addShaderToSP("resetBuffersHQR", "ResetComputeShaderSP");
 			ShaderManager::getInstancia()->nuevoShaderProgram("DepthComputeShaderSP");
@@ -59,8 +59,8 @@ PPCX::Renderer::Renderer() {
 			ShaderManager::getInstancia()->addShaderToSP("storeTextureHQR", "StoreComputeShaderSP");
 
 			hqRenderer.reset(new PointCloudHQRenderer());
-		} catch (std::exception& e) {
-			std::cout << "Error during High Quality rendering shaders. This could happen because the hardware is not compatible with the shader implementation: " << e.what() << std::endl;
+		} else {
+			std::cout << "Hardware not compatible with HQRendering shaders specifications. Disambling HQRenderer." << std::endl;
 			hqrCompiled = false;
 			hqr = false;
 		}
