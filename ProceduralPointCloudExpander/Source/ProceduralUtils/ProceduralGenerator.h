@@ -46,5 +46,4 @@ public:
 	~ProceduralGenerator();
 	void newPointCloud(PointCloud* pCloud, bool newScene, unsigned pointsPerVoxel);
 	void testRGBSegmentation();
-	static std::vector<std::string> generatedCloudsName;
 };

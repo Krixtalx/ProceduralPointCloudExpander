@@ -6,7 +6,7 @@
 std::vector<GLint> PPCX::ComputeShader::MAX_WORK_GROUP_SIZE = { 1024, 1024, 64 };
 
 PPCX::ComputeShader::ComputeShader(std::string nombreShader, const std::string& ruta) :
-	PPCX::Shader(std::move(nombreShader), GL_COMPUTE_SHADER, ruta) {}
+	Shader(std::move(nombreShader), GL_COMPUTE_SHADER, ruta) {}
 
 void PPCX::ComputeShader::bindBuffers(const std::vector<GLuint>& bufferID) {
 	for (unsigned i = 0; i < bufferID.size(); ++i) {
@@ -14,8 +14,8 @@ void PPCX::ComputeShader::bindBuffers(const std::vector<GLuint>& bufferID) {
 	}
 }
 
-void PPCX::ComputeShader::execute(GLuint numGroups_x, GLuint numGroups_y, GLuint numGroups_z, GLuint workGroup_x,
-								  GLuint workGroup_y, GLuint workGroup_z) {
+void PPCX::ComputeShader::execute(const GLuint numGroups_x, const GLuint numGroups_y, const GLuint numGroups_z, const GLuint workGroup_x,
+                                  const GLuint workGroup_y, const GLuint workGroup_z) {
 	glDispatchComputeGroupSizeARB(numGroups_x, numGroups_y, numGroups_z, workGroup_x, workGroup_y, workGroup_z);
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 }
@@ -33,13 +33,13 @@ std::vector<GLint> PPCX::ComputeShader::getMaxLocalSize() {
 }
 
 int PPCX::ComputeShader::getNumGroups(const unsigned arraySize, const WorkGroupAxis axis) {
-	return (int)std::ceil((float)arraySize / MAX_WORK_GROUP_SIZE[axis]);
+	return static_cast<int>(std::ceil(static_cast<float>(arraySize) / MAX_WORK_GROUP_SIZE[axis]));
 }
 
 int PPCX::ComputeShader::getWorkGroupSize(const unsigned numGroups, const unsigned arraySize) {
-	return (int)std::ceil((float)arraySize / numGroups);
+	return static_cast<int>(std::ceil(static_cast<float>(arraySize) / numGroups));
 }
 
 void PPCX::ComputeShader::initializeMaxGroupSize() {
-	ComputeShader::MAX_WORK_GROUP_SIZE = getMaxLocalSize();
+	MAX_WORK_GROUP_SIZE = getMaxLocalSize();
 }

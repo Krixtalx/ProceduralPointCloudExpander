@@ -1,9 +1,7 @@
 #include "stdafx.h"
 #include "PointCloudHQRRenderer.h"
-
-#include <iomanip>
-
 #include "InstancedPointCloud.h"
+#include "ModelManager.h"
 #include "Renderer.h"
 #include "ShaderManager.h"
 #include "RenderOptions.h"
@@ -26,14 +24,14 @@ PointCloudHQRRenderer::PointCloudHQRRenderer() {
 	// Window texture
 	glGenTextures(1, &_textureID);
 	glBindTexture(GL_TEXTURE_2D, _textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, windowSize.x, windowSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, windowSize.x, windowSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	GLuint fboId = 0;
 	glGenFramebuffers(1, &fboId);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, fboId);
 	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-						   GL_TEXTURE_2D, _textureID, 0);
+		GL_TEXTURE_2D, _textureID, 0);
 }
 
 PointCloudHQRRenderer::~PointCloudHQRRenderer() {
@@ -44,11 +42,11 @@ PointCloudHQRRenderer::~PointCloudHQRRenderer() {
 	glDeleteTextures(1, &_textureID);
 }
 
-void PointCloudHQRRenderer::addPointCloud(const std::string name, PointCloud* pointCloud) {
-	auto previous = pointCloudVBOs.find(name);
+void PointCloudHQRRenderer::addPointCloud(const std::string& name, PointCloud* pointCloud) {
+	const auto previous = pointCloudVBOs.find(name);
 	if (previous != pointCloudVBOs.end()) {
 		glDeleteBuffers(1, &previous->second);
-		auto previous2 = instancedPointCloudVBOs.find(name);
+		const auto previous2 = instancedPointCloudVBOs.find(name);
 		if (previous2 != instancedPointCloudVBOs.end())
 			glDeleteBuffers(1, &previous2->second);
 	}
@@ -56,14 +54,19 @@ void PointCloudHQRRenderer::addPointCloud(const std::string name, PointCloud* po
 	pointCloudVBOs.insert_or_assign(name, id);
 	pointClouds.insert_or_assign(name, pointCloud);
 
-	auto instancedCloud = dynamic_cast<InstancedPointCloud*>(pointCloud);
+	const auto instancedCloud = dynamic_cast<InstancedPointCloud*>(pointCloud);
 	if (instancedCloud) {
-		GLuint id = PPCX::ComputeShader::setReadBuffer(instancedCloud->getOffsets(), GL_STATIC_DRAW);
+		id = PPCX::ComputeShader::setReadBuffer(instancedCloud->getOffsets(), GL_STATIC_DRAW);
 		instancedPointCloudVBOs.insert_or_assign(name, id);
 	}
 }
 
 void PointCloudHQRRenderer::render(const mat4& MVPmatrix, const float& distanceThreshold) {
+	for (auto& cloud : ModelManager::getInstance()->pendingClouds) {
+		addPointCloud(cloud.first, cloud.second);
+	}
+	ModelManager::getInstance()->pendingClouds.clear();
+
 	const int numGroupsImage = PPCX::ComputeShader::getNumGroups(windowSize.x * windowSize.y);
 
 	// 1. Fill buffer of 32 bits with UINT_MAX
@@ -137,7 +140,7 @@ void PointCloudHQRRenderer::render(const mat4& MVPmatrix, const float& distanceT
 		}
 	}
 
-	storeHQRTexture->bindBuffers(std::vector<GLuint> { _color01SSBO, _color02SSBO });
+	storeHQRTexture->bindBuffers(std::vector{ _color01SSBO, _color02SSBO });
 	PPCX::ShaderManager::getInstancia()->activarSP("StoreComputeShaderSP");
 	glBindImageTexture(0, _textureID, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 	PPCX::ShaderManager::getInstancia()->setUniform("StoreComputeShaderSP", "backgroundColor", PPCX::Renderer::getInstancia()->getColorFondo());
@@ -147,10 +150,11 @@ void PointCloudHQRRenderer::render(const mat4& MVPmatrix, const float& distanceT
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBlitFramebuffer(0, 0, windowSize.x, windowSize.y, 0, 0, windowSize.x, windowSize.y,
-					  GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 void PointCloudHQRRenderer::updateWindowSize(const uvec2 newWindowSize) {
+	windowSize = newWindowSize;
 	PPCX::ComputeShader::updateWriteBuffer(_depthBufferSSBO, uint64_t(), windowSize.x * windowSize.y, GL_DYNAMIC_DRAW);
 	PPCX::ComputeShader::updateWriteBuffer(_rawDepthBufferSSBO, GLuint(), windowSize.x * windowSize.y, GL_DYNAMIC_DRAW);
 	PPCX::ComputeShader::updateWriteBuffer(_color01SSBO, uint64_t(), windowSize.x * windowSize.y, GL_DYNAMIC_DRAW);
@@ -158,6 +162,6 @@ void PointCloudHQRRenderer::updateWindowSize(const uvec2 newWindowSize) {
 
 	// Update size of texture
 	glBindTexture(GL_TEXTURE_2D, _textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, windowSize.x, windowSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, windowSize.x, windowSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	glGenerateMipmap(GL_TEXTURE_2D);
 }

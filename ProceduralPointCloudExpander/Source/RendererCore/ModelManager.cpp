@@ -2,11 +2,11 @@
 #include "ModelManager.h"
 
 #include "ComputeShader.h"
-#include "PointCloud.h"
-#include "Utilities/Loader.h"
+#include "pointCloud.h"
+#include "Utilities/FileManager.h"
 
 
-ModelManager::ModelManager() :hqrRenderer(new PointCloudHQRRenderer) {}
+ModelManager::ModelManager() {}
 
 ModelManager::~ModelManager() {
 	for (const auto& model : models) {
@@ -25,6 +25,10 @@ void ModelManager::newModel(const std::string& key, PPCX::Model* model) {
 	auto cloud = dynamic_cast<PointCloud*>(model);
 	if (cloud) {
 		pendingClouds.emplace_back(key, cloud);
+		if (cloud->classification == "High vegetation" && key != "High vegetation") {
+			generatedVegetation.insert(key);
+			generatedCloudsName.insert(key);
+		}
 	}
 }
 
@@ -83,28 +87,22 @@ std::vector<std::pair<std::string, PPCX::Model*>> ModelManager::getAllModelsLike
 	return vec;
 }
 
+std::set<std::string>& ModelManager::getVegetationClouds() {
+	return generatedVegetation;
+}
+
 /**
  * Method used by the renderer to draw all the models in the ModelManager
  *
  * @param matrizMVP Model view perspective view matrix.
  */
-void ModelManager::drawModels(const glm::mat4& matrizMVP) {
-	if (hqrRendering && !models.empty()) {
-		if (!pendingClouds.empty()) {
-			for (const auto& pendingCloud : pendingClouds) {
-				hqrRenderer->addPointCloud(pendingCloud.first, pendingCloud.second);
-			}
-			pendingClouds.clear();
-		}
-		hqrRenderer->render(matrizMVP, distanceThreshold);
-	} else {
-		for (const auto& model : models) {
-			model.second->drawModel(matrizMVP);
-		}
+void ModelManager::drawModels(const mat4& matrizMVP) const {
+	for (const auto& model : models) {
+		model.second->drawModel(matrizMVP);
 	}
 }
 
-void ModelManager::drawAndDeleteSingleModel(const std::string& modelKey, const glm::mat4& matrizMVP) {
+void ModelManager::drawAndDeleteSingleModel(const std::string& modelKey, const mat4& matrizMVP) {
 	try {
 		const auto model = getModel(modelKey);
 		model->drawModel(matrizMVP);
@@ -135,12 +133,9 @@ void ModelManager::exportAllVisibleModels(const std::string& filename) const {
 			}
 		}
 	}
-	std::thread thread(&Loader::savePointCloud, filename, clouds);
+	std::thread thread(&FileManager::savePointCloud, filename, clouds);
 	thread.detach();
-}
-
-void ModelManager::updateWindowSize(glm::vec2 newWindowSize) {
-	hqrRenderer->updateWindowSize(newWindowSize);
+	//FileManager::savePointCloud(filename, clouds);
 }
 
 unsigned ModelManager::getNumberOfPoints() {

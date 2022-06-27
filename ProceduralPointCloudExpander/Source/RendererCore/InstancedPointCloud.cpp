@@ -9,7 +9,7 @@ InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const vec3& 
 	newInstanceUpdate(false) {}
 
 InstancedPointCloud::InstancedPointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos, const
-										 vec3& rot, const vec3& scale) : PointCloud(std::move(shaderProgram), points, aabb, pos, rot, scale),
+	vec3& rot, const vec3& scale) : PointCloud(std::move(shaderProgram), points, aabb, pos, rot, scale),
 	newInstanceUpdate(false) {}
 
 void InstancedPointCloud::newInstance(const vec3& position, const vec3& rot, const vec3& scale) {
@@ -54,11 +54,11 @@ unsigned InstancedPointCloud::getNumberOfInstances() const {
 	return offsets.size();
 }
 
-std::vector<PointModel>& InstancedPointCloud::getAllPoints() {
+std::vector<PointModel>& InstancedPointCloud::getAllInstancesPoints() {
 	allPoints.clear();
-	allPoints.resize(offsets.size() * vbo.size());
-	for (auto& offset : offsets) {
-		for (auto& point : vbo) {
+	allPoints.reserve(offsets.size() * vbo.size());
+	for (const auto& offset : offsets) {
+		for (const auto& point : vbo) {
 			PointModel newPoint(point);
 			//std::cout << newPoint._point.x << "-" << newPoint._point.y << "-" << newPoint._point.z << std::endl;
 			newPoint._point = offset * vec4(point._point, 1);
@@ -105,7 +105,6 @@ unsigned InstancedPointCloud::getNumberOfPoints() const {
 	return vbo.size() * offsets.size();
 }
 
-unsigned InstancedPointCloud::getOneInstanceNumberOfPoints() const
-{
+unsigned InstancedPointCloud::getOneInstanceNumberOfPoints() const {
 	return vbo.size();
 }

@@ -5,7 +5,7 @@
 #include "Interface/Fonts/IconsFontAwesome5.h"
 #include "imfiledialog/ImGuiFileDialog.h"
 #include "RendererCore/Renderer.h"
-#include "Utilities/Loader.h"
+#include "Utilities/FileManager.h"
 #include <RendererCore/ModelManager.h>
 
 
@@ -29,7 +29,7 @@ void GUI::createMenu() {
 	if (_showVegetationSettings && procGenerator->progress >= 10000.0f)		showVegetationSelection();
 
 	if (ImGui::BeginMainMenuBar()) {
-		if (Loader::saving)
+		if (FileManager::saving)
 			Spinner("Saving Spinner", 8, 4, ImGui::GetColorU32(ImGuiCol_ButtonHovered));
 		if (ImGui::BeginMenu(ICON_FA_FILE "File")) {
 			ImGui::MenuItem(ICON_FA_FOLDER_OPEN "Open point cloud", nullptr, &_showFileDialog);
@@ -188,36 +188,39 @@ void GUI::showRenderingSettings() {
 		ImGui::ColorEdit3("Background color", &color[0]);
 		PPCX::Renderer::getInstancia()->setColorFondo(color);
 		this->leaveSpace(3);
-		ImGui::Checkbox("High quality rendering", &ModelManager::getInstance()->hqrRendering);
+		ImGui::Checkbox("High quality rendering", &PPCX::Renderer::getInstancia()->hqrRendering);
 		this->leaveSpace(1);
-		ImGui::InputFloat("Distance Threshold", &ModelManager::getInstance()->distanceThreshold, 0.00001f, 0.01f, "%4f");
+		ImGui::InputFloat("Distance Threshold", &PPCX::Renderer::getInstancia()->distanceThreshold, 0.00001f, 0.01f, "%4f");
 		this->leaveSpace(3);
 		if (ImGui::BeginTabBar("")) {
 			if (ImGui::BeginTabItem("Point Cloud")) {
 				this->leaveSpace(1);
-				float value = PPCX::Renderer::getInstancia()->getPointSize();
-				ImGui::SliderFloat("Point size", &value, 0.1f, 10.0f);
-				PPCX::Renderer::getInstancia()->setPointSize(value);
-
-				ImGui::Text("Loaded clouds");
-				for (unsigned i = 0; i < Loader::LASClassificationSize; ++i) {
-					try {
-						PPCX::Model* model = ModelManager::getInstance()->getModel(Loader::LASClassificationStrings[i]);
-						ImGui::Checkbox(Loader::LASClassificationStrings[i].c_str(), &model->getVisibility());
-					} catch (std::runtime_error& e) {
-					}
+				if (!PPCX::Renderer::getInstancia()->hqrRendering) {
+					float value = PPCX::Renderer::getInstancia()->getPointSize();
+					ImGui::SliderFloat("Point size", &value, 0.1f, 10.0f);
+					PPCX::Renderer::getInstancia()->setPointSize(value);
 				}
-
-				ImGui::Text("Generated clouds");
-				for (auto& cloudName : ProceduralGenerator::generatedCloudsName) {
-					try {
-						PPCX::Model* model = ModelManager::getInstance()->getModel(cloudName);
-						ImGui::Checkbox(cloudName.c_str(), &model->getVisibility());
-					} catch (std::runtime_error& e) {
+				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+				ImGui::BeginChild("SubWindow", ImGui::GetContentRegionAvail(), true, ImGuiWindowFlags_None);
+				if (ImGui::CollapsingHeader("Loaded cloud"))
+					for (unsigned i = 0; i < FileManager::LASClassificationSize; ++i) {
+						try {
+							PPCX::Model* model = ModelManager::getInstance()->getModel(FileManager::LASClassificationStrings[i]);
+							ImGui::Checkbox(FileManager::LASClassificationStrings[i].c_str(), &model->getVisibility());
+						} catch (std::runtime_error& e) {
+						}
 					}
-				}
 
-				ImGui::Separator();
+				if (ImGui::CollapsingHeader("Generated clouds"))
+					for (auto& cloudName : ModelManager::getInstance()->generatedCloudsName) {
+						try {
+							PPCX::Model* model = ModelManager::getInstance()->getModel(cloudName);
+							ImGui::Checkbox(cloudName.c_str(), &model->getVisibility());
+						} catch (std::runtime_error& e) {
+						}
+					}
+				ImGui::EndChild();
+				ImGui::PopStyleVar();
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Statistics")) {
@@ -325,23 +328,33 @@ void GUI::showVegetationSelection() {
 	if (ImGui::Begin("Vegetation settings", &_showVegetationSettings, ImGuiWindowFlags_NoCollapse)) {
 		ModelManager::getInstance()->setAllVisibility(false);
 		const auto models = ModelManager::getInstance()->getAllModelsLike("RGB");
-		const char* items[] = { "OliveTree.ply", "PineTree.ply" };
+		const auto& vegCloudNames = ModelManager::getInstance()->getVegetationClouds();
+		std::vector<const char*> items(vegCloudNames.size());
+		int i = 0;
+		for (auto& cloudName : vegCloudNames) {
+			items[i++] = cloudName.c_str();
+		}
 		static std::vector<int> values;
 
 		while (values.size() < models.size()) {
 			values.push_back(0);
 		}
 
-		int i = 0;
+		ModelManager::getInstance()->setVisibility("RGB", true);
+		i = 0;
 		for (const auto& model : models) {
 			const auto cloud = dynamic_cast<PointCloud*>(model.second);
-			cloud->getVisibility() = true;
 			const auto color = cloud->getRandomPointColor();
 			ImGui::ColorButton(model.first.c_str(), ImVec4(color.r / 256, color.g / 256, color.b / 256, 1), ImGuiColorEditFlags_NoBorder, ImVec2(20, 20));
 			ImGui::SameLine();
 			ImGui::Text(model.first.c_str());
 			ImGui::SameLine();
-			ImGui::Combo(("##Picker Mode" + std::to_string(i)).c_str(), &values[i++], "OliveTree.ply\0PineTree.ply\0", 2);
+			ImGui::Combo(("##Picker Mode" + std::to_string(i)).c_str(), &values[i++], items.data(), 2);
+			if (ImGui::IsItemHovered()) {
+				//PPCX::Renderer::getInstancia()->setCameraFocus(cloud->getAABB());
+				ModelManager::getInstance()->setVisibility("RGB", false);
+				cloud->getVisibility() = true;
+			}
 		}
 		if (ImGui::Button("Generate procedural vegetation")) {
 			std::vector<std::pair<std::string, std::string>> vec;
@@ -384,7 +397,7 @@ void GUI::showProgressBar() const {
 				ImGui::Text("Adding clusters clouds to the renderer...");
 
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.32f, 0.39f, 0.87f, 1.00f));
-			ImGui::ProgressBar(procGenerator->progress - (int)procGenerator->progress);
+			ImGui::ProgressBar(procGenerator->progress - static_cast<int>(procGenerator->progress));
 			ImGui::PopStyleColor();
 			ImGui::End();
 		}
@@ -426,6 +439,7 @@ void GUI::render() {
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	ImGui::EndFrame();
 
 }
 
@@ -439,7 +453,7 @@ void GUI::loadImGUIStyle() const {
 
 void GUI::loadFonts() const {
 	ImFontConfig cfg;
-	ImGuiIO& io = ImGui::GetIO();
+	const ImGuiIO& io = ImGui::GetIO();
 
 	io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto-Bold.ttf", 14.0f);
 
@@ -518,12 +532,12 @@ bool GUI::Spinner(const char* label, float radius, int thickness, const ImU32& c
 	if (window->SkipItems)
 		return false;
 
-	ImGuiContext& g = *GImGui;
+	const ImGuiContext& g = *GImGui;
 	const ImGuiStyle& style = g.Style;
 	const ImGuiID id = window->GetID(label);
 
-	ImVec2 pos = window->DC.CursorPos;
-	ImVec2 size((radius) * 2, (radius + style.FramePadding.y) * 2);
+	const ImVec2 pos = window->DC.CursorPos;
+	const ImVec2 size((radius) * 2, (radius + style.FramePadding.y) * 2);
 
 	const ImRect bb(pos, ImVec2(pos.x + size.x, pos.y + size.y));
 	ImGui::ItemSize(bb, style.FramePadding.y);
@@ -533,18 +547,18 @@ bool GUI::Spinner(const char* label, float radius, int thickness, const ImU32& c
 	// Render
 	window->DrawList->PathClear();
 
-	int num_segments = 30;
-	int start = abs(ImSin(g.Time * 1.8f) * (num_segments - 5));
+	constexpr int num_segments = 30;
+	const int start = abs(ImSin(g.Time * 1.8f) * (num_segments - 5));
 
-	const float a_min = IM_PI * 2.0f * ((float)start) / (float)num_segments;
-	const float a_max = IM_PI * 2.0f * ((float)num_segments - 3) / (float)num_segments;
+	const float a_min = IM_PI * 2.0f * static_cast<float>(start) / static_cast<float>(num_segments);
+	const float a_max = IM_PI * 2.0f * (static_cast<float>(num_segments) - 3) / static_cast<float>(num_segments);
 
-	const ImVec2 centre = ImVec2(pos.x + radius, pos.y + radius + style.FramePadding.y);
+	const auto centre = ImVec2(pos.x + radius, pos.y + radius + style.FramePadding.y);
 
 	for (int i = 0; i < num_segments; i++) {
-		const float a = a_min + ((float)i / (float)num_segments) * (a_max - a_min);
+		const float a = a_min + (static_cast<float>(i) / static_cast<float>(num_segments)) * (a_max - a_min);
 		window->DrawList->PathLineTo(ImVec2(centre.x + ImCos(a + g.Time * 8) * radius,
-											centre.y + ImSin(a + g.Time * 8) * radius));
+			centre.y + ImSin(a + g.Time * 8) * radius));
 	}
 
 	window->DrawList->PathStroke(color, false, thickness);

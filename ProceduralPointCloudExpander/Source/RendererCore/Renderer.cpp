@@ -8,13 +8,10 @@
 #include <iomanip>
 
 #include "ShaderManager.h"
-#include "Utilities/Loader.h"
+#include "Utilities/FileManager.h"
 #include "RendererCore/ModelManager.h"
-#include <RendererCore/InstancedPointCloud.h>
 
-#include "ComputeShader.h"
 #include "Material.h"
-#include "MaterialManager.h"
 #include "TriangleMesh.h"
 
 
@@ -61,27 +58,12 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->nuevoShaderProgram("StoreComputeShaderSP");
 		ShaderManager::getInstancia()->addShaderToSP("storeTextureHQR", "StoreComputeShaderSP");
 
-		Loader::loadPointCloud("OliveTree", false);
-		Loader::loadPointCloud("PineTree", false);
-		/*PPCX::MaterialManager::getInstancia()->nuevoMaterial("Vaca",
-													   new PPCX::Material({ 0.7, 0.15, 0.7 }, { 1, 1, 1 }, { 0.8, 0.8, 0.8 },
-																	32, "spot_texture.png"));
-		auto newTriangleMesh = new TriangleMesh("TriangleMeshSP", "vaca.obj");
-		newTriangleMesh->setMaterial("Vaca");
-		ModelManager::getInstance()->newModel("Test", newTriangleMesh);*/
+		FileManager::loadAllCloudsUnderFolder("VegetationAssets");
 
-		/*ComputeShader* compute = ShaderManager::getInstancia()->getComputeShader("ComputeShader");
-		unsigned bufferID = ComputeShader::setWriteBuffer(unsigned(), 100);
-		ShaderManager::getInstancia()->activarSP("TestComputeShader");
-		compute->bindBuffers({bufferID});
-		compute->execute(1, 1, 1, 100, 1, 1);
+		hqrRenderer.reset(new PointCloudHQRRenderer());
 
-		const unsigned* data = ComputeShader::readData(bufferID, unsigned());
-		for (int i = 0; i < 100; ++i) {
-			std::cout << data[i] << std::endl;
-		}*/
 	} catch (std::runtime_error& e) {
-		throw;
+		throw e;
 	}
 
 }
@@ -134,7 +116,10 @@ void PPCX::Renderer::refrescar() {
 	}
 
 	const mat4 matrizMVP = camara.matrizMVP();
-	ModelManager::getInstance()->drawModels(matrizMVP);
+	if (hqrRendering)
+		hqrRenderer->render(matrizMVP, distanceThreshold);
+	else
+		ModelManager::getInstance()->drawModels(matrizMVP);
 }
 
 /**
@@ -154,20 +139,11 @@ const GLubyte* PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
 }
 
 void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, const unsigned& pointsPerVoxel) {
-	Loader::loadPointCloud(path);
+	FileManager::loadPointCloud(path);
 	try {
 		const auto pCloud = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel("Ground"));
 		procGenerator.newPointCloud(pCloud, newScene, pointsPerVoxel);
-		vec3 pos = pCloud->getAABB().max();
-		const float dist = distance(pos, pCloud->getAABB().min());
-		camara.increaseZFar(dist);
-		pos = rotate(glm::pi<float>() / 6.0f, vec3(1.0f, .0f, 1.0f)) * vec4(pos, 0.0f);
-		camara.setPosicion(pos);
-		camara.setPuntoMira(pCloud->getAABB().center());
-		camara.setSpeedMultiplier((pCloud->getAABB().size().x + pCloud->getAABB().size().y) * 0.02f);
-		const float y = sqrt((pow(dist, 2) - pow(camara.aspecto(), 2) / 2));
-		const float x = camara.aspecto() * y;
-		camara.setOrthoPoints(vec2(-x, -y), vec2(x, y));
+		setCameraFocus(pCloud->getAABB());
 
 	} catch (std::runtime_error& e) {
 		std::cerr << "[Renderer:cargaModelo]: " << e.what() << std::endl;
@@ -184,7 +160,7 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	GLuint idTextura = -1;
 	// Creación de un renderbuffer object para utilizarlo como buffer de profundidad
 	GLuint idRBO = -1;
-	if (!ModelManager::getInstance()->hqrRendering) {
+	if (!hqrRendering) {
 		glGenFramebuffers(1, &idFBO);
 
 		// Activación del FBO
@@ -246,7 +222,7 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	delete[] pixeles;
 	delete[] flipped;
 
-	if (!ModelManager::getInstance()->hqrRendering) {
+	if (!hqrRendering) {
 		// VUELTA A LA NORMALIDAD
 		glDeleteTextures(1, &idTextura);
 		glDeleteRenderbuffers(1, &idRBO);
@@ -299,9 +275,9 @@ void PPCX::Renderer::pendingScreenshot(const std::string& filename, const std::s
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, idRBO);
 
 	// Se comprueba que el FBO está listo para su uso
-	GLenum estado = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	const GLenum estado = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (estado != GL_FRAMEBUFFER_COMPLETE) {
-		// Hay un error. Se genera una excepción
+		throw std::runtime_error("Error al crear el FBO");
 	}
 
 	// Ahora se puede utilizar el FBO. Es MUY IMPORTANTE ajustar el tamaño del viewport para que
@@ -353,7 +329,7 @@ void PPCX::Renderer::setViewport(const GLint x, const GLint y, const GLsizei wid
 	glViewport(x, y, width, height);
 	camara.setAlto(height);
 	camara.setAncho(width);
-	ModelManager::getInstance()->updateWindowSize({ width, height });
+	hqrRenderer->updateWindowSize({ width, height });
 }
 
 /**
@@ -379,6 +355,19 @@ float PPCX::Renderer::getPointSize() const {
 void PPCX::Renderer::setPointSize(const float pointS) {
 	pointSize = pointS;
 	glPointSize(pointSize);
+}
+
+void PPCX::Renderer::setCameraFocus(const AABB& aabb) {
+	vec3 pos = aabb.max();
+	const float dist = distance(pos, aabb.min());
+	camara.increaseZFar(dist);
+	pos = rotate(glm::pi<float>() / 6.0f, vec3(1.0f, .0f, 1.0f)) * vec4(pos, 0.0f);
+	camara.setPosicion(pos);
+	camara.setPuntoMira(aabb.center());
+	camara.setSpeedMultiplier((aabb.size().x + aabb.size().y) * 0.02f);
+	const float y = sqrt((pow(dist, 2) - pow(camara.aspecto(), 2) / 2));
+	const float x = camara.aspecto() * y;
+	camara.setOrthoPoints(vec2(-x, -y), vec2(x, y));
 }
 
 ProceduralGenerator* PPCX::Renderer::getProceduralGenerator() {

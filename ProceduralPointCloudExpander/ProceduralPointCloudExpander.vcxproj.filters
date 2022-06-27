@@ -105,7 +105,7 @@
     <ClCompile Include="Source\Utilities\Image.cpp">
       <Filter>Archivos de origen\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Utilities\Loader.cpp">
+    <ClCompile Include="Source\Utilities\FileManager.cpp">
       <Filter>Archivos de origen\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Libraries\lodepng\lodepng.cpp">
@@ -215,7 +215,7 @@
     <ClInclude Include="Source\Utilities\Image.h">
       <Filter>Archivos de encabezado\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Utilities\Loader.h">
+    <ClInclude Include="Source\Utilities\FileManager.h">
       <Filter>Archivos de encabezado\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Source\Utilities\Point.h">

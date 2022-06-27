@@ -118,6 +118,7 @@ void callbackMovimientoRaton(GLFWwindow* window, const double xpos, const double
 }
 
 void callbackScroll(GLFWwindow* window, double xoffset, double yoffset) {
+	if (GUI::getInstance()->isMouseActive()) return;
 	PPCX::Renderer::getInstancia()->getCamara().zoom(-yoffset * deltaTime * 5);
 }
 

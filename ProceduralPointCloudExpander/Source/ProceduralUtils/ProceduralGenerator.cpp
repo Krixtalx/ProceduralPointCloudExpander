@@ -7,7 +7,6 @@
 #include "Utilities/Image.h"
 #include <random>
 
-#include "Utilities/Loader.h"
 #include <RendererCore/ModelManager.h>
 
 #include <pcl/point_types.h>
@@ -18,7 +17,6 @@
 #include "RendererCore/InstancedPointCloud.h"
 #include "RendererCore/Renderer.h"
 
-std::vector<std::string> ProceduralGenerator::generatedCloudsName = { "Nurbs terrain cloud", "OliveTree.ply", "PineTree.ply"}; //"Nurbs cloud"};
 
 ProceduralGenerator::ProceduralGenerator() = default;
 
@@ -34,7 +32,7 @@ ProceduralGenerator::~ProceduralGenerator() {
 /**
  * @brief Initialize the voxel grid
 */
-void ProceduralGenerator::createVoxelGrid(std::vector<std::vector<ProceduralVoxel*>>&grid, PointCloud * pointCloud) {
+void ProceduralGenerator::createVoxelGrid(std::vector<std::vector<ProceduralVoxel*>>& grid, PointCloud* pointCloud) {
 	std::cout << "Creating voxel grid..." << std::endl;
 	this->progress = 0.2f;
 	vec3 size = pointCloud->getAABB().size();
@@ -66,7 +64,7 @@ void ProceduralGenerator::createVoxelGrid(std::vector<std::vector<ProceduralVoxe
 /**
  * @brief Assign each point of the PointCloud to the corresponding voxel in the voxel grid and computes the corresponding height and color
 */
-void ProceduralGenerator::subdivideCloud(const std::vector<std::vector<ProceduralVoxel*>>&grid, PointCloud * pointCloud) {
+void ProceduralGenerator::subdivideCloud(const std::vector<std::vector<ProceduralVoxel*>>& grid, PointCloud* pointCloud) {
 	std::cout << "Subdividing cloud..." << std::endl;
 	this->progress = 0.4f;
 	auto start = std::chrono::high_resolution_clock::now();
@@ -369,12 +367,14 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 		}
 		auto cloud = new PointCloud("DefaultSP", points, newAABB);
 		cloud->optimize();
+		cloud->classification = "Ground";
 		auto end = std::chrono::high_resolution_clock::now();
 
 		auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
 		std::cout << "NURBS: " << int_s.count() << " ms" << std::endl << std::endl;
 		ModelManager::getInstance()->modifyModel("Nurbs terrain cloud", cloud);
+		ModelManager::getInstance()->generatedCloudsName.insert("Nurbs terrain cloud");
 		this->progress = FLT_MAX;
 	}
 }
@@ -427,7 +427,7 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 			}
 			clouds.push_back(newCloud);
 			ModelManager::getInstance()->modifyModel("RGB Region Segment " + std::to_string(i), newCloud);
-			generatedCloudsName.emplace_back("RGB Region Segment " + i);
+			ModelManager::getInstance()->generatedCloudsName.emplace("RGB Region Segment " + i);
 		}
 		this->saveClusterBinary(filename, clouds);
 	}
@@ -435,7 +435,7 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 	this->progress = FLT_MAX;
 }
 
-void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr & cloud, const float distanceThreshold, const float pointColorThreshold, const float regionColorThreshold, const unsigned minClusterSize) {
+void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& cloud, const float distanceThreshold, const float pointColorThreshold, const float regionColorThreshold, const unsigned minClusterSize) {
 	static unsigned currentRegion = 0;
 
 	std::string filename = "dist-" + std::to_string(distanceThreshold);
@@ -483,8 +483,8 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 	this->progress = FLT_MAX;
 }
 
-void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>&data) {
-	auto start = std::chrono::high_resolution_clock::now();
+void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>& data) {
+	const auto start = std::chrono::high_resolution_clock::now();
 	for (auto& pair : data) {
 		std::cout << pair.first << std::endl;
 		std::vector<std::vector<ProceduralVoxel*>> grid;
@@ -618,7 +618,7 @@ bool ProceduralGenerator::meanNeightbourHeightColor(const unsigned x, const unsi
 }
 
 
-void ProceduralGenerator::newPointCloud(PointCloud * pCloud, const bool newScene, const unsigned pointsPerVoxel) {
+void ProceduralGenerator::newPointCloud(PointCloud* pCloud, const bool newScene, const unsigned pointsPerVoxel) {
 	if (newScene || !terrainCloud) {
 		terrainCloud = pCloud;
 		cloudDensity = terrainCloud->getDensity();
@@ -640,7 +640,7 @@ void ProceduralGenerator::newPointCloud(PointCloud * pCloud, const bool newScene
 /**
  * @brief Saves the current voxel grid as a png file in gray scale that represents a height map
 */
-void ProceduralGenerator::saveHeightMap(const std::string & path) const {
+void ProceduralGenerator::saveHeightMap(const std::string& path) const {
 	const float minPointZ = aabb.min()[2];
 	const float relativeMaxPointZ = aabb.max()[2] - minPointZ;
 	float relativeHeightValue;
@@ -672,7 +672,7 @@ void ProceduralGenerator::saveHeightMap(const std::string & path) const {
 /**
  * @brief Saves the current voxel grid as a png file in RGB scale that could be used as a texture of the terrain
 */
-void ProceduralGenerator::saveTextureMap(const std::string & path) const {
+void ProceduralGenerator::saveTextureMap(const std::string& path) const {
 	const float minPointZ = aabb.min()[2];
 	float relativeMaxPointZ = aabb.max()[2] - minPointZ;
 	float relativeHeightValue = 0;
@@ -691,18 +691,7 @@ void ProceduralGenerator::saveTextureMap(const std::string & path) const {
 	image->saveImage(path);
 }
 
-/*
-* @brief Saves the current point cloud as a PLY file.
-*/
-void ProceduralGenerator::savePointCloud(const std::string & path) const {
-	std::vector<PointCloud*> aux;
-	//aux.push_back(terrainCloud[0]);
-	//aux.push_back(terrainCloud[1]);
-	std::thread thread(&Loader::savePointCloud, path, aux);
-	thread.detach();
-}
-
-void ProceduralGenerator::saveClusterBinary(const std::string & filename, const std::vector<PointCloud*>&clouds) {
+void ProceduralGenerator::saveClusterBinary(const std::string& filename, const std::vector<PointCloud*>& clouds) {
 	std::ofstream wf(filename + ".bin", std::ios::out | std::ios::binary);
 	if (!wf.is_open()) {
 		throw std::runtime_error("Error while writing binary cluster file");
@@ -717,7 +706,7 @@ void ProceduralGenerator::saveClusterBinary(const std::string & filename, const 
 	wf.close();
 }
 
-bool ProceduralGenerator::loadClusterBinary(const std::string & filename) const {
+bool ProceduralGenerator::loadClusterBinary(const std::string& filename) const {
 	if (std::filesystem::exists(filename + ".bin")) {
 		std::ifstream rf(filename + ".bin", std::ios::in | std::ios::binary);
 		if (!rf.is_open()) {
@@ -729,14 +718,14 @@ bool ProceduralGenerator::loadClusterBinary(const std::string & filename) const 
 			std::vector<PointModel> points;
 			AABB _aabb;
 
-			rf.read((char*)&numPoints, sizeof(size_t));
+			rf.read(reinterpret_cast<char*>(&numPoints), sizeof(size_t));
 			points.resize(numPoints);
-			rf.read((char*)&points[0], numPoints * sizeof(PointModel));
-			rf.read((char*)&_aabb, sizeof(AABB));
+			rf.read(reinterpret_cast<char*>(&points[0]), numPoints * sizeof(PointModel));
+			rf.read(reinterpret_cast<char*>(&_aabb), sizeof(AABB));
 
-			PointCloud* cloud = new PointCloud("DefaultSP", points, aabb);
+			const auto cloud = new PointCloud("DefaultSP", points, aabb);
 			ModelManager::getInstance()->newModel("RGB Region Segment" + std::to_string(i), cloud);
-			generatedCloudsName.emplace_back("RGB Region Segment " + i);
+			ModelManager::getInstance()->generatedCloudsName.emplace("RGB Region Segment " + i);
 			i++;
 		}
 		rf.close();

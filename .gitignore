@@ -50,3 +50,5 @@
 *.db-wal
 *.opendb
 *.bak
+*.json
+*.dt

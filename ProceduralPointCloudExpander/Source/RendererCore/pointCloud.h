@@ -10,12 +10,15 @@ protected:
 	AABB aabb;
 	bool optimized;
 
+
 	void newVBO(GLenum freqAct);
 
 	void newIBO(const std::vector<GLuint>& data, GLenum freqAct);
 
 public:
 	bool needUpdating = false;
+
+	std::string classification;
 
 	PointCloud(std::string shaderProgram, const vec3& pos = { 0, 0, 0 }, const vec3& rot = { 0, 0, 0 }, const vec3& scale = { 1, 1, 1 });
 
@@ -32,7 +35,7 @@ public:
 
 	void updateCloud();
 
-	virtual void drawModel(const mat4& MVPMatrix);
+	void drawModel(const mat4& MVPMatrix) override;
 
 	virtual std::vector<PointModel>& getPoints();
 

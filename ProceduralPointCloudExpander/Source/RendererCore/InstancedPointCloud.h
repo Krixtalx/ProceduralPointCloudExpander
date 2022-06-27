@@ -27,7 +27,7 @@ public:
 
 	void resetInstances();
 
-	std::vector<PointModel>& getAllPoints();
+	std::vector<PointModel>& getAllInstancesPoints();
 
 	std::vector<mat4>& getOffsets();
 

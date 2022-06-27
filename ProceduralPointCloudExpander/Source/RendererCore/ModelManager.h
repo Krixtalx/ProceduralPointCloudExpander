@@ -5,15 +5,15 @@
 
 class ModelManager : public Singleton<ModelManager> {
 	std::map<std::string, PPCX::Model*> models;
-	std::unique_ptr<PointCloudHQRRenderer> hqrRenderer;
-	std::vector<std::pair<std::string, PointCloud*>> pendingClouds;
+	std::set<std::string> generatedVegetation;
 public:
-	bool hqrRendering = true;
-	float distanceThreshold = 1.00001f;
+	std::set<std::string> generatedCloudsName;
+	std::list<std::pair<std::string, PointCloud*>> pendingClouds;
+
 	ModelManager();
 	~ModelManager();
-	void drawModels(const glm::mat4& matrizMVP);
-	void drawAndDeleteSingleModel(const std::string& modelKey, const glm::mat4& matrizMVP);
+	void drawModels(const mat4& matrizMVP) const;
+	void drawAndDeleteSingleModel(const std::string& modelKey, const mat4& matrizMVP);
 
 	void newModel(const std::string& key, PPCX::Model* model);
 	void modifyModel(const std::string& key, PPCX::Model* model);
@@ -22,12 +22,12 @@ public:
 	PPCX::Model* getModel(const std::string& key);
 	std::vector<std::pair<std::string, PPCX::Model*>> getAllModels();
 	std::vector<std::pair<std::string, PPCX::Model*>> getAllModelsLike(const std::string& key) const;
+	std::set<std::string>& getVegetationClouds();
 
 	void setAllVisibility(bool visible) const;
 	void setVisibility(const std::string& key, bool visible) const;
 
 	void exportAllVisibleModels(const std::string& filename) const;
-	void updateWindowSize(glm::vec2 newWindowSize);
 
 	unsigned getNumberOfPoints();
 };

@@ -1,5 +1,7 @@
 #include "stdafx.h"
-#include "Image.h"
+
+#include <Utilities/Image.h>
+
 #include "Utilities/FileManagement.h"
 
 /// [Public methods]

@@ -166,7 +166,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ShowIncludes>false</ShowIncludes>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <TranslateIncludes>true</TranslateIncludes>
+      <TranslateIncludes>false</TranslateIncludes>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
@@ -211,7 +211,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <ShowIncludes>false</ShowIncludes>
-      <TranslateIncludes>true</TranslateIncludes>
+      <TranslateIncludes>false</TranslateIncludes>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OpenMPSupport>true</OpenMPSupport>
@@ -312,7 +312,7 @@
     <ClCompile Include="Source\RendererCore\ShaderManager.cpp" />
     <ClCompile Include="Source\RendererCore\ShaderProgram.cpp" />
     <ClCompile Include="Source\Utilities\Image.cpp" />
-    <ClCompile Include="Source\Utilities\Loader.cpp" />
+    <ClCompile Include="Source\Utilities\FileManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\RendererCore\ComputeShader.h" />
@@ -350,7 +350,7 @@
     <ClInclude Include="Source\RendererCore\ShaderProgram.h" />
     <ClInclude Include="Source\Utilities\FileManagement.h" />
     <ClInclude Include="Source\Utilities\Image.h" />
-    <ClInclude Include="Source\Utilities\Loader.h" />
+    <ClInclude Include="Source\Utilities\FileManager.h" />
     <ClInclude Include="Source\Utilities\Point.h" />
     <ClInclude Include="Source\Utilities\Singleton.h" />
   </ItemGroup>
