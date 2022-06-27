@@ -37,7 +37,7 @@ namespace PPCX {
 		//Orthogonal camara parameters
 		glm::vec2 minPoint;
 		glm::vec2 maxPoint;
-		bool perspective = false;
+		bool perspective = true;
 
 		Camara* backup;
 
@@ -90,6 +90,8 @@ namespace PPCX {
 		void setSpeedMultiplier(float speed);
 		
 		void setOrthoPoints(glm::vec2 minPoint, glm::vec2 maxPoint);
+
+		void updateOrtho();
 
 		GLuint getAncho() const;
 

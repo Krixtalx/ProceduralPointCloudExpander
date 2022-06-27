@@ -304,7 +304,7 @@
       <OpenMPSupport Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</OpenMPSupport>
     </ClCompile>
     <ClCompile Include="Source\RendererCore\Model.cpp" />
-    <ClCompile Include="Source\RendererCore\PointCloudHQRRenderer.cpp" />
+    <ClCompile Include="Source\RendererCore\PointCloudHQRenderer.cpp" />
     <ClCompile Include="Source\RendererCore\TriangleMesh.cpp" />
     <ClCompile Include="Source\RendererCore\PointCloud.cpp" />
     <ClCompile Include="Source\RendererCore\Renderer.cpp" />
@@ -340,7 +340,7 @@
     <ClInclude Include="Source\ProceduralUtils\ProceduralVoxel.h" />
     <ClInclude Include="Source\RendererCore\Camara.h" />
     <ClInclude Include="Source\RendererCore\Model.h" />
-    <ClInclude Include="Source\RendererCore\PointCloudHQRRenderer.h" />
+    <ClInclude Include="Source\RendererCore\PointCloudHQRenderer.h" />
     <ClInclude Include="Source\RendererCore\TriangleMesh.h" />
     <ClInclude Include="Source\RendererCore\PointCloud.h" />
     <ClInclude Include="Source\RendererCore\Renderer.h" />

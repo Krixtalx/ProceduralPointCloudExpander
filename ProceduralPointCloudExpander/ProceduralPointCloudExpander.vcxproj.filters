@@ -180,7 +180,7 @@
     <ClCompile Include="Source\RendererCore\ComputeShader.cpp">
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
-    <ClCompile Include="Source\RendererCore\PointCloudHQRRenderer.cpp">
+    <ClCompile Include="Source\RendererCore\PointCloudHQRenderer.cpp">
       <Filter>Archivos de origen\RendererCore</Filter>
     </ClCompile>
   </ItemGroup>
@@ -296,7 +296,7 @@
     <ClInclude Include="Source\RendererCore\ComputeShader.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
-    <ClInclude Include="Source\RendererCore\PointCloudHQRRenderer.h">
+    <ClInclude Include="Source\RendererCore\PointCloudHQRenderer.h">
       <Filter>Archivos de encabezado\RendererCore</Filter>
     </ClInclude>
   </ItemGroup>

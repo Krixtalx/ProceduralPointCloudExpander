@@ -43,24 +43,29 @@ PPCX::Renderer::Renderer() {
 		ShaderManager::getInstancia()->nuevoShaderProgram("TriangleMeshSP");
 		ShaderManager::getInstancia()->addShaderToSP("FullVertexShader", "TriangleMeshSP");
 		ShaderManager::getInstancia()->addShaderToSP("FullFragmentShader", "TriangleMeshSP");
-		ShaderManager::getInstancia()->nuevoShaderProgram("ResetComputeShaderSP");
-		ShaderManager::getInstancia()->addShaderToSP("resetBuffersHQR", "ResetComputeShaderSP");
-		ShaderManager::getInstancia()->nuevoShaderProgram("DepthComputeShaderSP");
-		ShaderManager::getInstancia()->addShaderToSP("depthBufferHQR", "DepthComputeShaderSP");
-		ShaderManager::getInstancia()->nuevoShaderProgram("ColorComputeShaderSP");
-		ShaderManager::getInstancia()->addShaderToSP("addColorHQR", "ColorComputeShaderSP");
 
-		ShaderManager::getInstancia()->nuevoShaderProgram("DepthComputeShaderSPInstancing");
-		ShaderManager::getInstancia()->addShaderToSP("depthBufferHQRInstancing", "DepthComputeShaderSPInstancing");
-		ShaderManager::getInstancia()->nuevoShaderProgram("ColorComputeShaderSPInstancing");
-		ShaderManager::getInstancia()->addShaderToSP("addColorHQRInstancing", "ColorComputeShaderSPInstancing");
+		try {
+			ShaderManager::getInstancia()->nuevoShaderProgram("ResetComputeShaderSP");
+			ShaderManager::getInstancia()->addShaderToSP("resetBuffersHQR", "ResetComputeShaderSP");
+			ShaderManager::getInstancia()->nuevoShaderProgram("DepthComputeShaderSP");
+			ShaderManager::getInstancia()->addShaderToSP("depthBufferHQR", "DepthComputeShaderSP");
+			ShaderManager::getInstancia()->nuevoShaderProgram("ColorComputeShaderSP");
+			ShaderManager::getInstancia()->addShaderToSP("addColorHQR", "ColorComputeShaderSP");
+			ShaderManager::getInstancia()->nuevoShaderProgram("DepthComputeShaderSPInstancing");
+			ShaderManager::getInstancia()->addShaderToSP("depthBufferHQRInstancing", "DepthComputeShaderSPInstancing");
+			ShaderManager::getInstancia()->nuevoShaderProgram("ColorComputeShaderSPInstancing");
+			ShaderManager::getInstancia()->addShaderToSP("addColorHQRInstancing", "ColorComputeShaderSPInstancing");
+			ShaderManager::getInstancia()->nuevoShaderProgram("StoreComputeShaderSP");
+			ShaderManager::getInstancia()->addShaderToSP("storeTextureHQR", "StoreComputeShaderSP");
 
-		ShaderManager::getInstancia()->nuevoShaderProgram("StoreComputeShaderSP");
-		ShaderManager::getInstancia()->addShaderToSP("storeTextureHQR", "StoreComputeShaderSP");
+			hqRenderer.reset(new PointCloudHQRenderer());
+		} catch (std::exception& e) {
+			std::cout << "Error during High Quality rendering shaders. This could happen because the hardware is not compatible with the shader implementation: " << e.what() << std::endl;
+			hqrCompiled = false;
+			hqr = false;
+		}
 
 		FileManager::loadAllCloudsUnderFolder("VegetationAssets");
-
-		hqrRenderer.reset(new PointCloudHQRRenderer());
 
 	} catch (std::runtime_error& e) {
 		throw e;
@@ -116,8 +121,8 @@ void PPCX::Renderer::refrescar() {
 	}
 
 	const mat4 matrizMVP = camara.matrizMVP();
-	if (hqrRendering)
-		hqrRenderer->render(matrizMVP, distanceThreshold);
+	if (hqr)
+		hqRenderer->render(matrizMVP, distanceThreshold);
 	else
 		ModelManager::getInstance()->drawModels(matrizMVP);
 }
@@ -160,7 +165,7 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	GLuint idTextura = -1;
 	// Creación de un renderbuffer object para utilizarlo como buffer de profundidad
 	GLuint idRBO = -1;
-	if (!hqrRendering) {
+	if (!hqr) {
 		glGenFramebuffers(1, &idFBO);
 
 		// Activación del FBO
@@ -222,7 +227,7 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	delete[] pixeles;
 	delete[] flipped;
 
-	if (!hqrRendering) {
+	if (!hqr) {
 		// VUELTA A LA NORMALIDAD
 		glDeleteTextures(1, &idTextura);
 		glDeleteRenderbuffers(1, &idRBO);
@@ -329,7 +334,7 @@ void PPCX::Renderer::setViewport(const GLint x, const GLint y, const GLsizei wid
 	glViewport(x, y, width, height);
 	camara.setAlto(height);
 	camara.setAncho(width);
-	hqrRenderer->updateWindowSize({ width, height });
+	hqRenderer->updateWindowSize({ width, height });
 }
 
 /**
@@ -350,6 +355,10 @@ vec3& PPCX::Renderer::getColorFondo() {
 
 float PPCX::Renderer::getPointSize() const {
 	return pointSize;
+}
+
+bool PPCX::Renderer::hqrCompatible() const {
+	return hqrCompiled;
 }
 
 void PPCX::Renderer::setPointSize(const float pointS) {

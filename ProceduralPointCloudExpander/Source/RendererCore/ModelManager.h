@@ -1,5 +1,5 @@
 #pragma once
-#include "PointCloudHQRRenderer.h"
+#include "PointCloudHQRenderer.h"
 #include "RendererCore/Model.h"
 #include "Utilities/Singleton.h"
 

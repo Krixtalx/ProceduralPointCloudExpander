@@ -188,14 +188,16 @@ void GUI::showRenderingSettings() {
 		ImGui::ColorEdit3("Background color", &color[0]);
 		PPCX::Renderer::getInstancia()->setColorFondo(color);
 		this->leaveSpace(3);
-		ImGui::Checkbox("High quality rendering", &PPCX::Renderer::getInstancia()->hqrRendering);
-		this->leaveSpace(1);
-		ImGui::InputFloat("Distance Threshold", &PPCX::Renderer::getInstancia()->distanceThreshold, 0.00001f, 0.01f, "%4f");
-		this->leaveSpace(3);
+		if (PPCX::Renderer::getInstancia()->hqrCompatible()) {
+			ImGui::Checkbox("High quality rendering", &PPCX::Renderer::getInstancia()->hqr);
+			this->leaveSpace(1);
+			ImGui::InputFloat("Distance Threshold", &PPCX::Renderer::getInstancia()->distanceThreshold, 0.00001f, 0.01f, "%4f");
+			this->leaveSpace(3);
+		}
 		if (ImGui::BeginTabBar("")) {
 			if (ImGui::BeginTabItem("Point Cloud")) {
 				this->leaveSpace(1);
-				if (!PPCX::Renderer::getInstancia()->hqrRendering) {
+				if (!PPCX::Renderer::getInstancia()->hqr) {
 					float value = PPCX::Renderer::getInstancia()->getPointSize();
 					ImGui::SliderFloat("Point size", &value, 0.1f, 10.0f);
 					PPCX::Renderer::getInstancia()->setPointSize(value);

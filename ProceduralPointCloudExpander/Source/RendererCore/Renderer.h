@@ -6,7 +6,7 @@
 #define RENDERER_H
 
 #include "Camara.h"
-#include "PointCloudHQRRenderer.h"
+#include "PointCloudHQRenderer.h"
 #include "ProceduralUtils/ProceduralGenerator.h"
 
 namespace PPCX {
@@ -31,11 +31,12 @@ namespace PPCX {
 
 		ProceduralGenerator procGenerator;
 		Camara camara;
-		std::unique_ptr<PointCloudHQRRenderer> hqrRenderer;
+		std::unique_ptr<PointCloudHQRenderer> hqRenderer;
 
+		bool hqrCompiled = true;
 	public:
 
-		bool hqrRendering;
+		bool hqr;
 		float distanceThreshold = 1.0000001f;
 
 		virtual ~Renderer();
@@ -67,6 +68,8 @@ namespace PPCX {
 		vec3& getColorFondo();
 
 		float getPointSize() const;
+
+		bool hqrCompatible() const;
 
 		void setPointSize(float pointS);
 

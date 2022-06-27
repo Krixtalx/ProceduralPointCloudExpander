@@ -32,7 +32,7 @@ ancho(anchoVentanaPorDefecto) {
  * @param ancho del viewport
  */
 PPCX::Camara::Camara(const glm::vec3& posicion, const glm::vec3& puntoMira, const glm::vec3& up, const GLfloat zNear,
-					 const GLfloat zFar, const GLfloat fovX, const GLuint alto, const GLuint ancho) :
+	const GLfloat zFar, const GLfloat fovX, const GLuint alto, const GLuint ancho) :
 	posicion(posicion), puntoMira(puntoMira),
 	up(up), zNear(zNear), zFar(zFar),
 	fovX(glm::radians(fovX)), alto(alto), ancho(ancho) {
@@ -212,9 +212,11 @@ void PPCX::Camara::zoom(float angulo) {
 			fovX = glm::pi<float>();
 		calcularFovY();
 	} else {
-		minPoint.x -= aspecto() * 20 * angulo;
+		const glm::vec2 size = maxPoint - minPoint;
+		const float rel = size.x / size.y;
+		minPoint.x -= rel * 20 * angulo;
 		minPoint.y -= 20 * angulo;
-		maxPoint.x += aspecto() * 20 * angulo;
+		maxPoint.x += rel * 20 * angulo;
 		maxPoint.y += 20 * angulo;
 	}
 }
@@ -287,6 +289,13 @@ void PPCX::Camara::setOrthoPoints(const glm::vec2 minPoint, const glm::vec2 maxP
 	this->maxPoint = maxPoint;
 	backup->maxPoint = maxPoint;
 	backup->minPoint = minPoint;
+}
+
+void PPCX::Camara::updateOrtho() {
+	float size = maxPoint.y - minPoint.y;
+	size *= aspecto();
+	minPoint.y = -size / 2;
+	maxPoint.y = size / 2;
 }
 
 GLuint PPCX::Camara::getAncho() const {
