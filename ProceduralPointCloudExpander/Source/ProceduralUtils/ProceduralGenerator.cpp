@@ -427,7 +427,7 @@ void ProceduralGenerator::RegionRGBSegmentation(const float distanceThreshold, c
 			}
 			clouds.push_back(newCloud);
 			ModelManager::getInstance()->modifyModel("RGB Region Segment " + std::to_string(i), newCloud);
-			ModelManager::getInstance()->generatedCloudsName.emplace("RGB Region Segment " + i);
+			ModelManager::getInstance()->generatedCloudsName.emplace("RGB Region Segment " + std::to_string(i));
 		}
 		this->saveClusterBinary(filename, clouds);
 	}
@@ -718,8 +718,8 @@ bool ProceduralGenerator::loadClusterBinary(const std::string& filename) const {
 			rf.read(reinterpret_cast<char*>(&_aabb), sizeof(AABB));
 
 			const auto cloud = new PointCloud("DefaultSP", points, aabb);
-			ModelManager::getInstance()->newModel("RGB Region Segment" + std::to_string(i), cloud);
-			ModelManager::getInstance()->generatedCloudsName.emplace("RGB Region Segment " + i);
+			ModelManager::getInstance()->modifyModel("RGB Region Segment" + std::to_string(i), cloud);
+			ModelManager::getInstance()->generatedCloudsName.emplace("RGB Region Segment " + std::to_string(i));
 			i++;
 		}
 		rf.close();
