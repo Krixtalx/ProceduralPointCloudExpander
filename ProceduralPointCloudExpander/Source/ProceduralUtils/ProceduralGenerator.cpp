@@ -475,7 +475,7 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 		point.saveRGB(vec3((*colored_cloud)[i].r, (*colored_cloud)[i].g, (*colored_cloud)[i].b));
 		newCloud->newPoint(point);
 	}
-	ModelManager::getInstance()->newModel("RGB Region Segmentation" + currentRegion, newCloud);
+	ModelManager::getInstance()->modifyModel("RGB Region Segmentation" + currentRegion, newCloud);
 
 #pragma omp critical
 	PPCX::Renderer::getInstancia()->addPendingScreenshot(filename, "RGB Region Segmentation" + currentRegion++);
@@ -484,6 +484,7 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 }
 
 void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pair<std::string, std::string>>& data) {
+	ModelManager::getInstance()->clearAllVegetationInstances();
 	const auto start = std::chrono::high_resolution_clock::now();
 	for (auto& pair : data) {
 		std::cout << pair.first << std::endl;
@@ -618,17 +619,10 @@ bool ProceduralGenerator::meanNeightbourHeightColor(const unsigned x, const unsi
 }
 
 
-void ProceduralGenerator::newPointCloud(PointCloud* pCloud, const bool newScene, const unsigned pointsPerVoxel) {
-	if (newScene || !terrainCloud) {
-		terrainCloud = pCloud;
-		cloudDensity = terrainCloud->getDensity();
-	} else {
-		const auto& vec = pCloud->getPoints();
-		for (auto& i : vec) {
-			terrainCloud->newPoint(i);
-		}
-		terrainCloud->needUpdating = true;
-	}
+void ProceduralGenerator::newPointCloud(const unsigned pointsPerVoxel) {
+	terrainCloud = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel("Ground"));;
+	cloudDensity = terrainCloud->getDensity();
+
 	this->aabb = terrainCloud->getAABB();
 	generateVoxelGrid(pointsPerVoxel);
 }

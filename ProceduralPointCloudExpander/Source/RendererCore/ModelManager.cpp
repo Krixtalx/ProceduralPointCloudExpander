@@ -4,6 +4,7 @@
 #include "ComputeShader.h"
 #include "pointCloud.h"
 #include "Utilities/FileManager.h"
+#include <RendererCore/InstancedPointCloud.h>
 
 
 ModelManager::ModelManager() {}
@@ -22,8 +23,7 @@ ModelManager::~ModelManager() {
  */
 void ModelManager::newModel(const std::string& key, PPCX::Model* model) {
 	models.insert(std::make_pair(key, model));
-	auto cloud = dynamic_cast<PointCloud*>(model);
-	if (cloud) {
+	if (auto cloud = dynamic_cast<PointCloud*>(model)) {
 		pendingClouds.emplace_back(key, cloud);
 		if (cloud->classification == "High vegetation" && key != "High vegetation") {
 			generatedVegetation.insert(key);
@@ -138,7 +138,16 @@ void ModelManager::exportAllVisibleModels(const std::string& filename) const {
 	//FileManager::savePointCloud(filename, clouds);
 }
 
-unsigned ModelManager::getNumberOfPoints() {
+void ModelManager::clearAllVegetationInstances() const {
+	for (auto& element : generatedVegetation) {
+		const auto& model = models.at(element);
+		if (auto* cloud = dynamic_cast<InstancedPointCloud*>(model)) {
+			cloud->clearInstances();
+		}
+	}
+}
+
+unsigned ModelManager::getNumberOfPoints() const {
 	unsigned n = 0;
 	for (const auto& model : models) {
 		if (model.second->getVisibility()) {

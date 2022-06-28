@@ -157,7 +157,6 @@ void GUI::showSaveWindow() {
 
 void GUI::showPointCloudDialog() {
 	if (ImGui::Begin("Open Point Cloud", &_showPointCloudDialog, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDocking)) {
-		static bool newScene = false;
 		this->leaveSpace(1);
 
 		//ImGui::Checkbox("New Scene", &newScene);
@@ -168,11 +167,10 @@ void GUI::showPointCloudDialog() {
 
 		if (ImGui::Button("Open Point Cloud")) {
 			procGenerator->progress = .0f;
-			std::thread thread(&PPCX::Renderer::cargaModelo, PPCX::Renderer::getInstancia(), _pointCloudPath, newScene, pointsPerVoxel);
+			std::thread thread(&PPCX::Renderer::cargaModelo, PPCX::Renderer::getInstancia(), _pointCloudPath, pointsPerVoxel);
 			thread.detach();
 			_showPointCloudDialog = false;
 			sceneLoaded = true;
-			newScene = false;
 		}
 		ImGui::End();
 	}

@@ -44,6 +44,6 @@ protected:
 public:
 	ProceduralGenerator();
 	~ProceduralGenerator();
-	void newPointCloud(PointCloud* pCloud, bool newScene, unsigned pointsPerVoxel);
+	void newPointCloud(unsigned pointsPerVoxel);
 	void testRGBSegmentation();
 };

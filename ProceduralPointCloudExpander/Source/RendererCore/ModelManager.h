@@ -29,5 +29,7 @@ public:
 
 	void exportAllVisibleModels(const std::string& filename) const;
 
-	unsigned getNumberOfPoints();
+	void clearAllVegetationInstances() const;
+
+	unsigned getNumberOfPoints() const;
 };

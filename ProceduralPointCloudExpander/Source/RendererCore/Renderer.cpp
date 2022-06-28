@@ -143,13 +143,13 @@ const GLubyte* PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
 	return glGetString(propiedad);
 }
 
-void PPCX::Renderer::cargaModelo(const std::string& path, const bool& newScene, const unsigned& pointsPerVoxel) {
+void PPCX::Renderer::cargaModelo(const std::string& path, const unsigned& pointsPerVoxel) {
 	FileManager::loadPointCloud(path);
 	try {
 		const auto pCloud = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel("Ground"));
-		procGenerator.newPointCloud(pCloud, newScene, pointsPerVoxel);
+		procGenerator.newPointCloud(pointsPerVoxel);
 		setCameraFocus(pCloud->getAABB());
-
+		ModelManager::getInstance()->clearAllVegetationInstances();
 	} catch (std::runtime_error& e) {
 		std::cerr << "[Renderer:cargaModelo]: " << e.what() << std::endl;
 	}

@@ -46,8 +46,10 @@ void InstancedPointCloud::drawModel(const mat4& MVPMatrix) {
 	}
 }
 
-void InstancedPointCloud::resetInstances() {
+void InstancedPointCloud::clearInstances() {
 	offsets.clear();
+	newInstanceUpdate = true;
+	HQRNeedUpdate = true;
 }
 
 unsigned InstancedPointCloud::getNumberOfInstances() const {

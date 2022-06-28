@@ -25,7 +25,7 @@ public:
 
 	void drawModel(const mat4& MVPMatrix) override;
 
-	void resetInstances();
+	void clearInstances();
 
 	std::vector<PointModel>& getAllInstancesPoints();
 

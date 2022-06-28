@@ -7,7 +7,6 @@
 #include "RendererCore/InstancedPointCloud.h"
 
 constexpr auto PLY_EXTENSION = ".ply";
-constexpr auto APPBIN_EXTENSION = ".ppcxbin";
 
 bool FileManager::saving = false;
 unsigned FileManager::LASClassificationSize = 13;
@@ -211,7 +210,7 @@ void FileManager::readFromPlyWithClassification(const std::string& filename) {
 				const auto cloud = new PointCloud("DefaultSP", _points[i], _aabb[i]);
 				cloud->optimize();
 				cloud->classification = LASClassificationStrings[i];
-				ModelManager::getInstance()->newModel(LASClassificationStrings[i], cloud);
+				ModelManager::getInstance()->modifyModel(LASClassificationStrings[i], cloud);
 			}
 		}
 	} catch (const std::runtime_error& e) {

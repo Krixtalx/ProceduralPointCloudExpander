@@ -49,7 +49,7 @@ namespace PPCX {
 
 		void actualizarColorFondo() const;
 
-		void cargaModelo(const std::string& path, const bool& newScene, const unsigned& pointsPerVoxel);
+		void cargaModelo(const std::string& path, const unsigned& pointsPerVoxel);
 
 		void screenshot(const std::string& filename);
 
