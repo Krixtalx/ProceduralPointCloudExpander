@@ -17,6 +17,14 @@
 #include "RendererCore/InstancedPointCloud.h"
 #include "RendererCore/Renderer.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#else
+#define omp_get_max_threads() 1
+#define omp_get_thread_num() 0
+#endif
+
+
 
 ProceduralGenerator::ProceduralGenerator() = default;
 
@@ -138,9 +146,9 @@ void ProceduralGenerator::computeHeightAndColor() {
 			}
 		}
 	}
-	auto end = std::chrono::high_resolution_clock::now();
+	const auto end = std::chrono::high_resolution_clock::now();
 
-	auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	const auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
 	std::cout << "Height and color: " << int_s.count() << " ms" << std::endl << std::endl;
 }
@@ -258,7 +266,8 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 			vec3 aux = voxelGrid[x][y]->getRepresentativePoint();
 			controlPoints.push_back(aux);
 			density = static_cast<float>(voxelGrid[x][y]->getNumberOfPoints() + 1);
-			weights.push_back(pow(density, 2));
+			//weights.push_back(pow(density, 2));
+			weights.push_back(1);
 			p._point = aux;
 			pc->newPoint(p);
 		}
@@ -282,7 +291,9 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 		vec3 minPoint = aabb.min();
 		vec3 maxPoint = aabb.max();
 		PointModel point;
-		std::vector<PointModel> points;
+		std::vector<PointModel>* localPoints;
+		localPoints = new std::vector<PointModel>[omp_get_max_threads()];
+
 		AABB newAABB;
 
 		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -290,7 +301,7 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 		std::default_random_engine generator(seed);
 		std::uniform_int_distribution<unsigned> genColor(0, 10);
 		std::atomic<int> count = 0;
-#pragma omp parallel for private(point, generator)
+#pragma omp parallel for collapse(2) private(point, generator)
 		for (int x = 0; x < axisSubdivision[0]; x++) {
 			for (int y = 0; y < axisSubdivision[1]; y++) {
 				unsigned limit = voxelGrid[x][y]->numberPointsToDensity(cloudDensity * desiredDensityMultiplier);
@@ -357,22 +368,35 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 					color.b += genColor(generator);
 					point.saveRGB(color);
 					if (point._point.z < maxPoint.z + 20 && point._point.z > minPoint.z - 20) {
-#pragma omp critical
-						points.push_back(point);
+						localPoints[omp_get_thread_num()].push_back(point);
 #pragma omp critical
 						newAABB.update(point._point);
 					}
 				}
 			}
 		}
-		auto cloud = new PointCloud("DefaultSP", points, newAABB);
-		cloud->optimize();
-		cloud->classification = "Ground";
+		std::cout << "Threads number: " << omp_get_max_threads() << std::endl;
+		std::cout << "AABB points: " << newAABB.min().x << ", " << newAABB.min().y << ", " << newAABB.min().z << std::endl;
+		std::cout << "AABB points: " << newAABB.max().x << ", " << newAABB.max().y << ", " << newAABB.max().z << std::endl;
+		unsigned pointsNumber = 0;
+		for (size_t i = 0; i < omp_get_max_threads(); i++) {
+			pointsNumber += localPoints[i].size();
+		}
+		std::vector<PointModel> points(pointsNumber);
+		unsigned index = 0;
+		for (size_t i = 0; i < omp_get_max_threads(); i++) {
+			std::copy(localPoints[i].begin(), localPoints[i].end(), points.begin() + index);
+			index += localPoints[i].size();
+		}
 		auto end = std::chrono::high_resolution_clock::now();
 
 		auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
 		std::cout << "NURBS: " << int_s.count() << " ms" << std::endl << std::endl;
+
+		auto cloud = new PointCloud("DefaultSP", points, newAABB);
+		delete[] localPoints;
+		cloud->optimize();
+		cloud->classification = "Ground";
 		ModelManager::getInstance()->modifyModel("Nurbs terrain cloud", cloud);
 		ModelManager::getInstance()->generatedCloudsName.insert("Nurbs terrain cloud");
 		this->progress = FLT_MAX;
@@ -478,7 +502,7 @@ void ProceduralGenerator::RegionRGBSegmentationUsingCloud(const pcl::PointCloud<
 	ModelManager::getInstance()->modifyModel("RGB Region Segmentation" + currentRegion, newCloud);
 
 #pragma omp critical
-	PPCX::Renderer::getInstancia()->addPendingScreenshot(filename, "RGB Region Segmentation" + currentRegion++);
+	PPCX::Renderer::getInstance()->addPendingScreenshot(filename, "RGB Region Segmentation" + currentRegion++);
 
 	this->progress = FLT_MAX;
 }
@@ -531,12 +555,13 @@ void ProceduralGenerator::generateProceduralVegetation(const std::vector<std::pa
 				delete voxel;
 			}
 		}
-		auto end = std::chrono::high_resolution_clock::now();
 
-		auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-		std::cout << "Vegetation instancing: " << int_s.count() << " ms" << std::endl << std::endl;
 	}
+	auto end = std::chrono::high_resolution_clock::now();
+
+	auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+	std::cout << "Vegetation instancing: " << int_s.count() << " ms" << std::endl << std::endl;
 	this->progress = FLT_MAX;
 }
 
@@ -639,8 +664,6 @@ void ProceduralGenerator::saveHeightMap(const std::string& path) const {
 	const float relativeMaxPointZ = aabb.max()[2] - minPointZ;
 	float relativeHeightValue;
 	const auto pixels = new std::vector<unsigned char>();
-	int i = 0;
-	int o = 0;
 	for (int y = 0; y < axisSubdivision[1]; y++) {
 		for (int x = 0; x < axisSubdivision[0]; x++) {
 			unsigned char color;
@@ -667,9 +690,6 @@ void ProceduralGenerator::saveHeightMap(const std::string& path) const {
  * @brief Saves the current voxel grid as a png file in RGB scale that could be used as a texture of the terrain
 */
 void ProceduralGenerator::saveTextureMap(const std::string& path) const {
-	const float minPointZ = aabb.min()[2];
-	float relativeMaxPointZ = aabb.max()[2] - minPointZ;
-	float relativeHeightValue = 0;
 	const auto pixels = new std::vector<unsigned char>();
 	for (int y = 0; y < axisSubdivision[1]; y++) {
 		for (int x = 0; x < axisSubdivision[0]; x++) {

@@ -41,11 +41,11 @@ void main()
 	float depth				= projectedPoint.w;
 	float depthInBuffer		= uintBitsToFloat(depthBuffer[pointIndex]);
 
-	if (depth < depthInBuffer * distanceThreshold)			// Same surface
+	if (depth < depthInBuffer * distanceThreshold) // Misma superficie
 	{
 		uvec3 rgbColor = uvec3(unpackUnorm4x8(points[index].rgb).rgb * 255.0f);
-		uint64_t rg = (uint64_t(rgbColor.r) << 32) | rgbColor.g;
-		uint64_t ba = (uint64_t(rgbColor.b) << 32) | 1;
+		uint64_t rg = (uint64_t(rgbColor.r) << 32) | rgbColor.g; //Se codifica el color rojo en los primeros 32 bits, y el verde en los 32 restantes
+		uint64_t ba = (uint64_t(rgbColor.b) << 32) | 1; //Se codifica el color azul en los primeros 32 bits, y se incrementa en uno el valor "alpha" que representa cuantos puntos han aportado al buffer de color.
 
 		atomicAdd(colorBuffer01[pointIndex], rg);
 		atomicAdd(colorBuffer02[pointIndex], ba);

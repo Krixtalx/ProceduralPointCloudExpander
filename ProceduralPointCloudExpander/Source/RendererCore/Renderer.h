@@ -19,11 +19,7 @@ namespace PPCX {
 	 * funciones callback hagan llamadas a sus métodos
 	 */
 
-	class Renderer {
-	private:
-		static Renderer* instancia; ///< Puntero al único objeto de la clase
-		Renderer();
-
+	class Renderer : public Singleton<Renderer> {
 		vec3 colorFondo = { 0.1, 0.1, 0.15 };
 		float pointSize = 1.0f;
 		unsigned currentScreenshot = 0;
@@ -39,9 +35,9 @@ namespace PPCX {
 		bool hqr;
 		float distanceThreshold = 1.0000001f;
 
-		virtual ~Renderer();
+		Renderer();
 
-		static Renderer* getInstancia();
+		virtual ~Renderer();
 
 		void inicializaOpenGL() const;
 
@@ -49,7 +45,7 @@ namespace PPCX {
 
 		void actualizarColorFondo() const;
 
-		void cargaModelo(const std::string& path, const unsigned& pointsPerVoxel);
+		void setupNewScene(const std::string& path, const unsigned& pointsPerVoxel);
 
 		void screenshot(const std::string& filename);
 

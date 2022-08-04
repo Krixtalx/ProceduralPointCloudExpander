@@ -47,7 +47,7 @@ namespace PPCX {
 		/**
 		*	@brief Retrieves data from GPU.
 		*	@param bufferID Identifier of buffer in GPU.
-		*	@param Type of data to be retrieved. Any value can be used here.
+		*	@param dataType Type of data to be retrieved. Any value can be used here.
 		*/
 		template<typename T>
 		static T* readData(GLuint bufferID, const T& dataType);
@@ -96,9 +96,9 @@ namespace PPCX {
 
 
 	template<typename T>
-	inline T* ComputeShader::readData(GLuint bufferID, const T& dataType) {
+	inline T* ComputeShader::readData(const GLuint bufferID, const T& dataType) {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, bufferID);
-		T* data = (T*)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+		T* data = static_cast<T*>(glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY));
 		glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
 		return data;

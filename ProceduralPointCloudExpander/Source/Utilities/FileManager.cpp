@@ -43,44 +43,6 @@ std::string FileManager::LASClassificationStrings[] = {
 	"Overlaped points"
 };
 
-bool FileManager::writeToBinary(const std::string& filename, PointCloud* pointCloud) {
-	std::ofstream fout(filename, std::ios::out | std::ios::binary);
-	if (!fout.is_open()) {
-		return false;
-	}
-
-	const size_t numPoints = pointCloud->getNumberOfPoints();
-	fout.write((char*)&numPoints, sizeof(size_t));
-	fout.write((char*)&pointCloud->getPoints()[0], numPoints * sizeof(PointModel));
-	fout.write((char*)&pointCloud->getAABB(), sizeof(AABB));
-
-	fout.close();
-
-	return true;
-}
-
-PointCloud* FileManager::readFromBinary(const std::string& filename) {
-	std::ifstream fin(filename, std::ios::in | std::ios::binary);
-	if (!fin.is_open()) {
-		return nullptr;
-	}
-
-	size_t numPoints;
-	std::vector<PointModel> points;
-	AABB _aabb;
-
-	fin.read((char*)&numPoints, sizeof(size_t));
-	points.resize(numPoints);
-	fin.read((char*)&points[0], numPoints * sizeof(PointModel));
-	fin.read((char*)&_aabb, sizeof(AABB));
-
-	fin.close();
-
-	const auto pointCloud = new PointCloud("DefaultSP", points, _aabb);
-
-	return pointCloud;
-}
-
 /**
  * Private method for loading a PLY file. It reads ascii and binary ply versions.
  * It will only load points position, color and LAZ classification.
@@ -220,7 +182,7 @@ void FileManager::readFromPlyWithClassification(const std::string& filename) {
 	}
 }
 
-void FileManager::readFromPlyWithoutClassification(const std::string& _filename) {
+void FileManager::readFromPlyWithoutClassification(const std::string& filename) {
 	std::vector<uint8_t> byteBuffer;
 
 	try {
@@ -229,7 +191,6 @@ void FileManager::readFromPlyWithoutClassification(const std::string& _filename)
 		std::shared_ptr<tinyply::PlyData> plyPoints;
 
 		std::unique_ptr<std::istream> fileStream;
-		const std::string& filename = _filename;
 		bool haveColors = true;
 		bool haveClassification = true;
 

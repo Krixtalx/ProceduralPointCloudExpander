@@ -29,13 +29,12 @@ void main()
 	const uint64_t ba = colorBuffer02[index];
 
 	const uint a = uint(ba);
-	const uint r = uint((rg >> 32) / a);
-	const uint g = uint(rg) / a;
-	const uint b = uint((ba >> 32) / a);
 
 	vec3 rgbColor = backgroundColor;
-	if (a > 0)
-	{
+	if (a > 0){
+		const uint r = uint((rg >> 32) / a);
+		const uint g = uint(rg) / a;
+		const uint b = uint((ba >> 32) / a);
 		rgbColor = vec3(r, g, b) / 255.0f;
 	}
 

@@ -142,16 +142,16 @@ void PPCX::TriangleMesh::drawModel(const glm::mat4& MVPMatrix) {
 	if (visible) {
 		try {
 			auto matrixMVP = MVPMatrix * mModelado;
-			ShaderManager::getInstancia()->activarSP(shaderProgram);
-			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrixMVP);
-			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMV", glm::mat4(1.0f));
-			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMS", glm::mat4(1.0f));
+			ShaderManager::getInstance()->activarSP(shaderProgram);
+			ShaderManager::getInstance()->setUniform(this->shaderProgram, "matrizMVP", matrixMVP);
+			ShaderManager::getInstance()->setUniform(this->shaderProgram, "matrizMV", glm::mat4(1.0f));
+			ShaderManager::getInstance()->setUniform(this->shaderProgram, "matrizMS", glm::mat4(1.0f));
 
 			const std::vector<std::string> nombreUniforms = { "luzElegida", "colorElegido", "normalMap" };
 
 			if (modo == wireframe) {
 				const std::vector<std::string> nombreSubrutinas = { "colorDefecto", "colorMaterial", "noUsarNormalMap" };
-				ShaderManager::getInstancia()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
+				ShaderManager::getInstance()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
 				                                                          nombreUniforms, nombreSubrutinas);
 			} else {
 
@@ -162,7 +162,7 @@ void PPCX::TriangleMesh::drawModel(const glm::mat4& MVPMatrix) {
 				if (usarTexturas && idTextura != UINT_MAX) {
 					nombreSubrutinas.emplace_back("colorTextura");
 					nombreSubrutinas.emplace_back("noUsarNormalMap");
-					ShaderManager::getInstancia()->setUniform(shaderProgram, "muestreador", (GLint)0);
+					ShaderManager::getInstance()->setUniform(shaderProgram, "muestreador", (GLint)0);
 					glActiveTexture(GL_TEXTURE0);
 					glBindTexture(GL_TEXTURE_2D, idTextura);
 				} else {
@@ -195,15 +195,15 @@ void PPCX::TriangleMesh::dibujarModelo(glm::mat4 matrizMVP, glm::mat4 matrizMV, 
 		matrizMV = matrizMV * mModelado;
 		matrizMS = matrizMS * mModelado;
 
-		ShaderManager::getInstancia()->activarSP(shaderProgram);
-		ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", matrizMVP);
-		ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMV", matrizMV);
-		ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMS", matrizMS);
+		ShaderManager::getInstance()->activarSP(shaderProgram);
+		ShaderManager::getInstance()->setUniform(this->shaderProgram, "matrizMVP", matrizMVP);
+		ShaderManager::getInstance()->setUniform(this->shaderProgram, "matrizMV", matrizMV);
+		ShaderManager::getInstance()->setUniform(this->shaderProgram, "matrizMS", matrizMS);
 		const std::vector<std::string> nombreUniforms = { "luzElegida", "colorElegido", "normalMap" };
 
 		if (modo == wireframe) {
 			const std::vector<std::string> nombreSubrutinas = { "colorDefecto", "colorMaterial", "noUsarNormalMap" };
-			ShaderManager::getInstancia()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
+			ShaderManager::getInstance()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
 			                                                          nombreUniforms, nombreSubrutinas);
 		} else {
 			const glm::vec3 ambiente = MaterialManager::getInstancia()->getMaterial(
@@ -214,10 +214,10 @@ void PPCX::TriangleMesh::dibujarModelo(glm::mat4 matrizMVP, glm::mat4 matrizMV, 
 				this->material)->getEspecular();
 			const GLuint phong = MaterialManager::getInstancia()->getMaterial(
 				this->material)->getPhong();
-			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "Ka", ambiente);
-			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "Kd", difusa);
-			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "Ks", especular);
-			ShaderManager::getInstancia()->setUniform(this->shaderProgram, "phong", phong);
+			ShaderManager::getInstance()->setUniform(this->shaderProgram, "Ka", ambiente);
+			ShaderManager::getInstance()->setUniform(this->shaderProgram, "Kd", difusa);
+			ShaderManager::getInstance()->setUniform(this->shaderProgram, "Ks", especular);
+			ShaderManager::getInstance()->setUniform(this->shaderProgram, "phong", phong);
 
 			std::vector<std::string> nombreSubrutinas;
 			if (tipoLuz == tipoLuz::ambiente) {
@@ -237,17 +237,17 @@ void PPCX::TriangleMesh::dibujarModelo(glm::mat4 matrizMVP, glm::mat4 matrizMV, 
 			if (usarTexturas && usarNormalMap && idTextura != UINT_MAX && idNormalMap != UINT_MAX) {
 				nombreSubrutinas.emplace_back("colorTextura");
 				nombreSubrutinas.emplace_back("siUsarNormalMap");
-				ShaderManager::getInstancia()->setUniform(shaderProgram, "muestreador", (GLint)0);
+				ShaderManager::getInstance()->setUniform(shaderProgram, "muestreador", (GLint)0);
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, idTextura);
 
-				ShaderManager::getInstancia()->setUniform(shaderProgram, "muestreadorNormalMap", (GLint)1);
+				ShaderManager::getInstance()->setUniform(shaderProgram, "muestreadorNormalMap", (GLint)1);
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, idNormalMap);
 			} else if (usarTexturas && idTextura != UINT_MAX) {
 				nombreSubrutinas.emplace_back("colorTextura");
 				nombreSubrutinas.emplace_back("noUsarNormalMap");
-				ShaderManager::getInstancia()->setUniform(shaderProgram, "muestreador", (GLint)0);
+				ShaderManager::getInstance()->setUniform(shaderProgram, "muestreador", (GLint)0);
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, idTextura);
 			} else {
@@ -255,7 +255,7 @@ void PPCX::TriangleMesh::dibujarModelo(glm::mat4 matrizMVP, glm::mat4 matrizMV, 
 				nombreSubrutinas.emplace_back("noUsarNormalMap");
 			}
 
-			ShaderManager::getInstancia()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
+			ShaderManager::getInstance()->activarMultiplesSubrutinas(this->shaderProgram, GL_FRAGMENT_SHADER,
 			                                                          nombreUniforms, nombreSubrutinas);
 		}
 		glBindVertexArray(idVAO);

@@ -7,18 +7,6 @@
 
 #include "ComputeShader.h"
 
-PPCX::ShaderManager* PPCX::ShaderManager::instancia = nullptr;
-
-/**
- * Consulta del objeto único de la clase
- * @return Puntero al ShaderManager
- */
-PPCX::ShaderManager* PPCX::ShaderManager::getInstancia() {
-	if (!instancia) {
-		instancia = new ShaderManager;
-	}
-	return instancia;
-}
 
 /**
  * Destructor. Elimina todos los shaders y shaderPrograms (que estén en los mapas) del contexto OpenGL
@@ -227,7 +215,7 @@ void PPCX::ShaderManager::setUniform(const std::string& nombreSP, const std::str
  * @param nombreSubrutina nombre de la subrutina a activar
  */
 void PPCX::ShaderManager::activarSubrutina(const std::string& nombreSP, GLenum tipoShader,
-										   const std::string& nombreSubrutina) {
+	const std::string& nombreSubrutina) {
 	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		const GLuint location = glGetSubroutineIndex(SP->second->getIdSP(), tipoShader, nombreSubrutina.c_str());
@@ -246,8 +234,8 @@ void PPCX::ShaderManager::activarSubrutina(const std::string& nombreSP, GLenum t
  * @param nombreSubrutina nombres de la subrutinas a activar
  */
 void PPCX::ShaderManager::activarMultiplesSubrutinas(const std::string& nombreSP, const GLenum tipoShader,
-													 const std::vector<std::string>& nombreUniform,
-													 const std::vector<std::string>& nombreSubrutina) {
+	const std::vector<std::string>& nombreUniform,
+	const std::vector<std::string>& nombreSubrutina) {
 	const auto SP = shaderPrograms.find(nombreSP);
 	if (SP != shaderPrograms.end()) {
 		if (nombreUniform.size() != nombreSubrutina.size())
@@ -256,7 +244,7 @@ void PPCX::ShaderManager::activarMultiplesSubrutinas(const std::string& nombreSP
 
 		GLint tam = 0;
 		glGetProgramStageiv(SP->second->getIdSP(), tipoShader,
-							GL_ACTIVE_SUBROUTINE_UNIFORMS, &tam);
+			GL_ACTIVE_SUBROUTINE_UNIFORMS, &tam);
 
 		if (nombreUniform.size() != tam)
 			throw std::runtime_error(
@@ -265,10 +253,10 @@ void PPCX::ShaderManager::activarMultiplesSubrutinas(const std::string& nombreSP
 		const auto valores = new GLuint[tam];
 		for (int i = 0; i < tam; ++i) {
 			const GLint posUniform = glGetSubroutineUniformLocation(SP->second->getIdSP(), tipoShader,
-																	nombreUniform[i].c_str());
+				nombreUniform[i].c_str());
 			if (posUniform == -1) {
 				throw std::runtime_error("[ShaderManager::MultiplesSubrutinas]: No se ha podido localizar el uniform " +
-										 nombreUniform[i] + " en " + nombreSP);
+					nombreUniform[i] + " en " + nombreSP);
 			}
 			const GLuint location = glGetSubroutineIndex(SP->second->getIdSP(), tipoShader, nombreSubrutina[i].c_str());
 			if (location == GL_INVALID_INDEX) {

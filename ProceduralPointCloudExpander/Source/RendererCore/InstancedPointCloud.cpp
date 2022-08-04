@@ -32,8 +32,8 @@ void InstancedPointCloud::drawModel(const mat4& MVPMatrix) {
 		if (newInstanceUpdate)
 			updateInstancingData();
 		try {
-			PPCX::ShaderManager::getInstancia()->activarSP(shaderProgram);
-			PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizVP", MVPMatrix);
+			PPCX::ShaderManager::getInstance()->activarSP(shaderProgram);
+			PPCX::ShaderManager::getInstance()->setUniform(this->shaderProgram, "matrizVP", MVPMatrix);
 
 			glBindVertexArray(idVAO);
 			glBindBuffer(GL_ARRAY_BUFFER, instancingVBO);

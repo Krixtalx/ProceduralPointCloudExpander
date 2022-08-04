@@ -119,8 +119,8 @@ void PointCloud::drawModel(const mat4 & MVPMatrix) {
 			updateCloud();
 		try {
 			//MVPMatrix = MVPMatrix * translate(pos);
-			PPCX::ShaderManager::getInstancia()->activarSP(shaderProgram);
-			PPCX::ShaderManager::getInstancia()->setUniform(this->shaderProgram, "matrizMVP", MVPMatrix);
+			PPCX::ShaderManager::getInstance()->activarSP(shaderProgram);
+			PPCX::ShaderManager::getInstance()->setUniform(this->shaderProgram, "matrizMVP", MVPMatrix);
 
 			glBindVertexArray(idVAO);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, idIBO);
@@ -164,7 +164,7 @@ bool compareFunction(const PointModel & a, const PointModel & b) {
 
 void PointCloud::optimize() {
 	if (!optimized) {
-		std::sort(vbo.begin(), vbo.end(), compareFunction);
+		std::sort(std::execution::par_unseq, vbo.begin(), vbo.end(), compareFunction);
 		std::vector<PointModel> newVbo(vbo.size());
 		const auto size = static_cast<unsigned>(vbo.size() / 128 + .5f);
 		std::vector<unsigned> batchOrder(size);

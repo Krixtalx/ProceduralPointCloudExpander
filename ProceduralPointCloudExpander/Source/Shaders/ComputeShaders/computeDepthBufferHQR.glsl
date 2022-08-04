@@ -27,10 +27,11 @@ void main()
 	const uint index = gl_GlobalInvocationID.x;
 	if (index >= numPoints) return;
 
-	// Projection: 3D to 2D
+	// Proyeccion: 3D a 2D
 	vec4 projectedPoint	= cameraMatrix * vec4(points[index].point, 1.0f);
 	projectedPoint.xyz /= projectedPoint.w;
 
+	//Se descartan los puntos que estén fuera del volumen de visión
 	if (projectedPoint.w <= 0.0 || projectedPoint.x < -1.0 || projectedPoint.x > 1.0 || projectedPoint.y < -1.0 || projectedPoint.y > 1.0) 
 	{
 		return;
@@ -38,12 +39,16 @@ void main()
 
 	ivec2 windowPosition	= ivec2((projectedPoint.xy * 0.5f + 0.5f) * windowSize);
 	int pointIndex			= int(windowPosition.y * windowSize.x + windowPosition.x);
-	uint depth				= floatBitsToUint(projectedPoint.w);							// Another way: multiply distance by 10^x. It is more precise when x is larger
+	uint depth				= floatBitsToUint(projectedPoint.w);
 	uint minDepth			= depth;
 
+	//Se consulta en qué pixel cae el punto asignado al primer hilo del warp.
 	int headID				= shuffleNV(pointIndex, 0, 32);
-	uint haveLeaderID		= ballotThreadNV(headID == pointIndex);
+	
+	//Se comprueba si todos los hilos del warp recaen sobre el mismo pixel de la pantalla. En principio, esto es bastante probable debido a la ordenación con Morton Codes.
+	uint haveLeaderID		= ballotThreadNV(headID == pointIndex); 
 
+	//En el caso de que todos los hilos del warp recaigan sobre el mismo pixel de la pantalla, se realiza una reducción para calcular la profundidad mínima.
 	if (haveLeaderID == 0xffffffff) 
 	{
 		minDepth = min(minDepth, shuffleXorNV(minDepth, 16, 32));
@@ -53,6 +58,7 @@ void main()
 		minDepth = min(minDepth, shuffleXorNV(minDepth, 1, 32));
 	}
 
+	//Si este hilo es el de profundidad mínima, se actualiza el valor en el buffer utilizando una instrucción atómica.
 	if (minDepth == depth)
 	{
 		uint oldDepth = depthBuffer[pointIndex];

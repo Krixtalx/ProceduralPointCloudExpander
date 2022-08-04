@@ -14,7 +14,7 @@
 GUI::GUI() :
 	_showAboutUs(false), _showControls(false), _showFileDialog(false),
 	_showSaveDialog(false), _showPointCloudDialog(false), _showRenderingSettings(false), _showProceduralSettings(false), _showVegetationSettings(false),
-	procGenerator(PPCX::Renderer::getInstancia()->getProceduralGenerator()) {}
+	procGenerator(PPCX::Renderer::getInstance()->getProceduralGenerator()) {}
 
 void GUI::createMenu() {
 	const ImGuiIO& io = ImGui::GetIO();
@@ -167,7 +167,7 @@ void GUI::showPointCloudDialog() {
 
 		if (ImGui::Button("Open Point Cloud")) {
 			procGenerator->progress = .0f;
-			std::thread thread(&PPCX::Renderer::cargaModelo, PPCX::Renderer::getInstancia(), _pointCloudPath, pointsPerVoxel);
+			std::thread thread(&PPCX::Renderer::setupNewScene, PPCX::Renderer::getInstance(), _pointCloudPath, pointsPerVoxel);
 			thread.detach();
 			_showPointCloudDialog = false;
 			sceneLoaded = true;
@@ -182,23 +182,25 @@ void GUI::showRenderingSettings() {
 		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
 	ImGui::SetNextWindowBgAlpha(0.6f);
 	if (ImGui::Begin("Rendering Settings", &_showRenderingSettings, window_flags)) {
-		vec3 color = PPCX::Renderer::getInstancia()->getColorFondo();
+		vec3 color = PPCX::Renderer::getInstance()->getColorFondo();
 		ImGui::ColorEdit3("Background color", &color[0]);
-		PPCX::Renderer::getInstancia()->setColorFondo(color);
+		PPCX::Renderer::getInstance()->setColorFondo(color);
 		this->leaveSpace(3);
-		if (PPCX::Renderer::getInstancia()->hqrCompatible()) {
-			ImGui::Checkbox("High quality rendering", &PPCX::Renderer::getInstancia()->hqr);
+		if (PPCX::Renderer::getInstance()->hqrCompatible()) {
+			ImGui::Checkbox("High quality rendering", &PPCX::Renderer::getInstance()->hqr);
 			this->leaveSpace(1);
-			ImGui::InputFloat("Distance Threshold", &PPCX::Renderer::getInstancia()->distanceThreshold, 0.00001f, 0.01f, "%4f");
-			this->leaveSpace(3);
+			if (PPCX::Renderer::getInstance()->hqr) {
+				ImGui::InputFloat("Distance Threshold", &PPCX::Renderer::getInstance()->distanceThreshold, 0.00001f, 0.01f, "%4f");
+				this->leaveSpace(3);
+			}
 		}
 		if (ImGui::BeginTabBar("")) {
 			if (ImGui::BeginTabItem("Point Cloud")) {
 				this->leaveSpace(1);
-				if (!PPCX::Renderer::getInstancia()->hqr) {
-					float value = PPCX::Renderer::getInstancia()->getPointSize();
+				if (!PPCX::Renderer::getInstance()->hqr) {
+					float value = PPCX::Renderer::getInstance()->getPointSize();
 					ImGui::SliderFloat("Point size", &value, 0.1f, 10.0f);
-					PPCX::Renderer::getInstancia()->setPointSize(value);
+					PPCX::Renderer::getInstance()->setPointSize(value);
 				}
 				ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
 				ImGui::BeginChild("SubWindow", ImGui::GetContentRegionAvail(), true, ImGuiWindowFlags_None);
@@ -351,7 +353,7 @@ void GUI::showVegetationSelection() {
 			ImGui::SameLine();
 			ImGui::Combo(("##Picker Mode" + std::to_string(i)).c_str(), &values[i++], items.data(), 2);
 			if (ImGui::IsItemHovered()) {
-				//PPCX::Renderer::getInstancia()->setCameraFocus(cloud->getAABB());
+				//PPCX::Renderer::getInstance()->setCameraFocus(cloud->getAABB());
 				ModelManager::getInstance()->setVisibility("RGB", false);
 				cloud->getVisibility() = true;
 			}

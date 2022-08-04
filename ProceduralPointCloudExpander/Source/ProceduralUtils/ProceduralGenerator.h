@@ -8,7 +8,6 @@
 
 class ProceduralGenerator {
 	friend class GUI;
-protected:
 	unsigned axisSubdivision[2]{};
 	float gsd{};
 
@@ -18,13 +17,11 @@ protected:
 	float cloudDensity{};
 	float progress = FLT_MAX;
 	bool useStatiticsMethod = true;
-
-
+protected:
 	float getHeight(vec2 pos) const;
 	float getDensity(vec2 pos) const;
 	void saveHeightMap(const std::string& path) const;
 	void saveTextureMap(const std::string& path) const;
-	void savePointCloud(const std::string& path) const;
 	void automaticGSD(unsigned pointsPerVoxel);
 	void generateVoxelGrid(unsigned pointsPerVoxel);
 	bool meanNeightbourHeightColor(unsigned x, unsigned y, char minCount) const;

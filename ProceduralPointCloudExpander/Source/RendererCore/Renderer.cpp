@@ -15,48 +15,46 @@
 #include "TriangleMesh.h"
 
 
-PPCX::Renderer* PPCX::Renderer::instancia = nullptr;
-
 /**
  * Constructor por defecto
  */
 PPCX::Renderer::Renderer() :hqr(true) {
 	try {
-		ShaderManager::getInstancia()->nuevoShader("VertexShader", GL_VERTEX_SHADER, "Source/Shaders/VertexShader.glsl");
-		ShaderManager::getInstancia()->nuevoShader("InstancingVertexShader", GL_VERTEX_SHADER, "Source/Shaders/InstancingVertexShader.glsl");
-		ShaderManager::getInstancia()->nuevoShader("FragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/FragmentShader.glsl");
-		ShaderManager::getInstancia()->nuevoShader("FullVertexShader", GL_VERTEX_SHADER, "Source/Shaders/pag-vs.glsl");
-		ShaderManager::getInstancia()->nuevoShader("FullFragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/pag-fs.glsl");
+		ShaderManager::getInstance()->nuevoShader("VertexShader", GL_VERTEX_SHADER, "Source/Shaders/VertexShader.glsl");
+		ShaderManager::getInstance()->nuevoShader("InstancingVertexShader", GL_VERTEX_SHADER, "Source/Shaders/InstancingVertexShader.glsl");
+		ShaderManager::getInstance()->nuevoShader("FragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/FragmentShader.glsl");
+		ShaderManager::getInstance()->nuevoShader("FullVertexShader", GL_VERTEX_SHADER, "Source/Shaders/pag-vs.glsl");
+		ShaderManager::getInstance()->nuevoShader("FullFragmentShader", GL_FRAGMENT_SHADER, "Source/Shaders/pag-fs.glsl");
 
-		ShaderManager::getInstancia()->nuevoShaderProgram("DefaultSP");
-		ShaderManager::getInstancia()->addShaderToSP("VertexShader", "DefaultSP");
-		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "DefaultSP");
-		ShaderManager::getInstancia()->nuevoShaderProgram("InstancingSP");
-		ShaderManager::getInstancia()->addShaderToSP("InstancingVertexShader", "InstancingSP");
-		ShaderManager::getInstancia()->addShaderToSP("FragmentShader", "InstancingSP");
-		ShaderManager::getInstancia()->nuevoShaderProgram("TriangleMeshSP");
-		ShaderManager::getInstancia()->addShaderToSP("FullVertexShader", "TriangleMeshSP");
-		ShaderManager::getInstancia()->addShaderToSP("FullFragmentShader", "TriangleMeshSP");
+		ShaderManager::getInstance()->nuevoShaderProgram("DefaultSP");
+		ShaderManager::getInstance()->addShaderToSP("VertexShader", "DefaultSP");
+		ShaderManager::getInstance()->addShaderToSP("FragmentShader", "DefaultSP");
+		ShaderManager::getInstance()->nuevoShaderProgram("InstancingSP");
+		ShaderManager::getInstance()->addShaderToSP("InstancingVertexShader", "InstancingSP");
+		ShaderManager::getInstance()->addShaderToSP("FragmentShader", "InstancingSP");
+		ShaderManager::getInstance()->nuevoShaderProgram("TriangleMeshSP");
+		ShaderManager::getInstance()->addShaderToSP("FullVertexShader", "TriangleMeshSP");
+		ShaderManager::getInstance()->addShaderToSP("FullFragmentShader", "TriangleMeshSP");
 
 		if (GLEW_ARB_compute_variable_group_size && GLEW_NV_gpu_shader5) {
-			ShaderManager::getInstancia()->nuevoShader("resetBuffersHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/resetBuffersHQR.glsl");
-			ShaderManager::getInstancia()->nuevoShader("depthBufferHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR.glsl");
-			ShaderManager::getInstancia()->nuevoShader("addColorHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR.glsl");
-			ShaderManager::getInstancia()->nuevoShader("storeTextureHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/storeTextureHQR.glsl");
-			ShaderManager::getInstancia()->nuevoShader("depthBufferHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR-Instancing.glsl");
-			ShaderManager::getInstancia()->nuevoShader("addColorHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR-Instancing.glsl");
-			ShaderManager::getInstancia()->nuevoShaderProgram("ResetComputeShaderSP");
-			ShaderManager::getInstancia()->addShaderToSP("resetBuffersHQR", "ResetComputeShaderSP");
-			ShaderManager::getInstancia()->nuevoShaderProgram("DepthComputeShaderSP");
-			ShaderManager::getInstancia()->addShaderToSP("depthBufferHQR", "DepthComputeShaderSP");
-			ShaderManager::getInstancia()->nuevoShaderProgram("ColorComputeShaderSP");
-			ShaderManager::getInstancia()->addShaderToSP("addColorHQR", "ColorComputeShaderSP");
-			ShaderManager::getInstancia()->nuevoShaderProgram("DepthComputeShaderSPInstancing");
-			ShaderManager::getInstancia()->addShaderToSP("depthBufferHQRInstancing", "DepthComputeShaderSPInstancing");
-			ShaderManager::getInstancia()->nuevoShaderProgram("ColorComputeShaderSPInstancing");
-			ShaderManager::getInstancia()->addShaderToSP("addColorHQRInstancing", "ColorComputeShaderSPInstancing");
-			ShaderManager::getInstancia()->nuevoShaderProgram("StoreComputeShaderSP");
-			ShaderManager::getInstancia()->addShaderToSP("storeTextureHQR", "StoreComputeShaderSP");
+			ShaderManager::getInstance()->nuevoShader("resetBuffersHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/resetBuffersHQR.glsl");
+			ShaderManager::getInstance()->nuevoShader("depthBufferHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR.glsl");
+			ShaderManager::getInstance()->nuevoShader("addColorHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR.glsl");
+			ShaderManager::getInstance()->nuevoShader("storeTextureHQR", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/storeTextureHQR.glsl");
+			ShaderManager::getInstance()->nuevoShader("depthBufferHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/computeDepthBufferHQR-Instancing.glsl");
+			ShaderManager::getInstance()->nuevoShader("addColorHQRInstancing", GL_COMPUTE_SHADER, "Source/Shaders/ComputeShaders/addColorsHQR-Instancing.glsl");
+			ShaderManager::getInstance()->nuevoShaderProgram("ResetComputeShaderSP");
+			ShaderManager::getInstance()->addShaderToSP("resetBuffersHQR", "ResetComputeShaderSP");
+			ShaderManager::getInstance()->nuevoShaderProgram("DepthComputeShaderSP");
+			ShaderManager::getInstance()->addShaderToSP("depthBufferHQR", "DepthComputeShaderSP");
+			ShaderManager::getInstance()->nuevoShaderProgram("ColorComputeShaderSP");
+			ShaderManager::getInstance()->addShaderToSP("addColorHQR", "ColorComputeShaderSP");
+			ShaderManager::getInstance()->nuevoShaderProgram("DepthComputeShaderSPInstancing");
+			ShaderManager::getInstance()->addShaderToSP("depthBufferHQRInstancing", "DepthComputeShaderSPInstancing");
+			ShaderManager::getInstance()->nuevoShaderProgram("ColorComputeShaderSPInstancing");
+			ShaderManager::getInstance()->addShaderToSP("addColorHQRInstancing", "ColorComputeShaderSPInstancing");
+			ShaderManager::getInstance()->nuevoShaderProgram("StoreComputeShaderSP");
+			ShaderManager::getInstance()->addShaderToSP("storeTextureHQR", "StoreComputeShaderSP");
 
 			hqRenderer.reset(new PointCloudHQRenderer());
 		} else {
@@ -77,22 +75,6 @@ PPCX::Renderer::Renderer() :hqr(true) {
  * Destructor
  */
 PPCX::Renderer::~Renderer() {}
-
-
-/**
- * Consulta del objeto único de la clase
- * @return Puntero al Renderer
- */
-PPCX::Renderer* PPCX::Renderer::getInstancia() {
-	if (!instancia) {
-		try {
-			instancia = new Renderer;
-		} catch (std::runtime_error& e) {
-			throw;
-		}
-	}
-	return instancia;
-}
 
 /**
  * Inicializa los parámetros globales de OpenGL.
@@ -143,7 +125,7 @@ const GLubyte* PPCX::Renderer::getPropiedadGL(GLenum propiedad) {
 	return glGetString(propiedad);
 }
 
-void PPCX::Renderer::cargaModelo(const std::string& path, const unsigned& pointsPerVoxel) {
+void PPCX::Renderer::setupNewScene(const std::string& path, const unsigned& pointsPerVoxel) {
 	FileManager::loadPointCloud(path);
 	try {
 		const auto pCloud = dynamic_cast<PointCloud*>(ModelManager::getInstance()->getModel("Ground"));
@@ -151,7 +133,7 @@ void PPCX::Renderer::cargaModelo(const std::string& path, const unsigned& points
 		setCameraFocus(pCloud->getAABB());
 		ModelManager::getInstance()->clearAllVegetationInstances();
 	} catch (std::runtime_error& e) {
-		std::cerr << "[Renderer:cargaModelo]: " << e.what() << std::endl;
+		std::cerr << "[Renderer::setupNewScene]: " << e.what() << std::endl;
 	}
 }
 

@@ -1,18 +1,13 @@
 #pragma once
-
-
 using namespace glm;
 /**
 *	@file AABB.h
-*	@authors Alfonso López Ruiz (alr00048@red.ujaen.es)
-*	@date 08/05/2019
 */
 
 /**
 *	@brief Axis-aligned bounding box.
 */
-class AABB
-{
+class AABB {
 protected:
 	vec3	_max, _min;						//!< Minimum and maximum points (max and min value at X, Y and Z axes)
 
@@ -38,7 +33,7 @@ public:
 	AABB& operator=(const AABB& aabb);
 
 	/**
-	*	@return Middle point of cube. 
+	*	@return Middle point of cube.
 	*/
 	vec3 center() const { return (_max + _min) / 2.0f; }
 

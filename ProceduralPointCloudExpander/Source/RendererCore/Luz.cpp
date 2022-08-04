@@ -51,30 +51,30 @@ PPCX::Luz::Luz(const glm::vec3 &id, const glm::vec3 &is, const glm::vec3 &posici
 }
 
 void PPCX::Luz::aplicarLuz(const std::string &shader, const glm::mat4 &matriz) const {
-	ShaderManager::getInstancia()->activarSP(shader);
+	ShaderManager::getInstance()->activarSP(shader);
 	if (this->tipoLuz == tipoLuz::ambiente) {
-		ShaderManager::getInstancia()->setUniform(shader, "Ia", ia);
+		ShaderManager::getInstance()->setUniform(shader, "Ia", ia);
 	} else if (this->tipoLuz == tipoLuz::puntual) {
-		ShaderManager::getInstancia()->setUniform(shader, "Id", id);
-		ShaderManager::getInstancia()->setUniform(shader, "Is", is);
-		ShaderManager::getInstancia()->setUniform(shader, "posLuz", glm::vec3(matriz * glm::vec4(posicion, 1)));
+		ShaderManager::getInstance()->setUniform(shader, "Id", id);
+		ShaderManager::getInstance()->setUniform(shader, "Is", is);
+		ShaderManager::getInstance()->setUniform(shader, "posLuz", glm::vec3(matriz * glm::vec4(posicion, 1)));
 	} else if (this->tipoLuz == tipoLuz::direccional) {
-		ShaderManager::getInstancia()->setUniform(shader, "Id", id);
-		ShaderManager::getInstancia()->setUniform(shader, "Is", is);
-		ShaderManager::getInstancia()->setUniform(shader, "dirLuz", normalize(glm::vec3(
+		ShaderManager::getInstance()->setUniform(shader, "Id", id);
+		ShaderManager::getInstance()->setUniform(shader, "Is", is);
+		ShaderManager::getInstance()->setUniform(shader, "dirLuz", normalize(glm::vec3(
 			                                          transpose(inverse(matriz)) * glm::vec4(direccion, 0))));
 	} else if (this->tipoLuz == tipoLuz::foco) {
-		ShaderManager::getInstancia()->setUniform(shader, "Id", id);
-		ShaderManager::getInstancia()->setUniform(shader, "Is", is);
-		ShaderManager::getInstancia()->setUniform(shader, "posLuz", glm::vec3(matriz * glm::vec4(posicion, 1)));
-		ShaderManager::getInstancia()->setUniform(shader, "dirLuz", normalize(glm::vec3(
+		ShaderManager::getInstance()->setUniform(shader, "Id", id);
+		ShaderManager::getInstance()->setUniform(shader, "Is", is);
+		ShaderManager::getInstance()->setUniform(shader, "posLuz", glm::vec3(matriz * glm::vec4(posicion, 1)));
+		ShaderManager::getInstance()->setUniform(shader, "dirLuz", normalize(glm::vec3(
 			                                          transpose(inverse(matriz)) * glm::vec4(direccion, 0))));
-		ShaderManager::getInstancia()->setUniform(shader, "spotAngle", gamma);
-		ShaderManager::getInstancia()->setUniform(shader, "expBordes", exponenteBordes);
+		ShaderManager::getInstance()->setUniform(shader, "spotAngle", gamma);
+		ShaderManager::getInstance()->setUniform(shader, "expBordes", exponenteBordes);
 	}
 	//Activamos el muestrador aunque no se use mapa de sombras para evitar undefined behaviours de OpenGL.
 	//https://stackoverflow.com/a/45203667
-	ShaderManager::getInstancia()->setUniform(shader, "muestreadorSombra", (GLint) 2);
+	ShaderManager::getInstance()->setUniform(shader, "muestreadorSombra", (GLint) 2);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, idMapaSombras);
 }

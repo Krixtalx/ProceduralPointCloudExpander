@@ -6,20 +6,17 @@
 #define PAG_SHADERMANAGER_H
 
 #include "ShaderProgram.h"
+#include "Utilities/Singleton.h"
 
 namespace PPCX {
 	class ComputeShader;
 
-	class ShaderManager {
-		static ShaderManager* instancia;
-
-		ShaderManager() = default;
-
+	class ShaderManager : public Singleton<ShaderManager> {
 		std::map<std::string, ShaderProgram*> shaderPrograms;
 		std::map<std::string, Shader*> shaders;
 		std::map<std::string, GLuint> uniformsLocation;
 	public:
-		static ShaderManager* getInstancia();
+		ShaderManager() = default;
 
 		ShaderManager(const ShaderManager& orig) = delete;
 
@@ -50,8 +47,8 @@ namespace PPCX {
 		void activarSubrutina(const std::string& nombreSP, GLenum tipoShader, const std::string& nombreSubrutina);
 
 		void activarMultiplesSubrutinas(const std::string& nombreSP, GLenum tipoShader,
-										const std::vector<std::string>& nombreUniform,
-										const std::vector<std::string>& nombreSubrutina);
+			const std::vector<std::string>& nombreUniform,
+			const std::vector<std::string>& nombreSubrutina);
 
 		ComputeShader* getComputeShader(const std::string& name);
 	};

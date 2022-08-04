@@ -32,7 +32,7 @@ void GLAPIENTRY MessageCallback(GLenum source,
 // OpenGL deba ser redibujada.
 void callbackRefrescoVentana(GLFWwindow* ventana) {
 	try {
-		PPCX::Renderer::getInstancia()->refrescar();
+		PPCX::Renderer::getInstance()->refrescar();
 		GUI::getInstance()->render();
 	} catch (std::runtime_error& e) {
 		std::cerr << e.what() << std::endl;
@@ -44,7 +44,7 @@ void callbackRefrescoVentana(GLFWwindow* ventana) {
 // - Esta función callback será llamada cada vez que se cambie el tamaño
 // del área de dibujo OpenGL.
 void callbackFramebufferSize(GLFWwindow* window, int width, int height) {
-	PPCX::Renderer::getInstancia()->setViewport(0, 0, width, height);
+	PPCX::Renderer::getInstance()->setViewport(0, 0, width, height);
 }
 
 // - Esta función callback será llamada cada vez que se pulse una tecla
@@ -53,27 +53,27 @@ void callbackTecla(GLFWwindow* window, int key, int scancode, int action, int mo
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	} else if (key == GLFW_KEY_W && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().truck(-1.0f * deltaTime);
+		PPCX::Renderer::getInstance()->getCamara().truck(-1.0f * deltaTime);
 	} else if (key == GLFW_KEY_S && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().truck(1.0f * deltaTime);
+		PPCX::Renderer::getInstance()->getCamara().truck(1.0f * deltaTime);
 	} else if (key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().dolly(-1.0f * deltaTime);
+		PPCX::Renderer::getInstance()->getCamara().dolly(-1.0f * deltaTime);
 	} else if (key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().dolly(1.0f * deltaTime);
+		PPCX::Renderer::getInstance()->getCamara().dolly(1.0f * deltaTime);
 	} else if (key == GLFW_KEY_Z && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().boom(1.0f * deltaTime);
+		PPCX::Renderer::getInstance()->getCamara().boom(1.0f * deltaTime);
 	} else if (key == GLFW_KEY_X && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().crane(1.0f * deltaTime);
+		PPCX::Renderer::getInstance()->getCamara().crane(1.0f * deltaTime);
 	} else if (key == GLFW_KEY_R && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().reset();
+		PPCX::Renderer::getInstance()->getCamara().reset();
 	} else if (key == GLFW_KEY_P && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().changeCamaraType();
+		PPCX::Renderer::getInstance()->getCamara().changeCamaraType();
 	} else if (key == GLFW_KEY_RIGHT_BRACKET || key == GLFW_KEY_KP_ADD && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(deltaTime * 10);
+		PPCX::Renderer::getInstance()->getCamara().increaseZFar(deltaTime * 10);
 	} else if (key == GLFW_KEY_SLASH || key == GLFW_KEY_KP_SUBTRACT && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->getCamara().increaseZFar(-deltaTime * 5);
+		PPCX::Renderer::getInstance()->getCamara().increaseZFar(-deltaTime * 5);
 	} else if (key == GLFW_KEY_PRINT_SCREEN && (action == GLFW_PRESS)) {
-		PPCX::Renderer::getInstancia()->screenshot("Cap");
+		PPCX::Renderer::getInstance()->screenshot("Cap");
 	}
 }
 
@@ -106,11 +106,11 @@ void callbackBotonRaton(GLFWwindow* window, int button, int action, int mods) {
 void callbackMovimientoRaton(GLFWwindow* window, const double xpos, const double ypos) {
 	if (!GUI::getInstance()->isMouseActive()) {
 		if (botonIzquierdoPulsado) {
-			PPCX::Renderer::getInstancia()->getCamara().orbitX(-(xpos - prevXPos) * deltaTime * 0.1);
-			PPCX::Renderer::getInstancia()->getCamara().orbitY((ypos - prevYPos) * deltaTime * 0.1);
+			PPCX::Renderer::getInstance()->getCamara().orbitX(-(xpos - prevXPos) * deltaTime * 0.1);
+			PPCX::Renderer::getInstance()->getCamara().orbitY((ypos - prevYPos) * deltaTime * 0.1);
 		} else if (botonDerechoPulsado) {
-			PPCX::Renderer::getInstancia()->getCamara().pan((xpos - prevXPos) * deltaTime * 0.05);
-			PPCX::Renderer::getInstancia()->getCamara().tilt((ypos - prevYPos) * deltaTime * 0.05);
+			PPCX::Renderer::getInstance()->getCamara().pan((xpos - prevXPos) * deltaTime * 0.05);
+			PPCX::Renderer::getInstance()->getCamara().tilt((ypos - prevYPos) * deltaTime * 0.05);
 		}
 	}
 	prevXPos = xpos;
@@ -119,7 +119,7 @@ void callbackMovimientoRaton(GLFWwindow* window, const double xpos, const double
 
 void callbackScroll(GLFWwindow* window, double xoffset, double yoffset) {
 	if (GUI::getInstance()->isMouseActive()) return;
-	PPCX::Renderer::getInstancia()->getCamara().zoom(-yoffset * deltaTime * 5);
+	PPCX::Renderer::getInstance()->getCamara().zoom(-yoffset * deltaTime * 5);
 }
 
 int main() {
@@ -157,7 +157,7 @@ int main() {
 
 	//Realizamos esta llamada para forzar la creación del Renderer y asi poder capturar el posible error sin problema
 	try {
-		PPCX::Renderer::getInstancia();
+		PPCX::Renderer::getInstance();
 	} catch (std::runtime_error& e) {
 		std::cerr << e.what() << std::endl;
 		std::cout << "Finishing application..." << std::endl;
@@ -184,7 +184,7 @@ int main() {
 	glDebugMessageCallback(MessageCallback, nullptr);
 
 
-	PPCX::Renderer::getInstancia()->inicializaOpenGL();
+	PPCX::Renderer::getInstance()->inicializaOpenGL();
 	GUI::getInstance()->initialize(window, 1);
 
 	// - Ciclo de eventos de la aplicación.
