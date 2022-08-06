@@ -17,7 +17,7 @@ PointCloud::PointCloud(std::string shaderProgram, const vec3& pos, const vec3& r
  * @param pos Posicion inicial de la nube de puntos
  */
 PointCloud::PointCloud(std::string shaderProgram, const std::vector<PointModel>& points, const AABB& aabb, const vec3& pos, const
-					   vec3& rot, const vec3& scale) :
+	vec3& rot, const vec3& scale) :
 	Model(std::move(shaderProgram), pos, rot, scale), aabb(aabb), needUpdating(true) {
 	newPoints(points);
 }
@@ -39,14 +39,14 @@ PointCloud::PointCloud(PointCloud& orig) : Model(orig), vbo(orig.vbo) {
  */
 PointCloud::~PointCloud() = default;
 
-void PointCloud::newPoint(const PointModel & point) {
+void PointCloud::newPoint(const PointModel& point) {
 	vbo.push_back(point);
 	aabb.update(point._point);
 	needUpdating = true;
 	optimized = false;
 }
 
-void PointCloud::newPoints(const std::vector<PointModel>&points) {
+void PointCloud::newPoints(const std::vector<PointModel>& points) {
 	vbo.clear();
 	vbo.resize(points.size());
 	std::copy(points.begin(), points.end(), vbo.begin());
@@ -85,11 +85,11 @@ void PointCloud::newVBO(GLenum freqAct) {
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PointModel),
-						  nullptr);
+		nullptr);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(PointModel),
-						  (static_cast<GLubyte*>(nullptr) + sizeof(vec3)));
+		(static_cast<GLubyte*>(nullptr) + sizeof(vec3)));
 }
 
 /**
@@ -97,7 +97,7 @@ void PointCloud::newVBO(GLenum freqAct) {
  * @param data a instanciar
  * @param freqAct GLenum que indica con que frecuencia se van a modificar los vertices. GL_STATIC_DRAW siempre por ahora
  */
-void PointCloud::newIBO(const std::vector<GLuint>&data, const GLenum freqAct) {
+void PointCloud::newIBO(const std::vector<GLuint>& data, const GLenum freqAct) {
 	//Si hay un buffer de este tipo instanciado, lo eliminamos
 	if (idIBO != UINT_MAX) {
 		glDeleteBuffers(1, &idIBO);
@@ -113,7 +113,7 @@ void PointCloud::newIBO(const std::vector<GLuint>&data, const GLenum freqAct) {
 /**
  * Función a la que se llama cuando se debe de dibujar el modelo
  */
-void PointCloud::drawModel(const mat4 & MVPMatrix) {
+void PointCloud::drawModel(const mat4& MVPMatrix) {
 	if (visible) {
 		if (needUpdating)
 			updateCloud();
@@ -156,7 +156,7 @@ vec3 PointCloud::getRandomPointColor() {
 	return vbo[rand() % vbo.size()].getRGBVec3();
 }
 
-bool compareFunction(const PointModel & a, const PointModel & b) {
+bool compareFunction(const PointModel& a, const PointModel& b) {
 	const uint_fast64_t aVal = libmorton::morton3D_64_encode(a._point.x * 10000, a._point.y * 10000, a._point.z * 10000);
 	const uint_fast64_t bVal = libmorton::morton3D_64_encode(b._point.x * 10000, b._point.y * 10000, b._point.z * 10000);
 	return aVal < bVal;
@@ -164,7 +164,12 @@ bool compareFunction(const PointModel & a, const PointModel & b) {
 
 void PointCloud::optimize() {
 	if (!optimized) {
+		auto start = std::chrono::high_resolution_clock::now();
 		std::sort(std::execution::par_unseq, vbo.begin(), vbo.end(), compareFunction);
+		auto end = std::chrono::high_resolution_clock::now();
+
+		auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+		std::cout << "Cloud optimization: " << vbo.size() << " points in " << int_s.count() << " ms" << std::endl << std::endl;
 		std::vector<PointModel> newVbo(vbo.size());
 		const auto size = static_cast<unsigned>(vbo.size() / 128 + .5f);
 		std::vector<unsigned> batchOrder(size);

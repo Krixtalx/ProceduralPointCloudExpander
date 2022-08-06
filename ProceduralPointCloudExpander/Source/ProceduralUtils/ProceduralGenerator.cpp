@@ -388,13 +388,14 @@ void ProceduralGenerator::computeNURBS(unsigned degree, unsigned divX, unsigned 
 			std::copy(localPoints[i].begin(), localPoints[i].end(), points.begin() + index);
 			index += localPoints[i].size();
 		}
+		
+		delete[] localPoints;
 		auto end = std::chrono::high_resolution_clock::now();
 
 		auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 		std::cout << "NURBS: " << int_s.count() << " ms" << std::endl << std::endl;
 
 		auto cloud = new PointCloud("DefaultSP", points, newAABB);
-		delete[] localPoints;
 		cloud->optimize();
 		cloud->classification = "Ground";
 		ModelManager::getInstance()->modifyModel("Nurbs terrain cloud", cloud);

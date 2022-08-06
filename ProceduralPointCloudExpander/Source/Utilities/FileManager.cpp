@@ -316,6 +316,8 @@ void FileManager::loadPointCloud(const std::string& filename, const bool useClas
  * @param clouds clouds that will be agregated to form the final point cloud.
  */
 void FileManager::savePointCloud(const std::string& filename, const std::vector<PointCloud*>& clouds) {
+
+	auto start = std::chrono::high_resolution_clock::now();
 	std::filebuf fb_binary;
 	fb_binary.open(filename, std::ios::out | std::ios::binary);
 	std::ostream outstream_binary(&fb_binary);
@@ -370,6 +372,10 @@ void FileManager::savePointCloud(const std::string& filename, const std::vector<
 
 	file.write(outstream_binary, true);
 	fb_binary.close();
+	auto end = std::chrono::high_resolution_clock::now();
+
+	auto int_s = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	std::cout << "File save: " << int_s.count() << " ms" << std::endl << std::endl;
 	saving = false;
 }
 
