@@ -27,9 +27,9 @@ PointCloudHQRenderer::PointCloudHQRenderer() {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, windowSize.x, windowSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	GLuint fboId = 0;
-	glGenFramebuffers(1, &fboId);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, fboId);
+	fboID = 0;
+	glGenFramebuffers(1, &fboID);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fboID);
 	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 		GL_TEXTURE_2D, _textureID, 0);
 }
@@ -68,6 +68,7 @@ void PointCloudHQRenderer::render(const mat4& MVPmatrix, const float& distanceTh
 	ModelManager::getInstance()->pendingClouds.clear();
 
 	const int numGroupsImage = PPCX::ComputeShader::getNumGroups(windowSize.x * windowSize.y);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fboID);
 
 	// 1. Fill buffer of 32 bits with UINT_MAX
 	resetDepthBufferHQRShader->bindBuffers(std::vector<GLuint> { _rawDepthBufferSSBO, _color01SSBO, _color02SSBO });

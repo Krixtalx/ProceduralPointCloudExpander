@@ -210,7 +210,7 @@ void PPCX::Renderer::screenshot(const std::string& filename) {
 	delete[] flipped;
 
 	if (!hqr) {
-		// VUELTA A LA NORMALIDAD
+		//VUELTA A LA NORMALIDAD
 		glDeleteTextures(1, &idTextura);
 		glDeleteRenderbuffers(1, &idRBO);
 		glDeleteFramebuffers(1, &idFBO);
