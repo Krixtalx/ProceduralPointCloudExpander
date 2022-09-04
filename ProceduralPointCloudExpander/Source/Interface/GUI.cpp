@@ -353,9 +353,13 @@ void GUI::showVegetationSelection() {
 			ImGui::SameLine();
 			ImGui::Combo(("##Picker Mode" + std::to_string(i)).c_str(), &values[i++], items.data(), 2);
 			if (ImGui::IsItemHovered()) {
-				//PPCX::Renderer::getInstance()->setCameraFocus(cloud->getAABB());
-				ModelManager::getInstance()->setVisibility("RGB", false);
-				cloud->getVisibility() = true;
+				if (PPCX::Renderer::getInstance()->hqr) {
+					ModelManager::getInstance()->setVisibility("High", true);
+					cloud->getVisibility() = false;
+				} else {
+					ModelManager::getInstance()->setVisibility("RGB", false);
+					cloud->getVisibility() = true;
+				}
 			}
 		}
 		if (ImGui::Button("Generate procedural vegetation")) {
